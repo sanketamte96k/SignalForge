@@ -197,3 +197,57 @@ def calculate_atr(
     ).mean()
 
     return atr
+def calculate_rvol(
+    volume: pd.Series,
+    period: int = 20,
+) -> pd.Series:
+    """
+    Calculate Relative Volume (RVOL).
+
+    RVOL compares the current volume with the average
+    volume over the previous `period` observations.
+
+    Parameters
+    ----------
+    volume:
+        Series containing trading volume.
+
+    period:
+        Lookback period for average volume.
+        Must be a positive integer.
+
+    Returns
+    -------
+    pd.Series
+        RVOL values where:
+            1.0 = average volume
+            >1.0 = above-average volume
+            <1.0 = below-average volume
+    """
+
+    if not isinstance(volume, pd.Series):
+        raise TypeError("volume must be a pandas Series.")
+
+    if volume.empty:
+        raise ValueError("volume series cannot be empty.")
+
+    if not isinstance(period, int) or isinstance(period, bool):
+        raise TypeError("period must be an integer.")
+
+    if period <= 0:
+        raise ValueError("period must be greater than zero.")
+
+    if volume.isna().any():
+        raise ValueError("volume series cannot contain missing values.")
+
+    if (volume < 0).any():
+        raise ValueError("volume cannot contain negative values.")
+
+    average_volume = volume.rolling(
+        window=period,
+        min_periods=period,
+    ).mean()
+
+    rvol = volume / average_volume
+
+    return rvol

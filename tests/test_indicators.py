@@ -5,6 +5,7 @@ from src.indicators.indicators import (
     calculate_ema,
     calculate_rsi,
     calculate_atr,
+    calculate_rvol,
 )
 
 
@@ -510,4 +511,185 @@ def test_atr_missing_values():
             low,
             close,
             period=2,
+        )
+# ============================================================
+# RVOL TESTS
+# ============================================================
+
+def test_rvol_returns_series():
+    volume = pd.Series(
+        [1000, 1100, 1200, 1300, 1400],
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert isinstance(result, pd.Series)
+    assert len(result) == len(volume)
+
+
+def test_rvol_preserves_index():
+    index = pd.date_range(
+        "2026-08-31 09:15",
+        periods=5,
+        freq="min",
+    )
+
+    volume = pd.Series(
+        [1000, 1100, 1200, 1300, 1400],
+        index=index,
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert result.index.equals(index)
+
+
+def test_rvol_initial_values_are_nan():
+    volume = pd.Series(
+        [1000, 1100, 1200, 1300, 1400],
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert result.iloc[:2].isna().all()
+    assert pd.notna(result.iloc[2])
+
+
+def test_rvol_average_volume_is_one():
+    volume = pd.Series(
+        [1000, 1000, 1000, 1000, 1000],
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert (result.dropna() == 1.0).all()
+
+
+def test_rvol_above_average_volume():
+    volume = pd.Series(
+        [1000, 1000, 1000, 2000],
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert result.iloc[-1] > 1.0
+
+
+def test_rvol_below_average_volume():
+    volume = pd.Series(
+        [1000, 1000, 1000, 500],
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert result.iloc[-1] < 1.0
+
+
+def test_rvol_zero_volume():
+    volume = pd.Series(
+        [0, 0, 0, 0],
+        dtype=float,
+    )
+
+    result = calculate_rvol(
+        volume,
+        period=3,
+    )
+
+    assert result.iloc[-1] != result.iloc[-1]
+
+
+def test_rvol_invalid_period():
+    volume = pd.Series(
+        [1000, 1100, 1200],
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_rvol(
+            volume,
+            period=0,
+        )
+
+
+def test_rvol_non_integer_period():
+    volume = pd.Series(
+        [1000, 1100, 1200],
+        dtype=float,
+    )
+
+    with pytest.raises(TypeError):
+        calculate_rvol(
+            volume,
+            period=20.5,
+        )
+
+
+def test_rvol_non_series_input():
+    with pytest.raises(TypeError):
+        calculate_rvol(
+            [1000, 1100, 1200],
+            period=3,
+        )
+
+
+def test_rvol_empty_series():
+    volume = pd.Series(
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_rvol(
+            volume,
+            period=3,
+        )
+
+
+def test_rvol_missing_values():
+    volume = pd.Series(
+        [1000, None, 1200, 1300],
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_rvol(
+            volume,
+            period=3,
+        )
+
+
+def test_rvol_negative_volume():
+    volume = pd.Series(
+        [1000, 1100, -1200, 1300],
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_rvol(
+            volume,
+            period=3,
         )
