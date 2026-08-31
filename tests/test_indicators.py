@@ -4,8 +4,13 @@ import pytest
 from src.indicators.indicators import (
     calculate_ema,
     calculate_rsi,
+    calculate_atr,
 )
 
+
+# ============================================================
+# EMA TESTS
+# ============================================================
 
 def test_ema_returns_series():
     close = pd.Series(
@@ -111,6 +116,11 @@ def test_missing_values():
 
     with pytest.raises(ValueError):
         calculate_ema(close, 3)
+
+
+# ============================================================
+# RSI TESTS
+# ============================================================
 
 def test_rsi_returns_series():
     close = pd.Series(
@@ -249,3 +259,255 @@ def test_rsi_missing_values():
 
     with pytest.raises(ValueError):
         calculate_rsi(close, 14)
+
+
+# ============================================================
+# ATR TESTS
+# ============================================================
+
+def test_atr_returns_series():
+    high = pd.Series(
+        [102, 103, 104, 105, 106],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101, 102, 103],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103, 104, 105],
+        dtype=float,
+    )
+
+    result = calculate_atr(
+        high,
+        low,
+        close,
+        period=3,
+    )
+
+    assert isinstance(result, pd.Series)
+    assert len(result) == len(close)
+
+
+def test_atr_preserves_index():
+    index = pd.date_range(
+        "2026-08-31 09:15",
+        periods=5,
+        freq="min",
+    )
+
+    high = pd.Series(
+        [102, 103, 104, 105, 106],
+        index=index,
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101, 102, 103],
+        index=index,
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103, 104, 105],
+        index=index,
+        dtype=float,
+    )
+
+    result = calculate_atr(
+        high,
+        low,
+        close,
+        period=3,
+    )
+
+    assert result.index.equals(index)
+
+
+def test_atr_initial_values_are_nan():
+    high = pd.Series(
+        [102, 103, 104, 105, 106],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101, 102, 103],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103, 104, 105],
+        dtype=float,
+    )
+
+    result = calculate_atr(
+        high,
+        low,
+        close,
+        period=3,
+    )
+
+    # With period=3, the first valid ATR appears
+    # at index 2 after three true-range observations.
+    assert result.iloc[:2].isna().all()
+    assert pd.notna(result.iloc[2])
+
+
+def test_atr_is_positive():
+    high = pd.Series(
+        [102, 103, 104, 105, 106, 107],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101, 102, 103, 104],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103, 104, 105, 106],
+        dtype=float,
+    )
+
+    result = calculate_atr(
+        high,
+        low,
+        close,
+        period=3,
+    )
+
+    assert (result.dropna() > 0).all()
+
+
+def test_atr_accounts_for_previous_close_gap():
+    high = pd.Series(
+        [101, 102, 112],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 110],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [100, 101, 111],
+        dtype=float,
+    )
+
+    result = calculate_atr(
+        high,
+        low,
+        close,
+        period=2,
+    )
+
+    # The third candle has a larger true range because
+    # of the gap from the previous close.
+    assert result.iloc[-1] > result.iloc[-2]
+
+
+def test_atr_invalid_period():
+    high = pd.Series(
+        [102, 103, 104],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103],
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_atr(
+            high,
+            low,
+            close,
+            period=0,
+        )
+
+
+def test_atr_non_integer_period():
+    high = pd.Series(
+        [102, 103, 104],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103],
+        dtype=float,
+    )
+
+    with pytest.raises(TypeError):
+        calculate_atr(
+            high,
+            low,
+            close,
+            period=14.5,
+        )
+
+
+def test_atr_mismatched_indexes():
+    high = pd.Series(
+        [102, 103, 104],
+        index=[0, 1, 2],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101],
+        index=[1, 2, 3],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103],
+        index=[0, 1, 2],
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_atr(
+            high,
+            low,
+            close,
+            period=2,
+        )
+
+
+def test_atr_missing_values():
+    high = pd.Series(
+        [102, None, 104],
+        dtype=float,
+    )
+
+    low = pd.Series(
+        [99, 100, 101],
+        dtype=float,
+    )
+
+    close = pd.Series(
+        [101, 102, 103],
+        dtype=float,
+    )
+
+    with pytest.raises(ValueError):
+        calculate_atr(
+            high,
+            low,
+            close,
+            period=2,
+        )
