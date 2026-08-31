@@ -14,6 +14,7 @@ env/
 # Local market data
 data/raw/*
 data/processed/*
+data/historical/*
 
 # Generated reports
 reports/*
