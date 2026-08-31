@@ -84,8 +84,26 @@ def _normalize_downloaded_data(
             "Downloaded market data is empty."
         )
 
-    # yfinance may return MultiIndex columns
-    # when downloading a single ticker.
+    data = data.copy()
+
+    required_columns = {
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+    }
+
+    # yfinance can return MultiIndex columns even
+    # when only one ticker is downloaded.
+    #
+    # Example:
+    #
+    # Price       Open  High  Low  Close  Volume
+    # Ticker     ^NSEI ^NSEI ^NSEI ^NSEI  ^NSEI
+    #
+    # Identify which level contains the OHLCV
+    # column names and discard the ticker level.
     if isinstance(
         data.columns,
         pd.MultiIndex,
@@ -95,29 +113,29 @@ def _normalize_downloaded_data(
                 "Unsupported MultiIndex structure."
             )
 
-        first_level = (
+        level_0 = list(
             data.columns.get_level_values(0)
         )
 
-        if len(set(first_level)) == 1:
-            data = data.copy()
-            data.columns = (
-                data.columns.get_level_values(0)
-            )
+        level_1 = list(
+            data.columns.get_level_values(1)
+        )
+
+        if required_columns.issubset(
+            set(level_0)
+        ):
+            data.columns = level_0
+
+        elif required_columns.issubset(
+            set(level_1)
+        ):
+            data.columns = level_1
+
         else:
             raise ValueError(
-                "Downloaded data contains multiple tickers."
+                "Downloaded data does not contain "
+                "standard OHLCV columns."
             )
-
-    data = data.copy()
-
-    required_columns = [
-        "Open",
-        "High",
-        "Low",
-        "Close",
-        "Volume",
-    ]
 
     missing_columns = [
         column
@@ -132,7 +150,13 @@ def _normalize_downloaded_data(
         )
 
     data = data[
-        required_columns
+        [
+            "Open",
+            "High",
+            "Low",
+            "Close",
+            "Volume",
+        ]
     ].rename(
         columns={
             "Open": "open",
@@ -153,9 +177,17 @@ def _normalize_downloaded_data(
 
     data = data.sort_index()
 
-    # Keep SignalForge timestamps timezone-naive.
+    # Convert Yahoo Finance timestamps to
+    # Indian Standard Time before removing
+    # timezone information.
+    #
+    # This is important because simply calling
+    # tz_localize(None) would remove the timezone
+    # without converting the actual clock time.
     if data.index.tz is not None:
-        data.index = data.index.tz_localize(
+        data.index = data.index.tz_convert(
+            "Asia/Kolkata"
+        ).tz_localize(
             None
         )
 
