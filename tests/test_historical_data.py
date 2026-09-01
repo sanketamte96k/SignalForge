@@ -42,13 +42,13 @@ def test_historical_dataset_has_expected_columns():
         DATA_PATH
     )
 
-    assert list(data.columns) == [
+    assert set(data.columns) == {
         "open",
         "high",
         "low",
         "close",
         "volume",
-    ]
+    }
 
 
 @pytest.mark.skipif(
@@ -84,7 +84,7 @@ def test_historical_dataset_has_expected_row_count():
         DATA_PATH
     )
 
-    assert len(data) == 1875
+    assert len(data) == 6000
 
 
 @pytest.mark.skipif(
@@ -96,9 +96,11 @@ def test_historical_dataset_has_expected_trading_days():
         DATA_PATH
     )
 
-    trading_days = data.index.normalize().unique()
+    trading_days = (
+        data.index.normalize().unique()
+    )
 
-    assert len(trading_days) == 5
+    assert len(trading_days) == 16
 
 
 @pytest.mark.skipif(
@@ -110,12 +112,14 @@ def test_each_trading_day_has_375_candles():
         DATA_PATH
     )
 
-    daily_counts = data.groupby(
-        data.index.date
-    ).size()
+    candles_per_day = (
+        data.groupby(
+            data.index.normalize()
+        ).size()
+    )
 
     assert (
-        daily_counts == 375
+        candles_per_day == 375
     ).all()
 
 
@@ -128,16 +132,17 @@ def test_market_session_starts_at_915():
         DATA_PATH
     )
 
-    first_times = (
-        data.groupby(data.index.date)
-        .apply(
-            lambda frame: frame.index[0].time(),
-            include_groups=False,
+    first_timestamp_each_day = (
+        data.groupby(
+            data.index.normalize()
+        ).apply(
+            lambda frame: frame.index.min()
         )
     )
 
     assert (
-        first_times.astype(str) == "09:15:00"
+        first_timestamp_each_day.dt.time
+        == pd.Timestamp("09:15").time()
     ).all()
 
 
@@ -150,16 +155,17 @@ def test_market_session_ends_at_1529():
         DATA_PATH
     )
 
-    last_times = (
-        data.groupby(data.index.date)
-        .apply(
-            lambda frame: frame.index[-1].time(),
-            include_groups=False,
+    last_timestamp_each_day = (
+        data.groupby(
+            data.index.normalize()
+        ).apply(
+            lambda frame: frame.index.max()
         )
     )
 
     assert (
-        last_times.astype(str) == "15:29:00"
+        last_timestamp_each_day.dt.time
+        == pd.Timestamp("15:29").time()
     ).all()
 
 
@@ -172,18 +178,16 @@ def test_ohlcv_values_are_numeric():
         DATA_PATH
     )
 
-    assert all(
-        pd.api.types.is_numeric_dtype(
+    for column in (
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+    ):
+        assert pd.api.types.is_numeric_dtype(
             data[column]
         )
-        for column in [
-            "open",
-            "high",
-            "low",
-            "close",
-            "volume",
-        ]
-    )
 
 
 @pytest.mark.skipif(

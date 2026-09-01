@@ -99,6 +99,29 @@ def _validate_state(
         )
 
 
+def _validate_threshold(
+    value: float,
+    name: str,
+) -> None:
+    """Validate a non-negative numeric threshold."""
+
+    if not isinstance(
+        value,
+        (int, float),
+    ) or isinstance(
+        value,
+        bool,
+    ):
+        raise TypeError(
+            f"{name} must be numeric."
+        )
+
+    if value < 0:
+        raise ValueError(
+            f"{name} cannot be negative."
+        )
+
+
 def generate_signal(
     timeframe_30m: TimeframeState,
     timeframe_15m: TimeframeState,
@@ -106,6 +129,7 @@ def generate_signal(
     timeframe_5m: TimeframeState,
     minimum_rvol: float = 1.5,
     minimum_atr: float = 0.0,
+    use_rvol: bool = True,
 ) -> SignalResult:
     """
     Generate a deterministic multi-timeframe signal.
@@ -119,7 +143,14 @@ def generate_signal(
 
     All four timeframes must agree directionally.
 
-    RSI, RVOL and ATR provide additional confirmation.
+    RSI and ATR provide confirmation.
+
+    RVOL provides additional confirmation only when
+    use_rvol=True.
+
+    When RVOL is unavailable for the underlying market,
+    use_rvol=False prevents unavailable volume from
+    incorrectly reducing the signal score.
 
     If timeframes disagree, NO_TRADE is returned.
     """
@@ -137,7 +168,10 @@ def generate_signal(
 
     for name, state in states.items():
 
-        if not isinstance(state, TimeframeState):
+        if not isinstance(
+            state,
+            TimeframeState,
+        ):
             raise TypeError(
                 f"{name} must be a TimeframeState."
             )
@@ -147,14 +181,22 @@ def generate_signal(
             name,
         )
 
-    if minimum_rvol < 0:
-        raise ValueError(
-            "minimum_rvol cannot be negative."
-        )
+    _validate_threshold(
+        minimum_rvol,
+        "minimum_rvol",
+    )
 
-    if minimum_atr < 0:
-        raise ValueError(
-            "minimum_atr cannot be negative."
+    _validate_threshold(
+        minimum_atr,
+        "minimum_atr",
+    )
+
+    if not isinstance(
+        use_rvol,
+        bool,
+    ):
+        raise TypeError(
+            "use_rvol must be a boolean."
         )
 
     # --------------------------------------------------------
@@ -223,6 +265,7 @@ def generate_signal(
     score = 4
 
     confirmations = 0
+    confirmation_maximum = 0
 
     # --------------------------------------------------------
     # Indicator confirmations
@@ -231,6 +274,8 @@ def generate_signal(
     for state in states.values():
 
         # RSI confirmation
+        confirmation_maximum += 1
+
         if momentum_support(
             first_direction,
             state.rsi,
@@ -238,13 +283,21 @@ def generate_signal(
             confirmations += 1
 
         # RVOL confirmation
-        if volume_support(
-            state.rvol,
-            minimum_rvol,
-        ):
-            confirmations += 1
+        #
+        # Only count RVOL when the underlying market
+        # actually provides usable volume.
+        if use_rvol:
+            confirmation_maximum += 1
+
+            if volume_support(
+                state.rvol,
+                minimum_rvol,
+            ):
+                confirmations += 1
 
         # ATR confirmation
+        confirmation_maximum += 1
+
         if volatility_is_acceptable(
             state.atr,
             minimum_atr,
@@ -255,16 +308,29 @@ def generate_signal(
     # Final score
     # --------------------------------------------------------
 
-    score += confirmations
+    score = (
+        score + confirmations
+    )
 
-    # Maximum:
+    # --------------------------------------------------------
+    # Confidence
     #
-    # 4 timeframe points
-    # +
-    # 12 indicator confirmation points
+    # Four timeframe alignment points plus the
+    # available indicator confirmation points.
     #
-    # = 16
-    maximum_score = 16
+    # With RVOL enabled:
+    #     4 + 12 = 16 maximum
+    #
+    # With RVOL disabled:
+    #     4 + 8 = 12 maximum
+    #
+    # This prevents unavailable RVOL from penalizing
+    # NIFTY index signals.
+    # --------------------------------------------------------
+
+    maximum_score = (
+        4 + confirmation_maximum
+    )
 
     confidence = round(
         (score / maximum_score) * 100,
@@ -275,17 +341,17 @@ def generate_signal(
     # Human-readable reason
     # --------------------------------------------------------
 
-    if confirmations == 0:
-
-        reason = (
-            "No indicator confirmation."
-        )
-
-    else:
-
+    if use_rvol:
         reason = (
             f"{confirmations}/12 "
             "indicator confirmations."
+        )
+
+    else:
+        reason = (
+            f"{confirmations}/8 "
+            "indicator confirmations. "
+            "RVOL unavailable."
         )
 
     return SignalResult(

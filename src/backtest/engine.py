@@ -133,6 +133,34 @@ def _validate_quantity(
         )
 
 
+def _close_position(
+    portfolio: Portfolio,
+    trades: list[Trade],
+    position: Position,
+    entry_time: pd.Timestamp,
+    entry_price: float,
+    exit_time: pd.Timestamp,
+    exit_price: float,
+    quantity: int,
+    transaction_cost_rate: float,
+) -> None:
+    """Close an open position and record the completed trade."""
+
+    trade = simulate_trade(
+        position=position,
+        entry_time=entry_time,
+        exit_time=exit_time,
+        entry_price=entry_price,
+        exit_price=exit_price,
+        quantity=quantity,
+        transaction_cost_rate=transaction_cost_rate,
+    )
+
+    portfolio.apply_trade(trade)
+
+    trades.append(trade)
+
+
 def run_backtest(
     data: pd.DataFrame,
     signal_function: SignalFunction,
@@ -141,35 +169,22 @@ def run_backtest(
     transaction_cost_rate: float = 0.0,
 ) -> BacktestResult:
     """
-    Run a sequential backtest.
+    Run a sequential intraday backtest.
 
     The signal function is called once per row.
 
     A signal opens a position using the current candle close.
-    The position remains open until an opposite signal appears.
 
-    Parameters
-    ----------
-    data:
-        OHLCV data indexed by timestamps.
+    An open position is closed when:
 
-    signal_function:
-        Function receiving the current row and previous row.
-        It must return Position.LONG, Position.SHORT, or None.
+    1. An opposite signal appears, or
+    2. The next timestamp belongs to a different
+       calendar trading session.
 
-    initial_capital:
-        Starting account capital.
+    Therefore positions are never carried overnight.
 
-    quantity:
-        Fixed quantity used for each trade.
-
-    transaction_cost_rate:
-        Transaction cost rate passed to the trade simulator.
-
-    Returns
-    -------
-    BacktestResult
-        Completed trades, portfolio, and performance metrics.
+    Any position still open at the final candle is
+    closed using the final available close.
     """
 
     _validate_data(data)
@@ -198,12 +213,64 @@ def run_backtest(
     entry_price: float | None = None
 
     for index in range(len(data)):
+
         row = data.iloc[index]
 
         if index == 0:
             previous_row = row
         else:
             previous_row = data.iloc[index - 1]
+
+        current_time = data.index[index]
+        current_price = float(
+            row["close"]
+        )
+
+        # ----------------------------------------------------
+        # Session boundary handling
+        # ----------------------------------------------------
+        #
+        # If the current timestamp belongs to a new
+        # calendar session, close the previous position
+        # at the previous candle's close before processing
+        # the current candle.
+        #
+        # This prevents overnight positions.
+        # ----------------------------------------------------
+
+        if (
+            current_position is not None
+            and index > 0
+            and current_time.date()
+            != data.index[index - 1].date()
+        ):
+
+            previous_time = data.index[index - 1]
+            previous_price = float(
+                data.iloc[index - 1]["close"]
+            )
+
+            _close_position(
+                portfolio=portfolio,
+                trades=trades,
+                position=current_position,
+                entry_time=entry_time,
+                entry_price=entry_price,
+                exit_time=previous_time,
+                exit_price=previous_price,
+                quantity=quantity,
+                transaction_cost_rate=(
+                    transaction_cost_rate
+                ),
+            )
+
+            current_position = None
+            entry_time = None
+            entry_price = None
+
+        # ----------------------------------------------------
+        # Generate signal
+        # ----------------------------------------------------
 
         signal = signal_function(
             row,
@@ -219,10 +286,9 @@ def run_backtest(
                 "Position or None."
             )
 
-        current_time = data.index[index]
-        current_price = float(
-            row["close"]
-        )
+        # ----------------------------------------------------
+        # No current position
+        # ----------------------------------------------------
 
         if current_position is None:
 
@@ -235,17 +301,28 @@ def run_backtest(
 
             continue
 
+        # ----------------------------------------------------
+        # Existing position
+        # ----------------------------------------------------
+
         if signal is None:
             continue
 
         if signal == current_position:
             continue
 
-        trade = simulate_trade(
+        # ----------------------------------------------------
+        # Opposite signal:
+        # close current position first.
+        # ----------------------------------------------------
+
+        _close_position(
+            portfolio=portfolio,
+            trades=trades,
             position=current_position,
             entry_time=entry_time,
-            exit_time=current_time,
             entry_price=entry_price,
+            exit_time=current_time,
             exit_price=current_price,
             quantity=quantity,
             transaction_cost_rate=(
@@ -253,18 +330,18 @@ def run_backtest(
             ),
         )
 
-        portfolio.apply_trade(
-            trade
-        )
-
-        trades.append(trade)
+        # ----------------------------------------------------
+        # Immediately reverse into new position.
+        # ----------------------------------------------------
 
         current_position = signal
         entry_time = current_time
         entry_price = current_price
 
-    # Close any remaining open position
-    # using the final available close.
+    # --------------------------------------------------------
+    # Close any remaining open position.
+    # --------------------------------------------------------
+
     if current_position is not None:
 
         final_time = data.index[-1]
@@ -272,23 +349,19 @@ def run_backtest(
             data.iloc[-1]["close"]
         )
 
-        trade = simulate_trade(
+        _close_position(
+            portfolio=portfolio,
+            trades=trades,
             position=current_position,
             entry_time=entry_time,
-            exit_time=final_time,
             entry_price=entry_price,
+            exit_time=final_time,
             exit_price=final_price,
             quantity=quantity,
             transaction_cost_rate=(
                 transaction_cost_rate
             ),
         )
-
-        portfolio.apply_trade(
-            trade
-        )
-
-        trades.append(trade)
 
     metrics = calculate_metrics(
         trades=trades,
