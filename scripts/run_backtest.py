@@ -1,5 +1,6 @@
 """Run the SignalForge strategy on historical NIFTY 50 data."""
 
+import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -12,7 +13,7 @@ from src.strategy.backtest_strategy import (
 )
 
 
-DATA_PATH = Path(
+DEFAULT_DATA_PATH = Path(
     "data/historical/nifty50_1m.csv"
 )
 
@@ -21,24 +22,50 @@ QUANTITY = 1
 TRANSACTION_COST_RATE = 0.0001
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run the SignalForge strategy on "
+            "historical NIFTY 50 data."
+        )
+    )
+
+    parser.add_argument(
+        "--data",
+        type=Path,
+        default=DEFAULT_DATA_PATH,
+        help=(
+            "Path to the historical CSV dataset. "
+            f"Default: {DEFAULT_DATA_PATH}"
+        ),
+    )
+
+    return parser.parse_args()
+
+
 def main() -> None:
     """Run and display the historical backtest."""
 
+    args = parse_args()
+    data_path = args.data
+
     print("=" * 60)
-    print("SignalForge — Real NIFTY 50 Backtest")
+    print("SignalForge — NIFTY 50 Backtest")
     print("=" * 60)
 
     # --------------------------------------------------------
     # Load historical data
     # --------------------------------------------------------
 
-    if not DATA_PATH.exists():
+    if not data_path.exists():
         raise FileNotFoundError(
-            f"Historical dataset not found: {DATA_PATH}"
+            f"Historical dataset not found: {data_path}"
         )
 
     data = pd.read_csv(
-        DATA_PATH,
+        data_path,
         index_col=0,
         parse_dates=True,
     ).sort_index()
@@ -50,15 +77,10 @@ def main() -> None:
 
     print()
     print("Dataset:")
-    print(
-        f"Rows:   {len(data):,}"
-    )
-    print(
-        f"Start:  {data.index.min()}"
-    )
-    print(
-        f"End:    {data.index.max()}"
-    )
+    print(f"Path:   {data_path}")
+    print(f"Rows:   {len(data):,}")
+    print(f"Start:  {data.index.min()}")
+    print(f"End:    {data.index.max()}")
 
     # --------------------------------------------------------
     # Strategy configuration
@@ -125,28 +147,20 @@ def main() -> None:
     # Run backtest
     # --------------------------------------------------------
 
-    print(
-        "Running backtest..."
-    )
+    print("Running backtest...")
 
     result = run_backtest(
         data=data,
         signal_function=signal_function,
         initial_capital=INITIAL_CAPITAL,
         quantity=QUANTITY,
-        transaction_cost_rate=(
-            TRANSACTION_COST_RATE
-        ),
+        transaction_cost_rate=TRANSACTION_COST_RATE,
     )
 
-    report = build_report(
-        result
-    )
+    report = build_report(result)
 
     print()
-    print(
-        "Backtest complete."
-    )
+    print("Backtest complete.")
 
     # --------------------------------------------------------
     # Results
@@ -187,7 +201,6 @@ def main() -> None:
     # --------------------------------------------------------
 
     if result.trades:
-
         print()
         print("Trade summary:")
 
@@ -195,7 +208,6 @@ def main() -> None:
             result.trades,
             start=1,
         ):
-
             print(
                 f"  Trade {number}: "
                 f"{trade.position.value} | "
@@ -209,13 +221,9 @@ def main() -> None:
                 f"Net P&L={trade.net_pnl:.2f} | "
                 f"Return={trade.return_pct:.4f}%"
             )
-
     else:
-
         print()
-        print(
-            "No trades were generated."
-        )
+        print("No trades were generated.")
 
     # --------------------------------------------------------
     # Performance
