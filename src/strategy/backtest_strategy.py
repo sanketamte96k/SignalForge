@@ -24,7 +24,7 @@ from src.signals.signal_engine import (
 
 @dataclass(frozen=True)
 class StrategyConfig:
-    """Configuration for the SignalForge strategy."""
+    """Configuration for the frozen SignalForge strategy."""
 
     ema_fast_period: int = 20
     ema_slow_period: int = 50
@@ -34,6 +34,9 @@ class StrategyConfig:
 
     minimum_rvol: float = 1.5
     minimum_atr: float = 0.0
+
+    # Locked research-validated LONG filter.
+    minimum_long_rsi: float = 60.0
 
     use_rvol: bool = True
 
@@ -75,6 +78,7 @@ def _validate_config(config: StrategyConfig) -> None:
         config.minimum_rvol, bool
     ):
         raise TypeError("minimum_rvol must be numeric.")
+
     if config.minimum_rvol < 0:
         raise ValueError("minimum_rvol cannot be negative.")
 
@@ -82,8 +86,19 @@ def _validate_config(config: StrategyConfig) -> None:
         config.minimum_atr, bool
     ):
         raise TypeError("minimum_atr must be numeric.")
+
     if config.minimum_atr < 0:
         raise ValueError("minimum_atr cannot be negative.")
+
+    if not isinstance(config.minimum_long_rsi, (int, float)) or isinstance(
+        config.minimum_long_rsi, bool
+    ):
+        raise TypeError("minimum_long_rsi must be numeric.")
+
+    if not 0 <= config.minimum_long_rsi <= 100:
+        raise ValueError(
+            "minimum_long_rsi must be between 0 and 100."
+        )
 
     if not isinstance(config.use_rvol, bool):
         raise TypeError("use_rvol must be a boolean.")
@@ -145,6 +160,7 @@ def _disable_rvol_if_unavailable(
             rvol_period=config.rvol_period,
             minimum_rvol=config.minimum_rvol,
             minimum_atr=config.minimum_atr,
+            minimum_long_rsi=config.minimum_long_rsi,
             use_rvol=False,
         )
 
@@ -172,20 +188,24 @@ def calculate_timeframe_indicators(
             frame["close"],
             config.ema_fast_period,
         )
+
         frame["ema50"] = calculate_ema(
             frame["close"],
             config.ema_slow_period,
         )
+
         frame["rsi"] = calculate_rsi(
             frame["close"],
             config.rsi_period,
         )
+
         frame["atr"] = calculate_atr(
             frame["high"],
             frame["low"],
             frame["close"],
             config.atr_period,
         )
+
         frame["rvol"] = calculate_rvol(
             frame["volume"],
             config.rvol_period,
@@ -249,7 +269,71 @@ def _completed_state(
     """
 
     position = frame.index.searchsorted(timestamp, side="left") - 1
-    return _row_to_state(frame, int(position), use_rvol)
+
+    return _row_to_state(
+        frame,
+        int(position),
+        use_rvol,
+    )
+
+
+def _apply_locked_long_filter(
+    result: SignalResult,
+    states: tuple[TimeframeState, ...],
+    minimum_long_rsi: float,
+) -> SignalResult:
+    """
+    Apply the frozen RSI >= 60 LONG filter.
+
+    The filter is deliberately applied only to BUY signals.
+
+    SELL signals are left unchanged because the robustness research
+    showed that the RSI threshold was specifically beneficial for
+    LONG trades while preserving SHORT performance.
+    """
+
+    if result.signal != Signal.BUY:
+        return result
+
+    if all(
+        state.rsi >= minimum_long_rsi
+        for state in states
+    ):
+        return result
+
+    return SignalResult(
+        signal=Signal.NO_TRADE,
+        score=0,
+        confidence=0.0,
+        timeframe_alignment=result.timeframe_alignment,
+        reason=(
+            "LONG rejected: RSI below locked threshold "
+            f"{minimum_long_rsi:.1f} on at least one timeframe."
+        ),
+    )
+
+
+def _generate_filtered_signal(
+    states: tuple[TimeframeState, ...],
+    config: StrategyConfig,
+) -> SignalResult:
+    """Generate the authoritative frozen SignalForge signal."""
+
+    result = generate_signal(
+        timeframe_30m=states[0],
+        timeframe_15m=states[1],
+        timeframe_10m=states[2],
+        timeframe_5m=states[3],
+        minimum_rvol=config.minimum_rvol,
+        minimum_atr=config.minimum_atr,
+        use_rvol=config.use_rvol,
+    )
+
+    return _apply_locked_long_filter(
+        result=result,
+        states=states,
+        minimum_long_rsi=config.minimum_long_rsi,
+    )
 
 
 def evaluate_timestamp(
@@ -257,7 +341,7 @@ def evaluate_timestamp(
     timeframe_data: dict[str, pd.DataFrame],
     config: StrategyConfig | None = None,
 ) -> SignalResult | None:
-    """Generate the SignalForge signal available at one timestamp."""
+    """Generate the frozen SignalForge signal available at one timestamp."""
 
     if config is None:
         config = StrategyConfig()
@@ -281,14 +365,16 @@ def evaluate_timestamp(
 
         states[timeframe] = state
 
-    return generate_signal(
-        timeframe_30m=states["30m"],
-        timeframe_15m=states["15m"],
-        timeframe_10m=states["10m"],
-        timeframe_5m=states["5m"],
-        minimum_rvol=config.minimum_rvol,
-        minimum_atr=config.minimum_atr,
-        use_rvol=config.use_rvol,
+    ordered_states = (
+        states["30m"],
+        states["15m"],
+        states["10m"],
+        states["5m"],
+    )
+
+    return _generate_filtered_signal(
+        states=ordered_states,
+        config=config,
     )
 
 
@@ -335,7 +421,10 @@ class _TimeframeCursor:
         self.position = -1
         self.state: TimeframeState | None = None
 
-    def update(self, timestamp: pd.Timestamp) -> TimeframeState | None:
+    def update(
+        self,
+        timestamp: pd.Timestamp,
+    ) -> TimeframeState | None:
         """Advance to the latest candle strictly before timestamp."""
 
         target = (
@@ -352,6 +441,7 @@ class _TimeframeCursor:
             return self.state
 
         self.position = target
+
         self.state = _row_to_state(
             self.frame,
             target,
@@ -380,7 +470,7 @@ def create_signal_function(
     data: pd.DataFrame,
     config: StrategyConfig | None = None,
 ):
-    """Create a fast chronological signal function for run_backtest()."""
+    """Create a fast chronological frozen strategy signal function."""
 
     if config is None:
         config = StrategyConfig()
@@ -388,10 +478,20 @@ def create_signal_function(
     _validate_config(config)
     _validate_market_data(data)
 
-    config = _disable_rvol_if_unavailable(data, config)
+    config = _disable_rvol_if_unavailable(
+        data,
+        config,
+    )
 
-    timeframe_data = calculate_timeframe_indicators(data, config)
-    cursors = _make_cursors(timeframe_data, config.use_rvol)
+    timeframe_data = calculate_timeframe_indicators(
+        data,
+        config,
+    )
+
+    cursors = _make_cursors(
+        timeframe_data,
+        config.use_rvol,
+    )
 
     def signal_function(
         row: pd.Series,
@@ -415,14 +515,14 @@ def create_signal_function(
         ):
             return None
 
-        result = generate_signal(
-            timeframe_30m=state_30m,
-            timeframe_15m=state_15m,
-            timeframe_10m=state_10m,
-            timeframe_5m=state_5m,
-            minimum_rvol=config.minimum_rvol,
-            minimum_atr=config.minimum_atr,
-            use_rvol=config.use_rvol,
+        result = _generate_filtered_signal(
+            states=(
+                state_30m,
+                state_15m,
+                state_10m,
+                state_5m,
+            ),
+            config=config,
         )
 
         return signal_result_to_position(result)
@@ -434,7 +534,7 @@ def generate_signals(
     data: pd.DataFrame,
     config: StrategyConfig | None = None,
 ) -> pd.DataFrame:
-    """Generate a multi-timeframe signal for every 1-minute candle."""
+    """Generate the frozen multi-timeframe signal for every 1-minute candle."""
 
     if config is None:
         config = StrategyConfig()
@@ -442,10 +542,20 @@ def generate_signals(
     _validate_config(config)
     _validate_market_data(data)
 
-    config = _disable_rvol_if_unavailable(data, config)
+    config = _disable_rvol_if_unavailable(
+        data,
+        config,
+    )
 
-    timeframe_data = calculate_timeframe_indicators(data, config)
-    cursors = _make_cursors(timeframe_data, config.use_rvol)
+    timeframe_data = calculate_timeframe_indicators(
+        data,
+        config,
+    )
+
+    cursors = _make_cursors(
+        timeframe_data,
+        config.use_rvol,
+    )
 
     result = data.copy()
 
@@ -455,7 +565,9 @@ def generate_signals(
     alignments: list[int] = []
     reasons: list[str] = []
 
-    insufficient_reason = "Insufficient completed timeframe history."
+    insufficient_reason = (
+        "Insufficient completed timeframe history."
+    )
 
     for timestamp in result.index:
         state_30m = cursors["30m"].update(timestamp)
@@ -476,14 +588,14 @@ def generate_signals(
             reasons.append(insufficient_reason)
             continue
 
-        signal_result = generate_signal(
-            timeframe_30m=state_30m,
-            timeframe_15m=state_15m,
-            timeframe_10m=state_10m,
-            timeframe_5m=state_5m,
-            minimum_rvol=config.minimum_rvol,
-            minimum_atr=config.minimum_atr,
-            use_rvol=config.use_rvol,
+        signal_result = _generate_filtered_signal(
+            states=(
+                state_30m,
+                state_15m,
+                state_10m,
+                state_5m,
+            ),
+            config=config,
         )
 
         signals.append(signal_result.signal)
