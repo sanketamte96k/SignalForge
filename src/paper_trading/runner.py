@@ -6,6 +6,10 @@ import pandas as pd
 
 from src.backtest.simulator import Position
 from src.paper_trading.engine import PaperTradingEngine
+from src.paper_trading.reporting import (
+    PaperTradingReport,
+    create_paper_trading_report,
+)
 from src.strategy.backtest_strategy import (
     StrategyConfig,
     create_signal_function,
@@ -28,6 +32,8 @@ class PaperTradingRunner:
         Paper Trading Engine
                 ↓
         Paper trades + P&L
+                ↓
+        Paper Trading Report
 
     Safety rules:
     - NO_TRADE (None) means HOLD.
@@ -53,6 +59,13 @@ class PaperTradingRunner:
         )
 
         self.strategy_config = strategy_config
+
+    @property
+    def report(self) -> PaperTradingReport:
+        """Return the current paper-trading performance report."""
+        return create_paper_trading_report(
+            self.engine.state
+        )
 
     @staticmethod
     def _validate_market_data(data: pd.DataFrame) -> None:
@@ -149,6 +162,10 @@ class PaperTradingRunner:
 
         NO_TRADE signals are passed through as HOLD behavior
         and do not close positions.
+
+        After completion, the report is available through:
+
+            runner.report
         """
 
         self._validate_market_data(data)
