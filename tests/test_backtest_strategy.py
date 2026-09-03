@@ -7,6 +7,7 @@ from src.signals.signal_engine import (
 from src.strategy.backtest_strategy import (
     StrategyConfig,
     calculate_timeframe_indicators,
+    create_signal_function,
     evaluate_timestamp,
     generate_signals,
 )
@@ -248,24 +249,74 @@ def test_lookahead_is_not_used():
         2000
     )
 
-    timeframe_data = (
-        calculate_timeframe_indicators(
-            data
+    timestamp = pd.Timestamp(
+        "2026-08-25 09:15:00"
+    )
+
+    data_without_future = data.loc[
+        :timestamp
+    ].copy()
+
+    future_data = data.loc[
+        timestamp + pd.Timedelta(minutes=1):
+    ].copy()
+
+    # Make the future dramatically different so
+    # accidental lookahead becomes obvious.
+    future_data.loc[:, "open"] = 100000.0
+    future_data.loc[:, "high"] = 100001.0
+    future_data.loc[:, "low"] = 99999.0
+    future_data.loc[:, "close"] = 100000.0
+    future_data.loc[:, "volume"] = 999999.0
+
+    data_with_future = pd.concat(
+        [
+            data_without_future,
+            future_data,
+        ]
+    )
+
+    function_without_future = (
+        create_signal_function(
+            data_without_future
         )
     )
 
-    timestamp = pd.Timestamp(
-        "2026-08-24 10:01:00"
+    function_with_future = (
+        create_signal_function(
+            data_with_future
+        )
     )
 
-    result = evaluate_timestamp(
-        timestamp,
-        timeframe_data,
+    current_row = data_without_future.loc[
+        timestamp
+    ]
+
+    previous_timestamp = (
+        timestamp - pd.Timedelta(minutes=1)
+    )
+
+    previous_row = data_without_future.loc[
+        previous_timestamp
+    ]
+
+    signal_without_future = (
+        function_without_future(
+            current_row,
+            previous_row,
+        )
+    )
+
+    signal_with_future = (
+        function_with_future(
+            current_row,
+            previous_row,
+        )
     )
 
     assert (
-        result is None
-        or isinstance(result, object)
+        signal_without_future
+        == signal_with_future
     )
 
 
