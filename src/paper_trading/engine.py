@@ -16,10 +16,15 @@ class PaperTradingEngine:
 
     Responsibilities:
     - Open a paper position.
-    - Close a paper position.
+    - Close a paper position explicitly.
     - Reverse long/short positions.
     - Track realized P&L and transaction costs.
     - Store completed paper trades.
+
+    Signal semantics:
+    - LONG  -> open/hold/reverse to LONG
+    - SHORT -> open/hold/reverse to SHORT
+    - None  -> NO_TRADE / HOLD
     """
 
     def __init__(
@@ -35,7 +40,9 @@ class PaperTradingEngine:
             raise ValueError("quantity must be positive")
 
         if transaction_cost_rate < 0:
-            raise ValueError("transaction_cost_rate cannot be negative")
+            raise ValueError(
+                "transaction_cost_rate cannot be negative"
+            )
 
         self.quantity = quantity
         self.transaction_cost_rate = transaction_cost_rate
@@ -85,11 +92,18 @@ class PaperTradingEngine:
     ) -> PaperOrder:
         self._validate_price(price)
 
-        if position not in (Position.LONG, Position.SHORT):
-            raise ValueError("Position must be LONG or SHORT")
+        if position not in (
+            Position.LONG,
+            Position.SHORT,
+        ):
+            raise ValueError(
+                "Position must be LONG or SHORT"
+            )
 
         if self.state.open_position is not None:
-            raise ValueError("A paper position is already open")
+            raise ValueError(
+                "A paper position is already open"
+            )
 
         self.state.open_position = PaperPosition(
             position=position,
@@ -117,7 +131,9 @@ class PaperTradingEngine:
         open_position = self.state.open_position
 
         if open_position is None:
-            raise ValueError("No paper position is open")
+            raise ValueError(
+                "No paper position is open"
+            )
 
         gross_pnl = self._calculate_gross_pnl(
             position=open_position.position,
@@ -199,7 +215,9 @@ class PaperTradingEngine:
         reason: str = "",
     ) -> tuple[PaperTrade, PaperOrder]:
         if self.state.open_position is None:
-            raise ValueError("No paper position to reverse")
+            raise ValueError(
+                "No paper position to reverse"
+            )
 
         if self.state.open_position.position == Position.LONG:
             raise ValueError("Already LONG")
@@ -225,7 +243,9 @@ class PaperTradingEngine:
         reason: str = "",
     ) -> tuple[PaperTrade, PaperOrder]:
         if self.state.open_position is None:
-            raise ValueError("No paper position to reverse")
+            raise ValueError(
+                "No paper position to reverse"
+            )
 
         if self.state.open_position.position == Position.SHORT:
             raise ValueError("Already SHORT")
@@ -250,33 +270,36 @@ class PaperTradingEngine:
         signal: Position | None,
         price: float,
         reason: str = "",
-    ) -> PaperOrder | tuple[PaperTrade, PaperOrder] | PaperTrade | None:
+    ) -> PaperOrder | tuple[PaperTrade, PaperOrder] | None:
         """
         Process a strategy position signal.
 
         Rules:
         - No position + LONG  -> open LONG
         - No position + SHORT -> open SHORT
+        - No position + None  -> do nothing
         - LONG + LONG         -> do nothing
         - SHORT + SHORT       -> do nothing
         - LONG + SHORT        -> reverse to SHORT
         - SHORT + LONG        -> reverse to LONG
-        - None signal         -> close any open position
+        - None signal         -> hold current position
+
+        Explicit position closure must use close_position().
         """
 
         self._validate_price(price)
 
         current_position = self.state.open_position
 
+        # NO_TRADE means HOLD.
+        #
+        # The strategy's None signal does not mean that
+        # the current position should be closed.
+        #
+        # Explicit closure is handled separately through
+        # close_position(), for example at session end.
         if signal is None:
-            if current_position is None:
-                return None
-
-            return self.close_position(
-                timestamp=timestamp,
-                price=price,
-                reason=reason or "No-position signal",
-            )
+            return None
 
         if current_position is None:
             if signal == Position.LONG:
@@ -293,7 +316,9 @@ class PaperTradingEngine:
                     reason=reason,
                 )
 
-            raise ValueError("Signal must be LONG, SHORT, or None")
+            raise ValueError(
+                "Signal must be LONG, SHORT, or None"
+            )
 
         if current_position.position == signal:
             return None
@@ -312,4 +337,6 @@ class PaperTradingEngine:
                 reason=reason,
             )
 
-        raise ValueError("Signal must be LONG, SHORT, or None")
+        raise ValueError(
+            "Signal must be LONG, SHORT, or None"
+        )
