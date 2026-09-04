@@ -51,6 +51,31 @@ class PaperTradingEngine:
             starting_capital=starting_capital,
         )
 
+    @property
+    def completed_trades(self) -> list[PaperTrade]:
+        """Return the completed paper trades."""
+        return self.state.completed_trades
+
+    @property
+    def trade_count(self) -> int:
+        """Return the number of completed trades."""
+        return self.state.trade_count
+
+    @property
+    def realized_pnl(self) -> float:
+        """Return total realized P&L."""
+        return self.state.realized_pnl
+
+    @property
+    def total_transaction_cost(self) -> float:
+        """Return total transaction costs."""
+        return self.state.total_transaction_cost
+
+    @property
+    def ending_equity(self) -> float:
+        """Return current ending equity."""
+        return self.state.current_equity
+
     def _validate_price(self, price: float) -> None:
         if price <= 0:
             raise ValueError("price must be positive")
