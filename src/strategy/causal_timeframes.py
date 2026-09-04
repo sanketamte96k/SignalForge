@@ -42,20 +42,17 @@ class CausalTimeframeBuilder:
 
     Only candles that are fully completed are emitted.
 
-    For example, for the 5-minute timeframe:
+    Source candles must arrive chronologically.
 
-        09:15
-        09:16
-        09:17
-        09:18
-        09:19
+    Duplicate timestamps are ignored.
 
-    produce one completed candle at 09:15.
+    Out-of-order timestamps are rejected.
 
-    That candle becomes available only when the 09:19 source
-    candle has been received.
+    A higher-timeframe candle is emitted only when all expected
+    consecutive 1-minute timestamps for its bucket have been received.
 
-    No future source candle is inspected.
+    Trading-session boundaries are treated as normal boundaries and
+    do not require overnight minute continuity.
     """
 
     def __init__(
@@ -67,6 +64,7 @@ class CausalTimeframeBuilder:
                 raise ValueError(
                     f"Unsupported timeframe: {timeframe}"
                 )
+
             self._timeframes = {
                 timeframe: SUPPORTED_TIMEFRAMES[timeframe]
             }
@@ -85,6 +83,8 @@ class CausalTimeframeBuilder:
             tf: None
             for tf in self._timeframes
         }
+
+        self._last_timestamp: pd.Timestamp | None = None
 
     @property
     def buffers(self) -> dict[str, list[pd.Series]]:
@@ -108,6 +108,8 @@ class CausalTimeframeBuilder:
             for tf in self._timeframes
         }
 
+        self._last_timestamp = None
+
     def process_candle(
         self,
         candle: pd.Series,
@@ -117,15 +119,33 @@ class CausalTimeframeBuilder:
 
         Returns only timeframe candles that became complete because
         of this source candle.
+
+        Duplicate timestamps are ignored.
+
+        Raises:
+            ValueError:
+                If the source timestamp arrives out of order.
         """
 
         self._validate_candle(candle)
 
         if candle.name is None and "timestamp" in candle.index:
             candle = candle.copy()
-            candle.name = pd.Timestamp(candle["timestamp"])
+            candle.name = pd.Timestamp(
+                candle["timestamp"]
+            )
 
         timestamp = pd.Timestamp(candle.name)
+
+        if self._last_timestamp is not None:
+            if timestamp < self._last_timestamp:
+                raise ValueError(
+                    "candle timestamp must be strictly increasing; "
+                    "out-of-order timestamp received."
+                )
+
+            if timestamp == self._last_timestamp:
+                return {}
 
         completed: dict[str, CompletedCandle] = {}
 
@@ -141,16 +161,20 @@ class CausalTimeframeBuilder:
                 self._current_bucket[timeframe] = bucket
 
             elif bucket != current_bucket:
-                # A bucket changed before the previous bucket reached
-                # its expected number of source candles. The previous
-                # higher-timeframe candle is therefore incomplete and
+                # The previous bucket did not receive all of its
+                # expected source candles, so it is incomplete and
                 # must never be emitted.
                 self._buffers[timeframe] = []
                 self._current_bucket[timeframe] = bucket
 
-            self._buffers[timeframe].append(candle.copy())
+            self._buffers[timeframe].append(
+                candle.copy()
+            )
 
-            if len(self._buffers[timeframe]) == minutes:
+            if self._is_complete(
+                timeframe=timeframe,
+                candles=self._buffers[timeframe],
+            ):
                 completed_candle = self._build_completed_candle(
                     timeframe=timeframe,
                     candles=self._buffers[timeframe],
@@ -162,7 +186,37 @@ class CausalTimeframeBuilder:
 
                 self._current_bucket[timeframe] = None
 
+        self._last_timestamp = timestamp
+
         return completed
+
+    @staticmethod
+    def _is_complete(
+        timeframe: str,
+        candles: list[pd.Series],
+    ) -> bool:
+        """
+        Return True only when the buffer contains exactly the expected
+        consecutive source timestamps for its timeframe.
+        """
+
+        expected_minutes = SUPPORTED_TIMEFRAMES[timeframe]
+
+        if len(candles) != expected_minutes:
+            return False
+
+        timestamps = [
+            pd.Timestamp(candle.name)
+            for candle in candles
+        ]
+
+        expected = pd.date_range(
+            start=timestamps[0],
+            periods=expected_minutes,
+            freq="min",
+        )
+
+        return timestamps == list(expected)
 
     @staticmethod
     def _bucket_start(
@@ -235,7 +289,9 @@ class CausalTimeframeBuilder:
         )
 
     @staticmethod
-    def _validate_candle(candle: pd.Series) -> None:
+    def _validate_candle(
+        candle: pd.Series,
+    ) -> None:
         """Validate one incoming OHLCV candle."""
 
         if not isinstance(candle, pd.Series):
@@ -245,7 +301,9 @@ class CausalTimeframeBuilder:
 
         if candle.name is None:
             if "timestamp" in candle.index:
-                timestamp = pd.Timestamp(candle["timestamp"])
+                timestamp = pd.Timestamp(
+                    candle["timestamp"]
+                )
             else:
                 raise ValueError(
                     "candle must have a timestamp index."
