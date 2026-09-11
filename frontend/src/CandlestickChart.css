@@ -1,0 +1,316 @@
+.real-candlestick-chart {
+  width: 100%;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #08111a;
+  border: 1px solid rgba(93, 132, 160, 0.18);
+  border-radius: 10px;
+}
+
+.chart-data-header,
+.chart-data-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 34px;
+  padding: 7px 12px;
+  color: #7f9bad;
+  font-size: 10px;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.chart-data-header {
+  border-bottom: 1px solid rgba(93, 132, 160, 0.14);
+}
+
+.chart-data-header span:first-child {
+  color: #d9e7ef;
+  font-weight: 700;
+}
+
+.chart-data-header span:last-child {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-data-footer {
+  border-top: 1px solid rgba(93, 132, 160, 0.14);
+}
+
+.chart-data-footer span:last-child {
+  margin-left: auto;
+  color: #a7bfce;
+  font-weight: 700;
+}
+
+.real-candlestick-viewport {
+  position: relative;
+  width: 100%;
+  height: 310px;
+  min-height: 310px;
+}
+
+.real-candlestick-viewport svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.chart-background {
+  fill: #08111a;
+}
+
+.chart-grid-line {
+  stroke: rgba(91, 126, 150, 0.16);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-candle-up {
+  fill: #00d9a3;
+  stroke: #00d9a3;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-candle-down {
+  fill: #ff5f67;
+  stroke: #ff5f67;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-volume-bar {
+  fill: rgba(99, 151, 190, 0.24);
+}
+
+.chart-price-label {
+  fill: #7893a5;
+  font-size: 9px;
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.15px;
+}
+
+.chart-data-state {
+  min-height: 360px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 28px;
+  text-align: center;
+  color: #7893a5;
+  background:
+    linear-gradient(rgba(91, 126, 150, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 126, 150, 0.08) 1px, transparent 1px);
+  background-size: 58px 58px;
+}
+
+.chart-data-state strong {
+  max-width: 620px;
+  color: #d9e7ef;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.chart-data-state span {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.chart-data-state-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 217, 163, 0.28);
+  border-radius: 10px;
+  color: #00d9a3;
+  background: rgba(0, 217, 163, 0.06);
+}
+
+.chart-data-state-icon .icon {
+  width: 21px;
+  height: 21px;
+}
+
+
+.chart-ema20,
+.chart-ema50 {
+  fill: none;
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.chart-ema20 {
+  stroke: #24a8ff;
+}
+
+.chart-ema50 {
+  stroke: #ffad42;
+}
+
+.chart-overlay-legend {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 8px;
+  border: 1px solid rgba(93, 132, 160, 0.18);
+  border-radius: 6px;
+  background: rgba(8, 17, 26, 0.88);
+  color: #a7bfce;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+}
+
+.chart-overlay-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chart-overlay-marker {
+  width: 18px;
+  height: 2px;
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.chart-overlay-marker.ema20 {
+  background: #24a8ff;
+}
+
+.chart-overlay-marker.ema50 {
+  background: #ffad42;
+}
+
+@media (max-width: 760px) {
+  .real-candlestick-chart {
+    min-height: 300px;
+  }
+
+  .real-candlestick-viewport {
+    height: 255px;
+    min-height: 255px;
+  }
+
+  .chart-data-header,
+  .chart-data-footer {
+    gap: 8px;
+    font-size: 9px;
+  }
+
+  .chart-data-header span:nth-child(3) {
+    display: none;
+  }
+
+  .chart-data-footer span:nth-child(2) {
+    display: none;
+  }
+
+  .chart-data-state {
+    min-height: 300px;
+  }
+}
+
+
+.real-rsi-chart {
+  position: relative;
+  width: 100%;
+  min-height: 96px;
+  overflow: hidden;
+  background: #08111a;
+  border-top: 1px solid rgba(93, 132, 160, 0.14);
+}
+
+.real-rsi-chart svg {
+  display: block;
+  width: 100%;
+  height: 96px;
+}
+
+.rsi-chart-background {
+  fill: #08111a;
+}
+
+.rsi-neutral-band {
+  fill: rgba(36, 168, 255, 0.035);
+}
+
+.rsi-grid {
+  stroke: rgba(91, 126, 150, 0.16);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.rsi-level-70,
+.rsi-level-30 {
+  stroke-dasharray: 5 4;
+}
+
+.rsi-level-50 {
+  stroke: rgba(91, 126, 150, 0.12);
+}
+
+.rsi-vertical-grid {
+  stroke: rgba(91, 126, 150, 0.09);
+}
+
+.rsi-level-label {
+  fill: #5f7b8f;
+  font-size: 8px;
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.1px;
+}
+
+.rsi-series {
+  stroke: #b56cff;
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.rsi-chart-meta {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 7px;
+  border: 1px solid rgba(93, 132, 160, 0.18);
+  border-radius: 5px;
+  background: rgba(8, 17, 26, 0.88);
+  color: #7f9bad;
+  font-size: 8px;
+  letter-spacing: 0.35px;
+  pointer-events: none;
+}
+
+.rsi-chart-meta strong {
+  color: #d9e7ef;
+  font-size: 10px;
+}
+
+.rsi-data-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  color: #7893a5;
+  font-size: 10px;
+  letter-spacing: 0.2px;
+}

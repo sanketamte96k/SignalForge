@@ -1,0 +1,588 @@
+import { useCallback, useState } from 'react'
+import {
+  fetchStockReadiness,
+  fetchStockValidation,
+  validateStock,
+} from './api'
+import './StockValidationView.css'
+
+const GATES = [
+  ['DATA_AVAILABILITY', 'Data Availability'],
+  ['DATA_QUALITY', 'Data Quality'],
+  ['INDICATOR_COMPATIBILITY', 'Indicator Compatibility'],
+  ['HISTORICAL_BACKTEST', 'Historical Backtest'],
+  ['CAUSALITY', 'Causality'],
+  ['COST_SLIPPAGE', 'Cost & Slippage'],
+  ['REGIME_OOS', 'Regime / Out-of-Sample'],
+]
+
+function statusClass(status) {
+  if (status === 'VALIDATED') return 'validated'
+  if (status === 'FAILED') return 'failed'
+  return 'testing'
+}
+
+function readinessClass(ready) {
+  return ready ? 'validated' : 'failed'
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '�'
+
+  const date = new Date(timestamp)
+
+  if (Number.isNaN(date.getTime())) {
+    return timestamp
+  }
+
+  return date.toLocaleString('en-IN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined) {
+    return '�'
+  }
+
+  return Number(value).toLocaleString('en-IN')
+}
+
+function StockValidationView() {
+  const [symbol, setSymbol] = useState('')
+  const [result, setResult] = useState(null)
+  const [readiness, setReadiness] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
+  const [readinessLoading, setReadinessLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const loadStatus = useCallback(async () => {
+    const normalized = symbol.trim().toUpperCase()
+
+    if (!normalized) {
+      setError('Enter a stock symbol.')
+      setResult(null)
+      setReadiness(null)
+      return
+    }
+
+    setStatusLoading(true)
+    setReadinessLoading(true)
+    setError(null)
+
+    try {
+      const [validationData, readinessData] = await Promise.all([
+        fetchStockValidation(normalized),
+        fetchStockReadiness(normalized),
+      ])
+
+      setResult(validationData)
+      setReadiness(readinessData)
+    } catch (requestError) {
+      setResult(null)
+      setReadiness(null)
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unable to fetch stock validation status.',
+      )
+    } finally {
+      setStatusLoading(false)
+      setReadinessLoading(false)
+    }
+  }, [symbol])
+
+  async function handleValidate() {
+    const normalized = symbol.trim().toUpperCase()
+
+    if (!normalized) {
+      setError('Enter a stock symbol.')
+      setResult(null)
+      setReadiness(null)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const readinessData = await fetchStockReadiness(normalized)
+
+      setReadiness(readinessData)
+
+      if (!readinessData.ready) {
+        setResult(null)
+        setError(
+          'Validation is blocked because historical stock data is not ready.',
+        )
+        return
+      }
+
+      const data = await validateStock(normalized)
+
+      setResult(data)
+    } catch (requestError) {
+      setResult(null)
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Validation request failed.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const passedGates = new Set(result?.passed_gates ?? [])
+  const failedGates = new Set(result?.failed_gates ?? [])
+
+  const status = result?.status ?? 'TESTING'
+  const readinessReady = readiness?.ready === true
+  const validationCanRun =
+    readinessReady && !loading && !statusLoading && !readinessLoading
+
+  return (
+    <div className="stock-validation-view">
+      <div className="validation-page-header">
+        <div>
+          <span className="section-kicker">STOCK VALIDATION</span>
+          <h1>Validation Pipeline</h1>
+          <p>
+            A stock becomes signal-eligible only after the complete
+            seven-gate validation process passes.
+          </p>
+        </div>
+
+        {result && (
+          <span
+            className={`validation-status-badge ${statusClass(status)}`}
+          >
+            {status}
+          </span>
+        )}
+      </div>
+
+      <section className="panel validation-control-panel">
+        <div className="validation-stock-input">
+          <label htmlFor="validation-stock-symbol">
+            Stock Symbol
+          </label>
+
+          <div className="validation-input-row">
+            <input
+              id="validation-stock-symbol"
+              value={symbol}
+              onChange={(event) => {
+                setSymbol(event.target.value.toUpperCase())
+                setError(null)
+                setResult(null)
+                setReadiness(null)
+              }}
+              placeholder="e.g. RELIANCE"
+              autoComplete="off"
+            />
+
+            <button
+              type="button"
+              className="validation-secondary-button"
+              onClick={loadStatus}
+              disabled={statusLoading || loading}
+            >
+              {statusLoading ? 'Checking...' : 'Check Status'}
+            </button>
+
+            <button
+              type="button"
+              className="validation-primary-button"
+              onClick={handleValidate}
+              disabled={!validationCanRun}
+              title={
+                !readinessReady
+                  ? 'Check Data Readiness before running validation.'
+                  : undefined
+              }
+            >
+              {loading ? 'Validating...' : 'Run Validation'}
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="validation-error" role="alert">
+            {error}
+          </div>
+        )}
+      </section>
+
+      {readiness && (
+        <section className="panel validation-readiness-panel">
+          <div className="panel-title">
+            <div className="panel-title-left">
+              <span className="section-kicker">DATA READINESS</span>
+              <h2>Historical Data Readiness</h2>
+            </div>
+
+            <span
+              className={`validation-status-badge ${readinessClass(
+                readiness.ready,
+              )}`}
+            >
+              {readiness.ready ? 'READY' : 'NOT READY'}
+            </span>
+          </div>
+
+          <div className="validation-readiness-grid">
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                DATA AVAILABLE
+              </span>
+              <strong>
+                {readiness.available ? 'YES' : 'NO'}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                DATASET ROWS
+              </span>
+              <strong>
+                {formatNumber(readiness.total_rows)}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                FIRST TIMESTAMP
+              </span>
+              <strong>
+                {formatTimestamp(readiness.first_timestamp)}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                LAST TIMESTAMP
+              </span>
+              <strong>
+                {formatTimestamp(readiness.last_timestamp)}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                REQUIRED START
+              </span>
+              <strong>
+                {formatTimestamp(readiness.required_start)}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                REQUIRED END
+              </span>
+              <strong>
+                {formatTimestamp(readiness.required_end)}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                PERIOD COVERAGE
+              </span>
+              <strong>
+                {readiness.covers_required_period
+                  ? 'COMPLETE'
+                  : 'INCOMPLETE'}
+              </strong>
+            </div>
+
+            <div className="validation-readiness-item">
+              <span className="validation-symbol-label">
+                VALIDATION
+              </span>
+              <strong>
+                {readiness.ready ? 'ALLOWED' : 'BLOCKED'}
+              </strong>
+            </div>
+          </div>
+
+          {readiness.issues?.length > 0 && (
+            <div className="validation-readiness-issues">
+              <span className="validation-detail-heading">
+                Readiness Issues
+              </span>
+
+              <ul className="validation-detail-list">
+                {readiness.issues.map((issue, index) => (
+                  <li
+                    key={`${issue}-${index}`}
+                    className="issue"
+                  >
+                    <span>!</span>
+                    {issue}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div
+            className={`validation-readiness-banner ${
+              readiness.ready ? 'ready' : 'blocked'
+            }`}
+          >
+            <div>
+              <strong>
+                {readiness.ready
+                  ? 'Historical data is ready for validation'
+                  : 'Validation blocked � historical data is not ready'}
+              </strong>
+
+              <p>
+                {readiness.ready
+                  ? 'The stock can proceed to the seven-gate validation pipeline.'
+                  : 'SignalForge will not run the seven validation gates until the required historical dataset is available.'}
+              </p>
+            </div>
+
+            <span>
+              {readiness.ready
+                ? 'READY'
+                : 'VALIDATION BLOCKED'}
+            </span>
+          </div>
+        </section>
+      )}
+
+      {result && (
+        <>
+          <section className="panel validation-summary-panel">
+            <div className="validation-summary-main">
+              <div>
+                <span className="validation-symbol-label">
+                  SYMBOL
+                </span>
+                <strong className="validation-symbol">
+                  {result.symbol}
+                </strong>
+              </div>
+
+              <div>
+                <span className="validation-symbol-label">
+                  STATUS
+                </span>
+                <strong
+                  className={`validation-summary-status ${statusClass(status)}`}
+                >
+                  {status}
+                </strong>
+              </div>
+
+              <div>
+                <span className="validation-symbol-label">
+                  SIGNAL ELIGIBILITY
+                </span>
+                <strong
+                  className={
+                    result.signal_eligible
+                      ? 'validation-eligible'
+                      : 'validation-blocked'
+                  }
+                >
+                  {result.signal_eligible
+                    ? 'SIGNAL ELIGIBLE'
+                    : 'SIGNALS BLOCKED'}
+                </strong>
+              </div>
+
+              <div>
+                <span className="validation-symbol-label">
+                  APPROVAL
+                </span>
+                <strong>
+                  {result.approved
+                    ? 'APPROVED'
+                    : 'NOT APPROVED'}
+                </strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="validation-gates-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">
+                Seven-Gate Validation
+              </h2>
+              <span className="section-sub">
+                Every gate must pass before stock signals are enabled.
+              </span>
+            </div>
+
+            <div className="validation-gates-grid">
+              {GATES.map(([key, label], index) => {
+                const passed = passedGates.has(key)
+                const failed = failedGates.has(key)
+
+                let gateState = 'pending'
+                let stateLabel = 'PENDING'
+
+                if (passed) {
+                  gateState = 'passed'
+                  stateLabel = 'PASSED'
+                } else if (failed) {
+                  gateState = 'failed'
+                  stateLabel = 'FAILED'
+                }
+
+                return (
+                  <div
+                    className={`panel validation-gate-card ${gateState}`}
+                    key={key}
+                  >
+                    <div className="validation-gate-number">
+                      {String(index + 1).padStart(2, '0')}
+                    </div>
+
+                    <div className="validation-gate-content">
+                      <strong>{label}</strong>
+                      <span>{key}</span>
+                    </div>
+
+                    <div
+                      className={`validation-gate-state ${gateState}`}
+                    >
+                      <span className="validation-gate-dot" />
+                      {stateLabel}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          <section className="panel validation-details-panel">
+            <div className="panel-title">
+              <div className="panel-title-left">
+                <h2>Validation Result</h2>
+              </div>
+            </div>
+
+            <div className="validation-detail-columns">
+              <div>
+                <span className="validation-detail-heading">
+                  Passed Gates
+                </span>
+
+                {result.passed_gates?.length ? (
+                  <ul className="validation-detail-list">
+                    {result.passed_gates.map((gate) => (
+                      <li
+                        key={gate}
+                        className="passed"
+                      >
+                        <span>?</span>
+                        {gate}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="validation-empty">
+                    No gates passed.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <span className="validation-detail-heading">
+                  Failed Gates
+                </span>
+
+                {result.failed_gates?.length ? (
+                  <ul className="validation-detail-list">
+                    {result.failed_gates.map((gate) => (
+                      <li
+                        key={gate}
+                        className="failed"
+                      >
+                        <span>�</span>
+                        {gate}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="validation-empty">
+                    No failed gates.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <span className="validation-detail-heading">
+                  Issues
+                </span>
+
+                {result.issues?.length ? (
+                  <ul className="validation-detail-list">
+                    {result.issues.map((issue, index) => (
+                      <li
+                        key={`${issue}-${index}`}
+                        className="issue"
+                      >
+                        <span>!</span>
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="validation-empty">
+                    No validation issues reported.
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <div
+            className={`validation-final-banner ${statusClass(status)}`}
+          >
+            <div>
+              <strong>
+                {result.signal_eligible
+                  ? 'Stock approved for SignalForge signals'
+                  : 'Stock is not eligible for SignalForge signals'}
+              </strong>
+
+              <p>
+                {result.signal_eligible
+                  ? 'The complete validation pipeline approved this instrument.'
+                  : 'No BUY or SELL signal should be generated for this instrument.'}
+              </p>
+            </div>
+
+            <span className="validation-final-status">
+              {result.signal_eligible
+                ? 'SIGNAL ELIGIBLE'
+                : 'SIGNAL BLOCKED'}
+            </span>
+          </div>
+        </>
+      )}
+
+      {!result && !readiness && !error && (
+        <section className="panel validation-empty-state">
+          <div className="validation-empty-icon">?</div>
+          <h2>Select a stock to validate</h2>
+          <p>
+            Enter an NSE stock symbol above to inspect its current
+            validation state or run the complete validation pipeline.
+          </p>
+        </section>
+      )}
+    </div>
+  )
+}
+
+export default StockValidationView
