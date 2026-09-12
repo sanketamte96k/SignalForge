@@ -5,6 +5,7 @@ import {
   validateStock,
 } from './api'
 import './StockValidationView.css'
+import { LoadingState, EmptyState } from './StateViews'
 
 const GATES = [
   ['DATA_AVAILABILITY', 'Data Availability'],
@@ -571,15 +572,18 @@ function StockValidationView() {
         </>
       )}
 
-      {!result && !readiness && !error && (
-        <section className="panel validation-empty-state">
-          <div className="validation-empty-icon">?</div>
-          <h2>Select a stock to validate</h2>
-          <p>
-            Enter an NSE stock symbol above to inspect its current
-            validation state or run the complete validation pipeline.
-          </p>
-        </section>
+      {loading && (
+        <LoadingState
+          title="Executing Seven-Gate Validation Pipeline..."
+          description={`Evaluating data readiness, schema integrity, and historical backtests for ${symbol}...`}
+        />
+      )}
+
+      {!result && !readiness && !error && !loading && (
+        <EmptyState
+          title="Select a Stock to Validate"
+          description="Enter an NSE stock symbol above to inspect its data readiness or execute the seven-gate pipeline."
+        />
       )}
     </div>
   )

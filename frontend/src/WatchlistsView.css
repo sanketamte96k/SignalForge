@@ -1,4 +1,4 @@
-﻿.watchlists-page {
+.watchlists-page {
   width: 100%;
   min-height: 100%;
   padding: 28px 30px 40px;
@@ -766,14 +766,22 @@
 
   .watchlist-danger-button {
     width: 100%;
+    min-height: 42px;
   }
 
   .watchlist-search-form {
     flex-direction: column;
   }
 
+  .watchlist-search-form input,
+  .watchlist-create-form input {
+    height: 42px;
+  }
+
+  .watchlist-primary-button,
   .watchlist-search-button {
     width: 100%;
+    height: 44px;
   }
 
   .watchlist-stock-grid {

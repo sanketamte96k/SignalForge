@@ -849,6 +849,7 @@
   .validation-input-row input,
   .validation-input-row button {
     width: 100%;
+    min-height: 44px;
   }
 
   .validation-readiness-panel .panel-title {

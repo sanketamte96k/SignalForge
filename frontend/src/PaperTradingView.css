@@ -774,5 +774,6 @@
   .paper-start-button,
   .paper-reset-button {
     width: 100%;
+    min-height: 44px;
   }
 }

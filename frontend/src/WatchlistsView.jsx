@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   addStockToWatchlist,
   createWatchlist,
@@ -8,6 +8,7 @@ import {
   searchStocks,
 } from './api'
 import './WatchlistsView.css'
+import { LoadingState, EmptyState } from './StateViews'
 
 function normalizeSearchResults(response) {
   if (Array.isArray(response)) {
@@ -259,17 +260,17 @@ function WatchlistsView() {
           </div>
 
           {loading ? (
-            <div className="watchlists-loading-list">
-              <div className="watchlists-skeleton" />
-              <div className="watchlists-skeleton" />
-              <div className="watchlists-skeleton" />
-            </div>
+            <LoadingState
+              compact
+              title="Loading Watchlists..."
+              description="Fetching watchlists from the backend..."
+            />
           ) : watchlists.length === 0 ? (
-            <div className="watchlists-empty-sidebar">
-              <div className="watchlists-empty-icon">＋</div>
-              <h3>No watchlists yet</h3>
-              <p>Create your first list using the form below.</p>
-            </div>
+            <EmptyState
+              compact
+              title="No Watchlists Yet"
+              description="Create your first list using the form below."
+            />
           ) : (
             <div className="watchlists-list">
               {watchlists.map((watchlist) => {
@@ -451,14 +452,10 @@ function WatchlistsView() {
                 </div>
 
                 {!selectedWatchlist.symbols?.length ? (
-                  <div className="watchlist-empty-stocks">
-                    <div className="watchlists-empty-icon">＋</div>
-                    <h3>No stocks in this watchlist</h3>
-                    <p>
-                      Search for an NSE instrument above and add it to this
-                      list.
-                    </p>
-                  </div>
+                  <EmptyState
+                    title="No Stocks in this Watchlist"
+                    description="Search for an NSE instrument above and add it to this list."
+                  />
                 ) : (
                   <div className="watchlist-stock-grid">
                     {selectedWatchlist.symbols.map((symbol) => (

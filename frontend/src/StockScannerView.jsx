@@ -1,71 +1,25 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './StockScannerView.css'
+import { LoadingState, ErrorState, EmptyState } from './StateViews'
+import {
+  fetchWatchlists,
+  addStockToWatchlist,
+  removeStockFromWatchlist,
+} from './api'
+import { isEditableTarget, isModifierKey } from './keyboardShortcuts'
+import {
+  formatScannerPrice,
+  formatScannerConfidence,
+  formatScannerScore,
+  formatScannerTimestamp,
+  normalizeSignal,
+  normalizeStatus,
+  filterScannerItems,
+  sortScannerItems,
+} from './scannerUtils'
 
 const SIGNAL_FILTERS = ['ALL', 'BUY', 'SELL', 'NO TRADE']
 const STATUS_FILTERS = ['ALL', 'VALIDATED', 'TESTING', 'FAILED']
-
-function formatPrice(value) {
-  const numeric = Number(value)
-  if (!Number.isFinite(numeric)) {
-    return '—'
-  }
-
-  return numeric.toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-}
-
-function formatConfidence(value) {
-  const numeric = Number(value)
-  if (!Number.isFinite(numeric)) {
-    return '—'
-  }
-
-  const percentage = numeric <= 1 ? numeric * 100 : numeric
-  return `${Math.round(percentage)}%`
-}
-
-function formatTimestamp(value) {
-  if (!value) {
-    return '—'
-  }
-
-  const raw = String(value).trim()
-  let iso = raw
-
-  if (!/[Z+-]\d{2}:?\d{2}$/.test(iso) && !iso.endsWith('Z')) {
-    iso = `${iso}+05:30`
-  }
-
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) {
-    return raw
-  }
-
-  return new Intl.DateTimeFormat('en-IN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Kolkata',
-  }).format(date)
-}
-
-function normalizeSignal(value) {
-  const signal = String(value || '').toUpperCase().trim()
-
-  if (signal === 'BUY') return 'BUY'
-  if (signal === 'SELL') return 'SELL'
-  return 'NO TRADE'
-}
-
-function normalizeStatus(value) {
-  const status = String(value || '').toUpperCase().trim()
-
-  if (status === 'VALIDATED') return 'VALIDATED'
-  if (status === 'TESTING' || status === 'IN_PROGRESS') return 'TESTING'
-  if (status === 'FAILED' || status === 'REJECTED') return 'FAILED'
-  return status || 'PENDING'
-}
 
 function signalClass(signal) {
   if (signal === 'BUY') return 'scanner-signal-buy'
@@ -141,14 +95,24 @@ function ScannerStat({ label, value, tone = 'neutral' }) {
   )
 }
 
-function StockScannerView() {
+function StockScannerView({ onSelectStock, focusTrigger = 0 }) {
+  const searchInputRef = useRef(null)
   const [scannerData, setScannerData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(null)
+  const [watchlistLoading, setWatchlistLoading] = useState(false)
+
+  // Filter & Search states
   const [search, setSearch] = useState('')
   const [signalFilter, setSignalFilter] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState('ALL')
+  const [eligibleOnly, setEligibleOnly] = useState(false)
+
+  // Sorting & Row Selection
+  const [sortKey, setSortKey] = useState('symbol')
+  const [sortDirection, setSortDirection] = useState('asc')
+  const [selectedSymbol, setSelectedSymbol] = useState(null)
 
   const loadScanner = useCallback(async ({ manual = false } = {}) => {
     if (manual) {
@@ -206,34 +170,146 @@ function StockScannerView() {
   )
 
   const filteredItems = useMemo(() => {
-    const query = search.trim().toLowerCase()
-
-    return items.filter((item) => {
-      const signal = normalizeSignal(item.signal)
-      const status = normalizeStatus(item.validation_status)
-
-      if (signalFilter !== 'ALL' && signal !== signalFilter) {
-        return false
-      }
-
-      if (statusFilter !== 'ALL' && status !== statusFilter) {
-        return false
-      }
-
-      if (!query) {
-        return true
-      }
-
-      return [
-        item.symbol,
-        item.name,
-        item.exchange,
-        item.reason,
-        status,
-        signal,
-      ].some((value) => String(value || '').toLowerCase().includes(query))
+    return filterScannerItems(items, {
+      search,
+      signalFilter,
+      statusFilter,
+      eligibleOnly,
     })
-  }, [items, search, signalFilter, statusFilter])
+  }, [items, search, signalFilter, statusFilter, eligibleOnly])
+
+  const processedItems = useMemo(() => {
+    return sortScannerItems(filteredItems, sortKey, sortDirection)
+  }, [filteredItems, sortKey, sortDirection])
+
+  const handleSort = useCallback((key) => {
+    if (sortKey === key) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      if (['price', 'score', 'confidence', 'timeframe_alignment'].includes(key)) {
+        setSortDirection('desc')
+      } else {
+        setSortDirection('asc')
+      }
+    }
+  }, [sortKey])
+
+  const handleResetFilters = useCallback(() => {
+    setSearch('')
+    setSignalFilter('ALL')
+    setStatusFilter('ALL')
+    setEligibleOnly(false)
+    setSelectedSymbol(null)
+    setSortKey('symbol')
+    setSortDirection('asc')
+  }, [])
+
+  // Watchlist toggle handler
+  const handleToggleWatchlist = useCallback(async (sym) => {
+    if (!sym || watchlistLoading) return
+    setWatchlistLoading(true)
+    try {
+      const wlData = await fetchWatchlists()
+      const lists = Array.isArray(wlData?.watchlists) ? wlData.watchlists : []
+      const defaultList = lists.find((w) => w.name === 'My Watchlist') || lists[0]
+      if (!defaultList) return
+
+      const isInList = Array.isArray(defaultList.stocks) && defaultList.stocks.some(
+        (s) => String(s.symbol || s).toUpperCase() === sym.toUpperCase(),
+      )
+
+      if (isInList) {
+        await removeStockFromWatchlist(defaultList.name, sym)
+      } else {
+        await addStockToWatchlist(defaultList.name, sym)
+      }
+    } catch {
+      // Retain existing state on error
+    } finally {
+      setWatchlistLoading(false)
+    }
+  }, [watchlistLoading])
+
+  // Focus search trigger from external navigation
+  useEffect(() => {
+    if (focusTrigger > 0 && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [focusTrigger])
+
+  // Scanner Keyboard Shortcuts
+  useEffect(() => {
+    const handleScannerKeyDown = (e) => {
+      // If typing in an editable field
+      if (isEditableTarget(e.target)) {
+        if (e.key === 'Escape') {
+          if (search) {
+            setSearch('')
+          } else {
+            searchInputRef.current?.blur()
+          }
+        }
+        return
+      }
+
+      if (isModifierKey(e)) return
+
+      // '/' focuses search
+      if (e.key === '/') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        return
+      }
+
+      // 'ArrowDown' selects next row
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        if (processedItems.length === 0) return
+        const idx = processedItems.findIndex((it) => it.symbol === selectedSymbol)
+        if (idx === -1) {
+          setSelectedSymbol(processedItems[0].symbol)
+        } else {
+          setSelectedSymbol(processedItems[Math.min(processedItems.length - 1, idx + 1)].symbol)
+        }
+        return
+      }
+
+      // 'ArrowUp' selects previous row
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        if (processedItems.length === 0) return
+        const idx = processedItems.findIndex((it) => it.symbol === selectedSymbol)
+        if (idx === -1) {
+          setSelectedSymbol(processedItems[processedItems.length - 1].symbol)
+        } else {
+          setSelectedSymbol(processedItems[Math.max(0, idx - 1)].symbol)
+        }
+        return
+      }
+
+      // 'Enter' or 'A' or 'a' analyzes selected stock
+      if (e.key === 'Enter' || e.key === 'a' || e.key === 'A') {
+        if (selectedSymbol && onSelectStock) {
+          e.preventDefault()
+          onSelectStock(selectedSymbol)
+        }
+        return
+      }
+
+      // 'W' or 'w' toggles watchlist
+      if (e.key === 'w' || e.key === 'W') {
+        if (selectedSymbol) {
+          e.preventDefault()
+          handleToggleWatchlist(selectedSymbol)
+        }
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleScannerKeyDown)
+    return () => window.removeEventListener('keydown', handleScannerKeyDown)
+  }, [processedItems, selectedSymbol, search, onSelectStock, handleToggleWatchlist])
 
   const totalStocks = Number(scannerData?.total_stocks) || items.length
   const eligibleStocks = Number(scannerData?.signal_eligible_stocks) || 0
@@ -271,12 +347,12 @@ function StockScannerView() {
           <span>Local validated-data pipeline</span>
         </div>
         <span className="scanner-source-time">
-          Latest evaluation: {formatTimestamp(scannerData?.timestamp)}
+          Latest evaluation: {formatScannerTimestamp(scannerData?.timestamp)}
         </span>
       </div>
 
       {error && (
-        <div className="scanner-error-banner">
+        <div className="scanner-error-banner" role="alert">
           <ScannerIcon type="alert" />
           <div>
             <strong>Scanner unavailable</strong>
@@ -310,9 +386,24 @@ function StockScannerView() {
             <div className="scanner-section-label">SIGNAL MATRIX</div>
             <h2>All NIFTY 50 Constituents</h2>
           </div>
-          <div className="scanner-count">
-            Showing <strong>{filteredItems.length}</strong> of{' '}
-            <strong>{items.length}</strong>
+          <div className="scanner-count" aria-live="polite">
+            Showing <strong>{processedItems.length}</strong> of{' '}
+            <strong>{items.length}</strong> stocks
+            {processedItems.length < items.length && (
+              <span className="scanner-filter-pill">
+                ({items.length - processedItems.length} filtered)
+              </span>
+            )}
+            {selectedSymbol && onSelectStock && (
+              <button
+                type="button"
+                className="scanner-analyze-selected-btn"
+                onClick={() => onSelectStock(selectedSymbol)}
+                aria-label={`Open Stock Analysis for ${selectedSymbol}`}
+              >
+                Analyze {selectedSymbol} →
+              </button>
+            )}
           </div>
         </div>
 
@@ -320,22 +411,45 @@ function StockScannerView() {
           <label className="scanner-search">
             <ScannerIcon type="search" />
             <input
+              ref={searchInputRef}
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault()
+                  if (search) {
+                    setSearch('')
+                  } else {
+                    searchInputRef.current?.blur()
+                  }
+                }
+              }}
               placeholder="Search symbol, company, reason..."
-              aria-label="Search scanner"
+              aria-label="Search scanner by symbol, company, or reason"
             />
+            {search && (
+              <button
+                type="button"
+                className="scanner-search-clear-btn"
+                onClick={() => setSearch('')}
+                aria-label="Clear search input"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </label>
 
           <div className="scanner-filter-group">
             <span>Signal</span>
-            <div className="scanner-filter-tabs">
+            <div className="scanner-filter-tabs" role="group" aria-label="Signal filter">
               {SIGNAL_FILTERS.map((filter) => (
                 <button
                   type="button"
                   key={filter}
                   className={signalFilter === filter ? 'active' : ''}
+                  aria-pressed={signalFilter === filter}
                   onClick={() => setSignalFilter(filter)}
                 >
                   {filter}
@@ -346,12 +460,13 @@ function StockScannerView() {
 
           <div className="scanner-filter-group">
             <span>Status</span>
-            <div className="scanner-filter-tabs">
+            <div className="scanner-filter-tabs" role="group" aria-label="Status filter">
               {STATUS_FILTERS.map((filter) => (
                 <button
                   type="button"
                   key={filter}
                   className={statusFilter === filter ? 'active' : ''}
+                  aria-pressed={statusFilter === filter}
                   onClick={() => setStatusFilter(filter)}
                 >
                   {filter}
@@ -359,62 +474,210 @@ function StockScannerView() {
               ))}
             </div>
           </div>
+
+          <div className="scanner-filter-group">
+            <span>Eligibility</span>
+            <div className="scanner-filter-tabs" role="group" aria-label="Eligibility filter">
+              <button
+                type="button"
+                className={!eligibleOnly ? 'active' : ''}
+                aria-pressed={!eligibleOnly}
+                onClick={() => setEligibleOnly(false)}
+                aria-label="Show all stocks"
+              >
+                ALL
+              </button>
+              <button
+                type="button"
+                className={eligibleOnly ? 'active' : ''}
+                aria-pressed={eligibleOnly}
+                onClick={() => setEligibleOnly(true)}
+                aria-label="Show signal-eligible stocks only"
+              >
+                ELIGIBLE
+              </button>
+            </div>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="scanner-state">
-            <div className="scanner-state-icon">
-              <ScannerIcon type="chart" />
-            </div>
-            <strong>Loading NIFTY 50 scanner…</strong>
-            <span>
-              Reading real scanner results from the SignalForge backend.
-            </span>
-          </div>
+        {loading && !scannerData ? (
+          <LoadingState
+            title="Loading NIFTY 50 Scanner..."
+            description="Reading algorithmic scanner results from the SignalForge backend."
+          />
         ) : error && items.length === 0 ? (
-          <div className="scanner-state">
-            <div className="scanner-state-icon">
-              <ScannerIcon type="alert" />
-            </div>
-            <strong>Unable to load scanner results</strong>
-            <span>Use Retry above after confirming the backend is running.</span>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="scanner-state">
-            <div className="scanner-state-icon">
-              <ScannerIcon type="search" />
-            </div>
-            <strong>No stocks match the current filters</strong>
-            <span>Clear the search or choose ALL filters.</span>
-          </div>
+          <ErrorState
+            title="Unable to Load Scanner Results"
+            message={error}
+            onRetry={() => loadScanner({ manual: true })}
+            retryLabel="Retry Scanner"
+          />
+        ) : processedItems.length === 0 ? (
+          <EmptyState
+            title={items.length === 0 ? 'No Scanner Data Available' : 'No Stocks Match Current Filters'}
+            description={
+              items.length === 0
+                ? 'The SignalForge scanner returned zero stock evaluation records.'
+                : 'Try adjusting your search query, or reset the signal, status, and eligibility filters.'
+            }
+            action={
+              search || signalFilter !== 'ALL' || statusFilter !== 'ALL' || eligibleOnly ? (
+                <button
+                  type="button"
+                  className="sf-state-retry-btn"
+                  onClick={handleResetFilters}
+                >
+                  Reset Filters
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="sf-state-retry-btn"
+                  onClick={() => loadScanner({ manual: true })}
+                >
+                  Reload Scanner
+                </button>
+              )
+            }
+          />
         ) : (
           <div className="scanner-table-wrap">
-            <div className="scanner-table">
-              <div className="scanner-table-head">
-                <span>Stock</span>
-                <span>Status</span>
-                <span>Signal</span>
-                <span>Price</span>
-                <span>Score</span>
-                <span>Confidence</span>
-                <span>MTF</span>
-                <span>Reason</span>
+            <div className="scanner-table" role="table" aria-label="NIFTY 50 Stock Scanner Results">
+              <div className="scanner-table-head" role="row">
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell ${sortKey === 'symbol' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('symbol')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'symbol' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>Stock</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'symbol' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell ${sortKey === 'status' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('status')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'status' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>Status</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'status' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell ${sortKey === 'signal' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('signal')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'signal' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>Signal</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'signal' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell align-right ${sortKey === 'price' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('price')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'price' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>Price</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'price' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell align-right ${sortKey === 'score' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('score')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'score' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>Score</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'score' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell align-right ${sortKey === 'confidence' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('confidence')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'confidence' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>Confidence</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'confidence' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`scanner-table-head-cell align-right ${sortKey === 'timeframe_alignment' ? 'is-sorted' : ''}`}
+                  onClick={() => handleSort('timeframe_alignment')}
+                  role="columnheader"
+                  aria-sort={sortKey === 'timeframe_alignment' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <span>MTF</span>
+                  <span className="scanner-sort-indicator" aria-hidden="true">
+                    {sortKey === 'timeframe_alignment' ? (sortDirection === 'asc' ? '▲' : '▼') : '↕'}
+                  </span>
+                </button>
+
+                <span role="columnheader">Reason</span>
               </div>
 
-              {filteredItems.map((item) => {
+              {processedItems.map((item) => {
                 const signal = normalizeSignal(item.signal)
                 const status = normalizeStatus(item.validation_status)
                 const eligible = Boolean(item.signal_eligible)
+                const isSelected = selectedSymbol === item.symbol
 
                 return (
-                  <div className="scanner-table-row" key={item.symbol}>
-                    <div className="scanner-stock-cell">
+                  <div
+                    className={`scanner-table-row ${isSelected ? 'is-selected' : ''}`}
+                    key={item.symbol}
+                    role="row"
+                    tabIndex={0}
+                    aria-selected={isSelected}
+                    onClick={() => setSelectedSymbol(item.symbol)}
+                    onDoubleClick={() => {
+                      if (onSelectStock) {
+                        onSelectStock(item.symbol)
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        if (onSelectStock) {
+                          onSelectStock(item.symbol)
+                        } else {
+                          setSelectedSymbol((prev) => (prev === item.symbol ? null : item.symbol))
+                        }
+                      } else if (event.key === ' ') {
+                        event.preventDefault()
+                        setSelectedSymbol((prev) => (prev === item.symbol ? null : item.symbol))
+                      }
+                    }}
+                  >
+                    <div className="scanner-stock-cell" role="cell">
                       <strong>{item.symbol}</strong>
                       <span>{item.name || 'NSE listed stock'}</span>
                       <small>{item.exchange || 'NSE'}</small>
                     </div>
 
-                    <div className="scanner-status-cell">
+                    <div className="scanner-status-cell" role="cell">
                       <span className={`scanner-status ${statusClass(status)}`}>
                         {status}
                       </span>
@@ -423,35 +686,50 @@ function StockScannerView() {
                       </small>
                     </div>
 
-                    <div className="scanner-signal-cell">
+                    <div className="scanner-signal-cell" role="cell">
                       <span className={`scanner-signal ${signalClass(signal)}`}>
                         {signal}
                       </span>
                     </div>
 
-                    <strong className="scanner-price">
-                      {formatPrice(item.price)}
+                    <strong className="scanner-price align-right" role="cell">
+                      {formatScannerPrice(item.price)}
                     </strong>
 
-                    <span className="scanner-number">
-                      {Number.isFinite(Number(item.score))
-                        ? Number(item.score).toFixed(2)
-                        : '—'}
+                    <span className="scanner-number align-right" role="cell">
+                      {formatScannerScore(item.score)}
                     </span>
 
-                    <span className="scanner-number">
-                      {formatConfidence(item.confidence)}
+                    <span className="scanner-number align-right" role="cell">
+                      {formatScannerConfidence(item.confidence)}
                     </span>
 
-                    <span className="scanner-number">
-                      {item.timeframe_alignment || '—'}
+                    <span className="scanner-number align-right" role="cell">
+                      {item.timeframe_alignment ?? '—'}
                     </span>
 
-                    <div className="scanner-reason">
-                      <span>{item.reason || 'No strategy reason available.'}</span>
-                      {item.timestamp && (
-                        <small>{formatTimestamp(item.timestamp)}</small>
-                      )}
+                    <div className="scanner-reason" role="cell">
+                      <div className="scanner-reason-inner">
+                        <div className="scanner-reason-texts">
+                          <span>{item.reason || 'No strategy reason available.'}</span>
+                          {item.timestamp && (
+                            <small>{formatScannerTimestamp(item.timestamp)}</small>
+                          )}
+                        </div>
+                        {onSelectStock && (
+                          <button
+                            type="button"
+                            className="scanner-row-analyze-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onSelectStock(item.symbol)
+                            }}
+                            aria-label={`Analyze ${item.symbol}`}
+                          >
+                            Analyze →
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )

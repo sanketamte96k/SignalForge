@@ -7,6 +7,7 @@ import {
   startPaperTrading,
 } from './api'
 import './PaperTradingView.css'
+import { LoadingState, ErrorState, EmptyState } from './StateViews'
 
 function formatCurrency(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -137,32 +138,6 @@ function SectionHeader({
   )
 }
 
-function EmptyTradesState() {
-  return (
-    <div className="paper-empty-state">
-      <div className="paper-empty-icon" aria-hidden="true">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 3h9l3 3v15H6z" />
-          <path d="M15 3v4h3" />
-          <path d="M9 12h6M9 16h6" />
-        </svg>
-      </div>
-
-      <strong>No paper trades yet</strong>
-
-      <span>
-        Start a historical replay to generate paper trades.
-      </span>
-    </div>
-  )
-}
 
 function PaperTradingView() {
   const [status, setStatus] = useState(null)
@@ -357,28 +332,40 @@ function PaperTradingView() {
         </div>
       </div>
 
-      {error && (
-        <div className="paper-error-banner">
-          <div className="paper-error-icon">
-            !
-          </div>
+      {loading && !status && !report ? (
+        <LoadingState
+          title="Loading Paper Trading Session..."
+          description="Connecting to simulation engine and retrieving trade telemetry..."
+        />
+      ) : error && !status && !report ? (
+        <ErrorState
+          title="Paper Trading System Offline"
+          message={error}
+          onRetry={loadPaperTradingData}
+          retryLabel="Retry Connection"
+        />
+      ) : (
+        <>
+          {error && (
+            <div className="paper-error-banner" role="alert">
+              <div className="paper-error-icon">!</div>
 
-          <div>
-            <strong>Paper Trading API unavailable</strong>
-            <span>{error}</span>
-          </div>
+              <div>
+                <strong>Paper Trading API unavailable</strong>
+                <span>{error}</span>
+              </div>
 
-          <button
-            type="button"
-            onClick={loadPaperTradingData}
-            disabled={isBusy}
-          >
-            Retry
-          </button>
-        </div>
-      )}
+              <button
+                type="button"
+                onClick={loadPaperTradingData}
+                disabled={isBusy}
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
-      <section className="paper-stats-grid">
+          <section className="paper-stats-grid">
         <StatCard
           label="Starting Capital"
           value={formatCurrency(
@@ -612,7 +599,20 @@ function PaperTradingView() {
             </div>
 
             {recentTrades.length === 0 ? (
-              <EmptyTradesState />
+              <EmptyState
+                title="No Paper Trades Yet"
+                description="Start a simulation replay to execute trades against frozen historical data."
+                action={
+                  <button
+                    type="button"
+                    className="sf-state-retry-btn"
+                    onClick={handleStartReplay}
+                    disabled={starting || resetting}
+                  >
+                    {starting ? 'Starting Simulation...' : 'Start Simulation Replay'}
+                  </button>
+                }
+              />
             ) : (
               recentTrades.map((trade, index) => {
                 const netPnlClass =
@@ -729,7 +729,9 @@ function PaperTradingView() {
           <span>Data</span>
           <strong>NIFTY 1-minute historical</strong>
         </div>
-      </section>
+          </section>
+        </>
+      )}
     </div>
   )
 }

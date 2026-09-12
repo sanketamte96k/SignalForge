@@ -224,6 +224,32 @@
   .chart-data-state {
     min-height: 300px;
   }
+
+  .chart-zoom-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .chart-ohlc-hud {
+    font-size: 9px;
+    gap: 6px;
+    padding: 3px 6px;
+    flex-wrap: wrap;
+  }
+
+  .chart-overlay-legend {
+    font-size: 9px;
+    gap: 8px;
+    padding: 3px 6px;
+  }
+
+  .rsi-chart-meta {
+    font-size: 7.5px;
+    padding: 3px 6px;
+  }
 }
 
 
@@ -314,3 +340,182 @@
   font-size: 10px;
   letter-spacing: 0.2px;
 }
+
+/* Professional Crosshair */
+.real-candlestick-viewport {
+  cursor: crosshair;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.real-candlestick-viewport.is-panning {
+  cursor: grabbing;
+}
+
+.chart-crosshair-v,
+.chart-crosshair-h {
+  stroke: rgba(143, 175, 198, 0.45);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.chart-crosshair-price-bg,
+.chart-crosshair-time-bg {
+  fill: #0c1a27;
+  stroke: rgba(93, 132, 160, 0.4);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.chart-crosshair-price-text,
+.chart-crosshair-time-text {
+  fill: #d9e7ef;
+  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.chart-crosshair-dot {
+  fill: #00d9a3;
+  stroke: #08111a;
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+/* Compact Terminal HUD */
+.chart-ohlc-hud {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #a7bfce;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.chart-ohlc-hud .hud-val {
+  color: #d9e7ef;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-ohlc-hud .hud-up {
+  color: #00d9a3;
+}
+
+.chart-ohlc-hud .hud-down {
+  color: #ff5f67;
+}
+
+/* Zoom & Pan Controls */
+.chart-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.chart-zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: rgba(14, 26, 38, 0.7);
+  border: 1px solid rgba(93, 132, 160, 0.22);
+  border-radius: 4px;
+  color: #8faec2;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chart-zoom-btn:hover {
+  background: rgba(36, 168, 255, 0.15);
+  border-color: rgba(36, 168, 255, 0.4);
+  color: #ffffff;
+}
+
+.chart-zoom-btn:active {
+  transform: scale(0.95);
+}
+
+.chart-zoom-btn:focus-visible {
+  outline: 2px solid #24a8ff;
+  outline-offset: 1px;
+}
+
+.chart-zoom-info {
+  font-size: 9px;
+  color: #6d889c;
+  letter-spacing: 0.3px;
+  margin: 0 4px;
+}
+
+/* Signal Markers */
+.chart-signal-marker {
+  cursor: pointer;
+}
+
+.chart-signal-pin-buy {
+  fill: #00d9a3;
+  stroke: #08111a;
+  stroke-width: 1;
+}
+
+.chart-signal-pin-sell {
+  fill: #ff5f67;
+  stroke: #08111a;
+  stroke-width: 1;
+}
+
+.chart-signal-label-buy {
+  fill: #08111a;
+  font-size: 7px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.chart-signal-label-sell {
+  fill: #ffffff;
+  font-size: 7px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* RSI Synchronized Crosshair */
+.real-rsi-chart {
+  cursor: crosshair;
+  user-select: none;
+}
+
+.rsi-crosshair-v,
+.rsi-crosshair-h {
+  stroke: rgba(143, 175, 198, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.rsi-crosshair-badge-val {
+  fill: #0c1a27;
+  stroke: rgba(181, 108, 255, 0.4);
+  stroke-width: 1;
+}
+
+.rsi-crosshair-badge-text {
+  fill: #b56cff;
+  font-size: 8px;
+  font-weight: 700;
+}
+

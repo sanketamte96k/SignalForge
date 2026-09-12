@@ -23,19 +23,19 @@
 
 html {
   min-width: 320px;
-  min-height: 100%;
+  height: 100%;
   background: var(--bg);
   color-scheme: dark;
 }
 
 body {
   min-width: 320px;
-  min-height: 100vh;
+  height: 100%;
   margin: 0;
   background:
     radial-gradient(circle at 60% -10%, rgba(0, 105, 210, 0.12), transparent 32%),
     #020b14;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* Custom modern scrollbars */
@@ -74,5 +74,5 @@ input:focus-visible {
 }
 
 #root {
-  min-height: 100vh;
+  height: 100%;
 }

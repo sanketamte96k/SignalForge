@@ -1,6 +1,9 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import './CandlestickChart.css'
+import { LoadingState, ErrorState, EmptyState } from './StateViews'
+import { calculateCandleChange } from './chartUtils'
+import { CandlestickChart, RsiChart } from './CandlestickChart'
 import {
   fetchNiftyAnalysis,
   fetchNiftyLatest,
@@ -11,16 +14,23 @@ import PaperTradingView from './PaperTradingView'
 import SectorsView from './SectorsView'
 import WatchlistsView from './WatchlistsView'
 import StockScannerView from './StockScannerView'
+import StockAnalysisView from './StockAnalysisView'
+import KeyboardShortcutsModal from './KeyboardShortcutsModal'
+import {
+  isEditableTarget,
+  isModifierKey,
+  NAVIGATION_SHORTCUTS,
+} from './keyboardShortcuts'
 
 const navItems = [
   ['Dashboard', 'dashboard'],
   ['NIFTY Analysis', 'chart'],
   ['Stock Scanner', 'search'],
+  ['Stock Analysis', 'candles'],
   ['Sectors', 'bars'],
   ['Watchlists', 'bookmark'],
   ['Add Stock', 'plus'],
   ['Validation', 'check'],
-  ['Charts', 'candles'],
   ['Paper Trading', 'briefcase'],
   ['Reports', 'report'],
   ['Settings', 'settings'],
@@ -129,10 +139,23 @@ function formatApiTimestamp(timestamp) {
 
 function App() {
   const [activeNav, setActiveNav] = useState('Dashboard')
+  const [selectedStockSymbol, setSelectedStockSymbol] = useState('RELIANCE')
   const [activeTimeframe, setActiveTimeframe] = useState('15m')
   const [activeSignalFilter, setActiveSignalFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const handleSelectStock = useCallback((symbol) => {
+    if (symbol) {
+      setSelectedStockSymbol(symbol.trim().toUpperCase())
+      setActiveNav('Stock Analysis')
+    }
+  }, [])
+
+  // Synchronized chart interaction states
+  const [chartViewRange, setChartViewRange] = useState(null)
+  const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [hoveredCandle, setHoveredCandle] = useState(null)
 
   // Dashboard state
   const [niftyLatest, setNiftyLatest] = useState(null)
@@ -164,86 +187,82 @@ function App() {
     }
   }, [])
 
-  useEffect(() => {
-    let cancelled = false
+  const initializeDashboardData = useCallback(async () => {
+    setNiftyLoading(true)
+    setAnalysisLoading(true)
+    setNiftyError(null)
+    setAnalysisError(null)
 
-    async function initializeData() {
-      try {
-        const [latestResult, signalResult, analysisResult] =
-          await Promise.allSettled([
-            fetchNiftyLatest(),
-            fetchNiftySignal(),
-            fetchNiftyAnalysis(),
-          ])
+    try {
+      const [latestResult, signalResult, analysisResult] =
+        await Promise.allSettled([
+          fetchNiftyLatest(),
+          fetchNiftySignal(),
+          fetchNiftyAnalysis(),
+        ])
 
-        if (cancelled) return
+      let dashboardErr = null
 
-        let dashboardErr = null
-
-        if (latestResult.status === 'fulfilled') {
-          setNiftyLatest(latestResult.value)
-        } else {
-          setNiftyLatest(null)
-          dashboardErr =
-            latestResult.reason instanceof Error
-              ? latestResult.reason.message
-              : 'Failed to fetch latest NIFTY data'
-        }
-
-        if (signalResult.status === 'fulfilled') {
-          setNiftySignal(signalResult.value)
-        } else {
-          setNiftySignal(null)
-          dashboardErr =
-            signalResult.reason instanceof Error
-              ? signalResult.reason.message
-              : 'Failed to fetch NIFTY signal'
-        }
-
-        if (
-          latestResult.status === 'rejected' &&
-          signalResult.status === 'rejected'
-        ) {
-          setNiftyError(dashboardErr || 'SignalForge API unavailable')
-        } else if (signalResult.status === 'rejected') {
-          setNiftyError(dashboardErr || 'Signal API unavailable')
-        } else {
-          setNiftyError(null)
-        }
-
-        if (analysisResult.status === 'fulfilled') {
-          setAnalysisData(analysisResult.value)
-          setAnalysisError(null)
-        } else {
-          setAnalysisData(null)
-          setAnalysisError(
-            analysisResult.reason instanceof Error
-              ? analysisResult.reason.message
-              : 'Backend analysis unavailable',
-          )
-        }
-      } catch (error) {
-        if (cancelled) return
-        setNiftyError(
-          error instanceof Error ? error.message : 'Unable to connect to API',
-        )
-        setAnalysisError(
-          error instanceof Error ? error.message : 'Backend analysis unavailable',
-        )
-      } finally {
-        if (!cancelled) {
-          setNiftyLoading(false)
-          setAnalysisLoading(false)
-        }
+      if (latestResult.status === 'fulfilled') {
+        setNiftyLatest(latestResult.value)
+      } else {
+        setNiftyLatest(null)
+        dashboardErr =
+          latestResult.reason instanceof Error
+            ? latestResult.reason.message
+            : 'Failed to fetch latest NIFTY data'
       }
-    }
 
-    initializeData()
+      if (signalResult.status === 'fulfilled') {
+        setNiftySignal(signalResult.value)
+      } else {
+        setNiftySignal(null)
+        dashboardErr =
+          signalResult.reason instanceof Error
+            ? signalResult.reason.message
+            : 'Failed to fetch NIFTY signal'
+      }
 
-    return () => {
-      cancelled = true
+      if (
+        latestResult.status === 'rejected' &&
+        signalResult.status === 'rejected'
+      ) {
+        setNiftyError(dashboardErr || 'SignalForge API unavailable')
+      } else if (signalResult.status === 'rejected') {
+        setNiftyError(dashboardErr || 'Signal API unavailable')
+      } else {
+        setNiftyError(null)
+      }
+
+      if (analysisResult.status === 'fulfilled') {
+        setAnalysisData(analysisResult.value)
+        setAnalysisError(null)
+      } else {
+        setAnalysisData(null)
+        setAnalysisError(
+          analysisResult.reason instanceof Error
+            ? analysisResult.reason.message
+            : 'Backend analysis unavailable',
+        )
+      }
+    } catch (error) {
+      setNiftyError(
+        error instanceof Error ? error.message : 'Unable to connect to API',
+      )
+      setAnalysisError(
+        error instanceof Error ? error.message : 'Backend analysis unavailable',
+      )
+    } finally {
+      setNiftyLoading(false)
+      setAnalysisLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      initializeDashboardData()
+    })
+  }, [initializeDashboardData])
 
   const filteredSignals = useMemo(() => {
     let list = signals
@@ -271,10 +290,67 @@ function App() {
 
   const watchlistStocks = watchlists['My Watchlist']
 
-  function handleNavigation(item) {
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false)
+  const [scannerFocusTrigger, setScannerFocusTrigger] = useState(0)
+
+  const handleNavigation = useCallback((item) => {
     setActiveNav(item)
     setSidebarOpen(false)
-  }
+  }, [])
+
+  // Centralized Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // If modal is open, let Escape close it
+      if (showShortcutsModal) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          setShowShortcutsModal(false)
+        }
+        return
+      }
+
+      // If user is actively typing in an input/textarea/select/contenteditable
+      if (isEditableTarget(e.target)) {
+        if (e.key === 'Escape') {
+          e.target.blur()
+        }
+        return
+      }
+
+      // Do not hijack browser modifiers (Ctrl, Meta, Alt)
+      if (isModifierKey(e)) {
+        return
+      }
+
+      // '?' opens shortcuts help dialog
+      if (e.key === '?') {
+        e.preventDefault()
+        setShowShortcutsModal(true)
+        return
+      }
+
+      // '/' routes to Stock Scanner and focuses search
+      if (e.key === '/') {
+        e.preventDefault()
+        if (activeNav !== 'Stock Scanner') {
+          handleNavigation('Stock Scanner')
+        }
+        setScannerFocusTrigger((prev) => prev + 1)
+        return
+      }
+
+      // '1' - '7' navigation shortcuts
+      if (NAVIGATION_SHORTCUTS[e.key]) {
+        e.preventDefault()
+        handleNavigation(NAVIGATION_SHORTCUTS[e.key])
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [showShortcutsModal, activeNav, handleNavigation])
 
   // Dashboard signal calculations
   let displaySignal = '�'
@@ -526,6 +602,17 @@ function App() {
           <div className="header-actions">
             <button
               type="button"
+              className="header-shortcuts-btn"
+              onClick={() => setShowShortcutsModal(true)}
+              aria-label="Keyboard shortcuts (?)"
+              title="Keyboard shortcuts (?)"
+            >
+              <Icon type="keyboard" />
+              <span className="shortcuts-key-hint">?</span>
+            </button>
+
+            <button
+              type="button"
               className="notification-btn"
               aria-label="Notifications"
             >
@@ -554,7 +641,16 @@ function App() {
               onNavigateDashboard={() => handleNavigation('Dashboard')}
             />
           ) : activeNav === 'Stock Scanner' ? (
-            <StockScannerView />
+            <StockScannerView
+              onSelectStock={handleSelectStock}
+              focusTrigger={scannerFocusTrigger}
+            />
+          ) : activeNav === 'Stock Analysis' ? (
+            <StockAnalysisView
+              symbol={selectedStockSymbol}
+              onBack={() => handleNavigation('Stock Scanner')}
+              onSelectStock={handleSelectStock}
+            />
           ) : activeNav === 'Validation' ? (
             <StockValidationView />
           ) : activeNav === 'Sectors' ? (
@@ -574,22 +670,34 @@ function App() {
                       <h1>NIFTY 50</h1>
 
                       <div className="timeframe-tabs-wrap">
-                        <div className="timeframe-tabs">
+                        <div
+                          className="timeframe-tabs"
+                          role="tablist"
+                          aria-label="Select chart timeframe"
+                        >
                           {TIMEFRAMES.map((timeframe) => (
                             <button
                               type="button"
                               key={timeframe}
+                              role="tab"
+                              aria-selected={activeTimeframe === timeframe}
+                              aria-label={`Select ${timeframe} timeframe`}
                               className={
                                 activeTimeframe === timeframe ? 'active' : ''
                               }
-                              onClick={() => setActiveTimeframe(timeframe)}
+                              onClick={() => {
+                                setActiveTimeframe(timeframe)
+                                setChartViewRange(null)
+                                setHoveredIndex(null)
+                                setHoveredCandle(null)
+                              }}
                             >
                               {timeframe}
                             </button>
                           ))}
                         </div>
                         <span className="timeframe-hint">
-                          (UI Selection � API timeframe not available)
+                          (UI Selection • API timeframe not available)
                         </span>
                       </div>
                     </div>
@@ -612,21 +720,21 @@ function App() {
                   </div>
 
                   {/* OHLC Row */}
-                  <div className="ohlc-row">
+                  <div className="ohlc-row" aria-label="Current candle OHLC information">
                     <span>
-                      O <strong>{formatPrice(niftyLatest?.open)}</strong>
+                      O <strong>{formatPrice(hoveredCandle ? hoveredCandle.open : niftyLatest?.open)}</strong>
                     </span>
                     <span className="positive">
-                      H <strong>{formatPrice(niftyLatest?.high)}</strong>
+                      H <strong>{formatPrice(hoveredCandle ? hoveredCandle.high : niftyLatest?.high)}</strong>
                     </span>
                     <span className="negative">
-                      L <strong>{formatPrice(niftyLatest?.low)}</strong>
+                      L <strong>{formatPrice(hoveredCandle ? hoveredCandle.low : niftyLatest?.low)}</strong>
                     </span>
                     <span className="positive">
-                      C <strong>{formatPrice(niftyLatest?.close)}</strong>
+                      C <strong>{formatPrice(hoveredCandle ? hoveredCandle.close : niftyLatest?.close)}</strong>
                     </span>
-                    <span className={`ohlc-change ${candleClass}`}>
-                      {candleText}
+                    <span className={`ohlc-change ${hoveredCandle ? (hoveredCandle.close >= hoveredCandle.open ? 'positive' : 'negative') : candleClass}`}>
+                      {hoveredCandle ? (calculateCandleChange(hoveredCandle)?.text ?? candleText) : candleText}
                     </span>
                   </div>
 
@@ -634,30 +742,40 @@ function App() {
                   <div className="chart-legend">
                     <span className="legend-item blue">
                       <span className="legend-marker marker-blue" />
-                      EMA 20 <strong>�</strong>
+                      EMA 20 <strong>—</strong>
                     </span>
                     <span className="legend-item orange">
                       <span className="legend-marker marker-orange" />
-                      EMA 50 <strong>�</strong>
+                      EMA 50 <strong>—</strong>
                     </span>
                     <span className="legend-item purple">
                       <span className="legend-marker marker-purple" />
-                      EMA 200 <strong>�</strong>
+                      EMA 200 <strong>—</strong>
                     </span>
                     <span className="legend-item volume">
                       <span className="legend-marker marker-volume" />
                       Volume{' '}
                       <strong>
-                        {typeof niftyLatest?.volume === 'number'
-                          ? niftyLatest.volume.toLocaleString('en-IN')
-                          : '�'}
+                        {typeof (hoveredCandle?.volume ?? niftyLatest?.volume) === 'number'
+                          ? Number(hoveredCandle?.volume ?? niftyLatest?.volume).toLocaleString('en-IN')
+                          : '—'}
                       </strong>
                     </span>
                   </div>
 
                   {/* Real historical candlestick chart from the backend API */}
                   <div className="candlestick-chart">
-                    <CandlestickChart timeframe={activeTimeframe} />
+                    <CandlestickChart
+                      timeframe={activeTimeframe}
+                      signal={niftySignal}
+                      viewRange={chartViewRange}
+                      onViewRangeChange={setChartViewRange}
+                      hoverIndex={hoveredIndex}
+                      onHoverChange={(index, candle) => {
+                        setHoveredIndex(index)
+                        setHoveredCandle(candle)
+                      }}
+                    />
                   </div>
 
                   {/* Real RSI(14) series from the backend chart API */}
@@ -668,7 +786,14 @@ function App() {
                         Real RSI(14) calculated by the SignalForge indicator engine
                       </span>
                     </div>
-                    <RsiChart timeframe={activeTimeframe} />
+                    <RsiChart
+                      timeframe={activeTimeframe}
+                      viewRange={chartViewRange}
+                      hoverIndex={hoveredIndex}
+                      onHoverChange={(index) => {
+                        setHoveredIndex(index)
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -688,18 +813,34 @@ function App() {
                   </div>
 
                   <div className="signal-content">
-                    {/* 1. Visually Dominant BUY / SELL / NO TRADE status */}
-                    <div className="signal-badge-section">
-                      <div className="signal-tag-label">ALGORITHMIC SIGNAL</div>
-                      <div className={`signal-dominant-box ${signalClass}`}>
-                        <div className="signal-dominant-text">
-                          {displaySignal}
+                    {niftyLoading && !niftySignal && !niftyLatest ? (
+                      <LoadingState
+                        title="Connecting to Strategy Engine..."
+                        description="Fetching real-time algorithmic signal and price updates..."
+                        compact
+                      />
+                    ) : niftyError && !niftySignal && !niftyLatest ? (
+                      <ErrorState
+                        title="Signal Engine Offline"
+                        message={niftyError}
+                        onRetry={initializeDashboardData}
+                        retryLabel="Retry Connection"
+                        compact
+                      />
+                    ) : (
+                      <>
+                        {/* 1. Visually Dominant BUY / SELL / NO TRADE status */}
+                        <div className="signal-badge-section">
+                          <div className="signal-tag-label">ALGORITHMIC SIGNAL</div>
+                          <div className={`signal-dominant-box ${signalClass}`}>
+                            <div className="signal-dominant-text">
+                              {displaySignal}
+                            </div>
+                            <div className="signal-dominant-sub">
+                              {signalSubtitle}
+                            </div>
+                          </div>
                         </div>
-                        <div className="signal-dominant-sub">
-                          {signalSubtitle}
-                        </div>
-                      </div>
-                    </div>
 
                     {/* 2. Key Instrument & Price Metrics */}
                     <div className="signal-metrics-list">
@@ -827,30 +968,32 @@ function App() {
                       <span>View Full Analysis</span>
                       <Icon type="arrow-right" />
                     </button>
-                  </div>
-                </div>
-              </section>
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
 
-              {/* Lower Section: Top Signals Today, Sector Performance, Watchlists */}
-              <section className="lower-grid">
-                {/* Top Signals Today */}
-                <div className="panel signals-panel">
-                  <PanelTitle title="Top Signals Today" action="View All" />
+          {/* Lower Section: Top Signals Today, Sector Performance, Watchlists */}
+          <section className="lower-grid">
+            {/* Top Signals Today */}
+            <div className="panel signals-panel">
+              <PanelTitle title="Top Signals Today" action="View All" />
 
-                  <div className="filter-tabs">
-                    {['All', 'NIFTY 50', 'Watchlists', 'Sectors'].map(
-                      (tab) => (
-                        <button
-                          type="button"
-                          className={activeSignalFilter === tab ? 'active' : ''}
-                          key={tab}
-                          onClick={() => setActiveSignalFilter(tab)}
-                        >
-                          {tab}
-                        </button>
-                      ),
-                    )}
-                  </div>
+              <div className="filter-tabs">
+                {['All', 'NIFTY 50', 'Watchlists', 'Sectors'].map(
+                  (tab) => (
+                    <button
+                      type="button"
+                      className={activeSignalFilter === tab ? 'active' : ''}
+                      key={tab}
+                      onClick={() => setActiveSignalFilter(tab)}
+                    >
+                      {tab}
+                    </button>
+                  ),
+                )}
+              </div>
 
                   <div className="table-wrapper">
                     <div className="signals-table">
@@ -1125,6 +1268,7 @@ function App() {
             ['Dashboard', 'dashboard'],
             ['NIFTY', 'chart'],
             ['Scanner', 'search'],
+            ['Analysis', 'candles'],
             ['Watchlists', 'bookmark'],
             ['Paper', 'briefcase'],
           ].map(([label, icon]) => (
@@ -1134,7 +1278,8 @@ function App() {
               className={
                 activeNav === label ||
                   (label === 'NIFTY' && activeNav === 'NIFTY Analysis') ||
-                  (label === 'Scanner' && activeNav === 'Stock Scanner')
+                  (label === 'Scanner' && activeNav === 'Stock Scanner') ||
+                  (label === 'Analysis' && activeNav === 'Stock Analysis')
                   ? 'active'
                   : ''
               }
@@ -1144,9 +1289,11 @@ function App() {
                     ? 'NIFTY Analysis'
                     : label === 'Scanner'
                       ? 'Stock Scanner'
-                      : label === 'Paper'
-                        ? 'Paper Trading'
-                        : label,
+                      : label === 'Analysis'
+                        ? 'Stock Analysis'
+                        : label === 'Paper'
+                          ? 'Paper Trading'
+                          : label,
                 )
               }
             >
@@ -1155,6 +1302,12 @@ function App() {
             </button>
           ))}
         </nav>
+
+        {/* Keyboard Shortcuts Help Dialog Modal */}
+        <KeyboardShortcutsModal
+          isOpen={showShortcutsModal}
+          onClose={() => setShowShortcutsModal(false)}
+        />
       </main>
     </div>
   )
@@ -1249,7 +1402,7 @@ function NiftyAnalysisView({
         <div className="analysis-top-actions">
           <span className="analysis-dataset-tag">
             <span className="dataset-dot" />
-            Historical Dataset � March 2024
+            Historical Dataset • March 2024
           </span>
 
           <button
@@ -1260,32 +1413,59 @@ function NiftyAnalysisView({
             title="Refresh NIFTY Analysis"
           >
             <Icon type="refresh" />
-            <span>{loading ? 'Refreshing�' : 'Refresh Analysis'}</span>
+            <span>{loading ? 'Refreshing…' : 'Refresh Analysis'}</span>
           </button>
         </div>
       </div>
 
-      {/* Error notification banner if API failed */}
-      {error && (
-        <div className="analysis-error-banner">
-          <Icon type="alert-circle" />
-          <div className="error-banner-text">
-            <strong>API Unavailable:</strong> {error}
-          </div>
-          <button
-            type="button"
-            className="error-retry-btn"
-            onClick={onRefresh}
-          >
-            Retry Connection
-          </button>
-        </div>
-      )}
+      {loading && !data ? (
+        <LoadingState
+          title="Loading NIFTY 50 Strategy Analysis..."
+          description="Calculating multi-timeframe trend alignment, confirmation metrics, and execution parameters from the backend strategy engine..."
+        />
+      ) : error && !data ? (
+        <ErrorState
+          title="Unable to Load NIFTY Analysis"
+          message={error}
+          onRetry={onRefresh}
+          retryLabel="Retry Analysis"
+        />
+      ) : !data ? (
+        <EmptyState
+          title="No Analysis Data Available"
+          description="No strategy analysis record was returned for NIFTY 50."
+          action={
+            <button
+              type="button"
+              className="sf-state-retry-btn"
+              onClick={onRefresh}
+            >
+              Run Analysis
+            </button>
+          }
+        />
+      ) : (
+        <>
+          {error && (
+            <div className="analysis-error-banner" role="alert">
+              <Icon type="alert-circle" />
+              <div className="error-banner-text">
+                <strong>API Unavailable:</strong> {error}
+              </div>
+              <button
+                type="button"
+                className="error-retry-btn"
+                onClick={onRefresh}
+              >
+                Retry Connection
+              </button>
+            </div>
+          )}
 
-      {/* 2. NIFTY Analysis Header Panel */}
-      <section className="analysis-header-panel panel">
-        <div className="analysis-header-top">
-          <div className="analysis-title-block">
+          {/* 2. NIFTY Analysis Header Panel */}
+          <section className="analysis-header-panel panel">
+            <div className="analysis-header-top">
+              <div className="analysis-title-block">
             <div className="symbol-badge-row">
               <h1 className="analysis-symbol">{symbol}</h1>
               <span className="strategy-tag">Strategy Analysis</span>
@@ -1739,6 +1919,8 @@ function NiftyAnalysisView({
           </div>
         </div>
       </section>
+        </>
+      )}
     </div>
   )
 }
@@ -1964,6 +2146,13 @@ function Icon({ type }) {
       </>
     ),
 
+    keyboard: (
+      <>
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+      </>
+    ),
+
     'arrow-right': (
       <>
         <path d="M5 12h14" />
@@ -2010,548 +2199,6 @@ function Icon({ type }) {
   )
 }
 
-function calculateEmaSeries(values, period) {
-  if (!Array.isArray(values) || values.length === 0 || period <= 0) {
-    return []
-  }
-
-  const alpha = 2 / (period + 1)
-  const series = new Array(values.length)
-  let previous = Number(values[0])
-
-  series[0] = Number.isFinite(previous) ? previous : null
-
-  for (let index = 1; index < values.length; index += 1) {
-    const value = Number(values[index])
-
-    if (!Number.isFinite(value)) {
-      series[index] = previous
-      continue
-    }
-
-    previous = value * alpha + previous * (1 - alpha)
-    series[index] = previous
-  }
-
-  return series
-}
-
-function CandlestickChart({ timeframe }) {
-  const [chartData, setChartData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadChart() {
-      setLoading(true)
-      setError(null)
-
-      const supported = new Set(['1m', '5m', '10m', '15m', '30m'])
-      if (!supported.has(timeframe)) {
-        setChartData(null)
-        setError(
-          `${timeframe} chart is not available yet. Use 5m, 10m, 15m or 30m.`,
-        )
-        setLoading(false)
-        return
-      }
-
-      try {
-        const response = await fetch(
-          `/api/nifty/chart?timeframe=${encodeURIComponent(timeframe)}&limit=200`,
-        )
-
-        if (!response.ok) {
-          let message = `Chart API returned HTTP ${response.status}`
-          try {
-            const body = await response.json()
-            if (body?.detail) {
-              message = body.detail
-            }
-          } catch {
-            // Keep the HTTP status message.
-          }
-          throw new Error(message)
-        }
-
-        const payload = await response.json()
-
-        if (!cancelled) {
-          setChartData(payload)
-        }
-      } catch (requestError) {
-        if (!cancelled) {
-          setChartData(null)
-          setError(
-            requestError instanceof Error
-              ? requestError.message
-              : 'Unable to load historical chart data.',
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
-    loadChart()
-
-    return () => {
-      cancelled = true
-    }
-  }, [timeframe])
-
-  const candles = Array.isArray(chartData?.candles) ? chartData.candles : []
-
-  if (loading) {
-    return (
-      <div className="chart-data-state">
-        <div className="chart-data-state-icon">
-          <Icon type="candles" />
-        </div>
-        <strong>Loading {timeframe} historical candles...</strong>
-        <span>Reading the real SignalForge chart-data API.</span>
-      </div>
-    )
-  }
-
-  if (error || candles.length === 0) {
-    return (
-      <div className="chart-data-state">
-        <div className="chart-data-state-icon">
-          <Icon type="alert-circle" />
-        </div>
-        <strong>{error || 'No historical candle data returned.'}</strong>
-        <span>No synthetic candles are displayed.</span>
-      </div>
-    )
-  }
-
-  const width = 780
-  const height = 330
-  const chartTop = 18
-  const chartBottom = 252
-  const volumeTop = 266
-  const volumeBottom = 318
-  const chartHeight = chartBottom - chartTop
-
-  const closes = candles.map((candle) => Number(candle.close))
-  const ema20 = calculateEmaSeries(closes, 20)
-  const ema50 = calculateEmaSeries(closes, 50)
-
-  const lows = candles.map((candle) => Number(candle.low))
-  const highs = candles.map((candle) => Number(candle.high))
-  const volumes = candles.map((candle) => Number(candle.volume) || 0)
-
-  const validEma20 = ema20.filter((value) => Number.isFinite(value))
-  const validEma50 = ema50.filter((value) => Number.isFinite(value))
-  const allPrices = [
-    ...lows,
-    ...highs,
-    ...validEma20,
-    ...validEma50,
-  ]
-
-  const minPrice = Math.min(...allPrices)
-  const maxPrice = Math.max(...allPrices)
-  const priceRange = Math.max(maxPrice - minPrice, 0.01)
-  const maxVolume = Math.max(...volumes, 1)
-
-  const xStep = width / candles.length
-  const candleWidth = Math.max(2, Math.min(9, xStep * 0.62))
-
-  const yPrice = (price) =>
-    chartBottom - ((price - minPrice) / priceRange) * chartHeight
-
-  const volumeHeight = volumeBottom - volumeTop
-
-  const gridRows = [0, 0.25, 0.5, 0.75, 1]
-  const visibleLabels = [0, 0.25, 0.5, 0.75, 1]
-
-  const first = candles[0]
-  const last = candles[candles.length - 1]
-  const latestEma20 = ema20[ema20.length - 1]
-  const latestEma50 = ema50[ema50.length - 1]
-
-  const buildLinePath = (series) => {
-    const points = series
-      .map((value, index) => {
-        if (!Number.isFinite(value)) {
-          return null
-        }
-
-        const x = index * xStep + xStep / 2
-        const y = yPrice(value)
-        return `${x.toFixed(2)},${y.toFixed(2)}`
-      })
-      .filter(Boolean)
-
-    return points.length > 0
-      ? `M${points.join(' L')}`
-      : ''
-  }
-
-  const ema20Path = buildLinePath(ema20)
-  const ema50Path = buildLinePath(ema50)
-
-  return (
-    <div className="real-candlestick-chart">
-      <div className="chart-data-header">
-        <span>
-          {chartData?.symbol || 'NIFTY 50'} / {chartData?.timeframe || timeframe}
-        </span>
-        <span>{candles.length} candles</span>
-        <span>
-          EMA20 {formatNumber(latestEma20)} | EMA50 {formatNumber(latestEma50)}
-        </span>
-        <span>
-          {formatApiTimestamp(first?.timestamp)} - {formatApiTimestamp(last?.timestamp)}
-        </span>
-      </div>
-
-      <div className="real-candlestick-viewport">
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label={`NIFTY 50 ${timeframe} candlestick chart with EMA 20 and EMA 50 overlays`}
-        >
-          <rect
-            x="0"
-            y="0"
-            width={width}
-            height={height}
-            className="chart-background"
-          />
-
-          {gridRows.map((ratio) => {
-            const y = chartTop + ratio * chartHeight
-            return (
-              <line
-                key={`h-${ratio}`}
-                x1="0"
-                y1={y}
-                x2={width}
-                y2={y}
-                className="chart-grid-line"
-              />
-            )
-          })}
-
-          {[0, 0.2, 0.4, 0.6, 0.8, 1].map((ratio) => {
-            const x = ratio * width
-            return (
-              <line
-                key={`v-${ratio}`}
-                x1={x}
-                y1="0"
-                x2={x}
-                y2={height}
-                className="chart-grid-line"
-              />
-            )
-          })}
-
-          {candles.map((candle, index) => {
-            const open = Number(candle.open)
-            const high = Number(candle.high)
-            const low = Number(candle.low)
-            const close = Number(candle.close)
-
-            const x = index * xStep + xStep / 2
-            const yOpen = yPrice(open)
-            const yHigh = yPrice(high)
-            const yLow = yPrice(low)
-            const yClose = yPrice(close)
-            const bodyTop = Math.min(yOpen, yClose)
-            const bodyHeight = Math.max(Math.abs(yClose - yOpen), 1.2)
-            const isUp = close >= open
-            const candleClass = isUp
-              ? 'chart-candle-up'
-              : 'chart-candle-down'
-            const volumeBarHeight =
-              (Number(candle.volume) || 0) / maxVolume * volumeHeight
-
-            return (
-              <g key={`${candle.timestamp}-${index}`}>
-                <line
-                  x1={x}
-                  y1={yHigh}
-                  x2={x}
-                  y2={yLow}
-                  className={candleClass}
-                />
-                <rect
-                  x={x - candleWidth / 2}
-                  y={bodyTop}
-                  width={candleWidth}
-                  height={bodyHeight}
-                  className={candleClass}
-                  rx="0.8"
-                />
-                <rect
-                  x={x - Math.max(1, candleWidth / 2)}
-                  y={volumeBottom - volumeBarHeight}
-                  width={Math.max(1.5, candleWidth)}
-                  height={volumeBarHeight}
-                  className="chart-volume-bar"
-                />
-              </g>
-            )
-          })}
-
-          {ema20Path && (
-            <path
-              d={ema20Path}
-              className="chart-ema20"
-              fill="none"
-              aria-label="EMA 20"
-            />
-          )}
-
-          {ema50Path && (
-            <path
-              d={ema50Path}
-              className="chart-ema50"
-              fill="none"
-              aria-label="EMA 50"
-            />
-          )}
-
-          {visibleLabels.map((ratio) => {
-            const price = maxPrice - ratio * priceRange
-            const y = chartTop + ratio * chartHeight
-            return (
-              <text
-                key={`price-${ratio}`}
-                x={width - 6}
-                y={Math.max(12, y - 4)}
-                textAnchor="end"
-                className="chart-price-label"
-              >
-                {formatNumber(price)}
-              </text>
-            )
-          })}
-        </svg>
-
-        <div className="chart-overlay-legend">
-          <span>
-            <i className="chart-overlay-marker ema20" />
-            EMA 20
-          </span>
-          <span>
-            <i className="chart-overlay-marker ema50" />
-            EMA 50
-          </span>
-        </div>
-      </div>
-
-      <div className="chart-data-footer">
-        <span>Real OHLCV data</span>
-        <span>EMA 20 / EMA 50 calculated from chart closes</span>
-        <span>Latest: {formatPrice(Number(last?.close))}</span>
-      </div>
-    </div>
-  )
-}
-
-function RsiChart({ timeframe }) {
-  const [chartData, setChartData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadRsi() {
-      setLoading(true)
-      setError(null)
-
-      const supported = new Set(['1m', '5m', '10m', '15m', '30m'])
-      if (!supported.has(timeframe)) {
-        setChartData(null)
-        setError('RSI chart is not available for this timeframe yet.')
-        setLoading(false)
-        return
-      }
-
-      try {
-        const response = await fetch(
-          `/api/nifty/chart?timeframe=${encodeURIComponent(timeframe)}&limit=200`,
-        )
-
-        if (!response.ok) {
-          let message = `Chart API returned HTTP ${response.status}`
-          try {
-            const body = await response.json()
-            if (body?.detail) {
-              message = body.detail
-            }
-          } catch {
-            // Keep the HTTP status message.
-          }
-          throw new Error(message)
-        }
-
-        const payload = await response.json()
-
-        if (!cancelled) {
-          setChartData(payload)
-        }
-      } catch (requestError) {
-        if (!cancelled) {
-          setChartData(null)
-          setError(
-            requestError instanceof Error
-              ? requestError.message
-              : 'Unable to load the real RSI series.',
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
-    loadRsi()
-
-    return () => {
-      cancelled = true
-    }
-  }, [timeframe])
-
-  const candles = Array.isArray(chartData?.candles) ? chartData.candles : []
-  const rsiSeries = candles.map((candle) => {
-    const value = Number(candle.rsi14)
-    return Number.isFinite(value) ? value : null
-  })
-
-  if (loading) {
-    return (
-      <div className="real-rsi-chart rsi-data-state">
-        <span>Loading real RSI(14) data�</span>
-      </div>
-    )
-  }
-
-  if (error || candles.length === 0) {
-    return (
-      <div className="real-rsi-chart rsi-data-state">
-        <span>{error || 'No RSI data returned by the chart API.'}</span>
-      </div>
-    )
-  }
-
-  const width = 780
-  const height = 96
-  const chartTop = 10
-  const chartBottom = 78
-  const chartHeight = chartBottom - chartTop
-  const xStep = width / Math.max(rsiSeries.length, 1)
-
-  const yRsi = (value) =>
-    chartBottom - (Math.max(0, Math.min(100, value)) / 100) * chartHeight
-
-  const buildLinePath = (series) => {
-    const points = series
-      .map((value, index) => {
-        if (!Number.isFinite(value)) {
-          return null
-        }
-
-        const x = index * xStep + xStep / 2
-        const y = yRsi(value)
-        return `${x.toFixed(2)},${y.toFixed(2)}`
-      })
-      .filter(Boolean)
-
-    return points.length > 0 ? `M${points.join(' L')}` : ''
-  }
-
-  const rsiPath = buildLinePath(rsiSeries)
-  const latestRsi = [...rsiSeries].reverse().find((value) => Number.isFinite(value))
-
-  return (
-    <div className="real-rsi-chart">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label={`NIFTY 50 ${timeframe} real RSI 14 indicator chart`}
-      >
-        <rect
-          x="0"
-          y="0"
-          width={width}
-          height={height}
-          className="rsi-chart-background"
-        />
-
-        <rect
-          x="0"
-          y={yRsi(70)}
-          width={width}
-          height={yRsi(30) - yRsi(70)}
-          className="rsi-neutral-band"
-        />
-
-        {[70, 50, 30].map((level) => (
-          <g key={level}>
-            <line
-              x1="0"
-              y1={yRsi(level)}
-              x2={width}
-              y2={yRsi(level)}
-              className={`rsi-grid rsi-level-${level}`}
-            />
-            <text
-              x="8"
-              y={yRsi(level) - 3}
-              className="rsi-level-label"
-            >
-              {level}
-            </text>
-          </g>
-        ))}
-
-        {[0, 0.2, 0.4, 0.6, 0.8, 1].map((ratio) => {
-          const x = ratio * width
-          return (
-            <line
-              key={`rsi-v-${ratio}`}
-              x1={x}
-              y1="0"
-              x2={x}
-              y2={height}
-              className="rsi-grid rsi-vertical-grid"
-            />
-          )
-        })}
-
-        {rsiPath && (
-          <path
-            d={rsiPath}
-            className="rsi-series"
-            fill="none"
-            aria-label="RSI 14"
-          />
-        )}
-      </svg>
-
-      <div className="rsi-chart-meta">
-        <span>REAL RSI(14) � BACKEND</span>
-        <strong>
-          {Number.isFinite(latestRsi) ? latestRsi.toFixed(2) : '�'}
-        </strong>
-      </div>
-    </div>
-  )
-}
 
 function EquityChart() {
   return (

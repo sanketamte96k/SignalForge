@@ -1,0 +1,224 @@
+/* =========================================================
+   SIGNALFORGE REUSABLE GLOBAL STATE COMPONENTS
+   (LoadingState, ErrorState, EmptyState)
+   Visually compliant with SignalForge dark institutional theme
+   ========================================================= */
+
+.sf-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 32px 20px;
+  width: 100%;
+  min-height: 180px;
+  border-radius: var(--sf-radius, 6px);
+  background: rgba(4, 15, 26, 0.6);
+  border: 1px solid var(--sf-border-soft, #0b2234);
+  box-sizing: border-box;
+}
+
+/* Compact mode for small cards, widget rows, RSI sub-panels */
+.sf-state-container.sf-state-compact {
+  min-height: 72px;
+  padding: 12px 14px;
+  gap: 8px;
+  flex-direction: row;
+  text-align: left;
+}
+
+.sf-state-compact .sf-state-text-block {
+  text-align: left;
+}
+
+.sf-state-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 440px;
+}
+
+.sf-state-title {
+  color: var(--sf-text-bright, #f2f7fc);
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  line-height: 1.35;
+}
+
+.sf-state-compact .sf-state-title {
+  font-size: 12px;
+}
+
+.sf-state-description {
+  margin: 0;
+  color: var(--sf-text-muted, #7991a5);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.sf-state-compact .sf-state-description {
+  font-size: 11px;
+}
+
+/* ---------------------------------------------------------
+   1. LOADING STATE
+   --------------------------------------------------------- */
+.sf-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-spinner-medium {
+  width: 32px;
+  height: 32px;
+}
+
+.sf-spinner-small {
+  width: 20px;
+  height: 20px;
+}
+
+.sf-spinner-svg {
+  width: 100%;
+  height: 100%;
+  animation: sf-spin 0.95s linear infinite;
+}
+
+.sf-spinner-track {
+  stroke: rgba(22, 140, 255, 0.16);
+}
+
+.sf-spinner-head {
+  stroke: var(--sf-blue-bright, #168cff);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px rgba(22, 140, 255, 0.5));
+}
+
+@keyframes sf-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------
+   2. ERROR STATE
+   --------------------------------------------------------- */
+.sf-error-state {
+  background: rgba(255, 79, 94, 0.05);
+  border-color: rgba(255, 79, 94, 0.28);
+}
+
+.sf-error-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 79, 94, 0.12);
+  color: var(--sf-red, #ff4f5e);
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(255, 79, 94, 0.2);
+}
+
+.sf-error-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sf-state-compact .sf-error-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.sf-state-compact .sf-error-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sf-state-retry-btn {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #0d273f;
+  border: 1px solid #1c4d75;
+  border-radius: 5px;
+  color: #a5d3f8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.sf-state-compact .sf-state-retry-btn {
+  margin-top: 0;
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.sf-state-retry-btn:hover {
+  background: #123657;
+  border-color: var(--sf-blue-bright, #168cff);
+  color: #d9edff;
+  box-shadow: 0 0 8px rgba(22, 140, 255, 0.25);
+}
+
+.sf-state-retry-btn:focus-visible {
+  outline: 2px solid var(--sf-blue-bright, #168cff);
+  outline-offset: 2px;
+}
+
+.sf-retry-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------------------------------------------------------
+   3. EMPTY STATE
+   --------------------------------------------------------- */
+.sf-empty-state {
+  background: rgba(6, 19, 33, 0.45);
+  border: 1px dashed var(--sf-border, #102d45);
+}
+
+.sf-empty-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #051627;
+  color: #637f94;
+  border: 1px solid var(--sf-border-soft, #0b2234);
+  flex-shrink: 0;
+}
+
+.sf-empty-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sf-state-compact .sf-empty-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.sf-state-compact .sf-empty-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sf-state-action {
+  margin-top: 6px;
+}
+
+.sf-state-compact .sf-state-action {
+  margin-top: 0;
+  margin-left: auto;
+}

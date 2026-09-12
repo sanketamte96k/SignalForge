@@ -1,0 +1,781 @@
+/* ==========================================================================
+   StockAnalysisView.css — SignalForge Stock Analysis Terminal
+   Locked Visual Identity: Dark trading terminal, cyan/blue/emerald/rose accents
+   ========================================================================== */
+
+.stock-analysis-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 2.5rem;
+}
+
+/* 1. Header Navigation & Breadcrumb Bar */
+.analysis-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.analysis-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.analysis-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(14, 40, 68, 0.6);
+  border: 1px solid rgba(22, 139, 255, 0.24);
+  border-radius: 4px;
+  color: #aebfd0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.analysis-back-btn:hover {
+  background: rgba(22, 139, 255, 0.16);
+  border-color: rgba(22, 139, 255, 0.45);
+  color: #eef5fb;
+}
+
+.analysis-bread-sep {
+  color: #385777;
+}
+
+.analysis-bread-current {
+  color: #eef5fb;
+  font-weight: 600;
+}
+
+.analysis-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Stock Switcher Dropdown */
+.stock-switcher-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stock-switcher-label {
+  font-size: 0.75rem;
+  color: #5f7b98;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.stock-switcher-select {
+  padding: 0.4rem 0.75rem;
+  background: #081a2c;
+  border: 1px solid rgba(22, 139, 255, 0.28);
+  border-radius: 4px;
+  color: #eef5fb;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 140px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.stock-switcher-select:hover,
+.stock-switcher-select:focus-visible {
+  border-color: #168bff;
+}
+
+.analysis-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.875rem;
+  background: rgba(14, 40, 68, 0.6);
+  border: 1px solid rgba(22, 139, 255, 0.24);
+  border-radius: 4px;
+  color: #aebfd0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.analysis-refresh-btn:hover:not(:disabled) {
+  background: rgba(22, 139, 255, 0.16);
+  border-color: rgba(22, 139, 255, 0.45);
+  color: #eef5fb;
+}
+
+.analysis-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.analysis-refresh-btn.is-loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 2. Stock Context Header Panel */
+.stock-context-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(8, 26, 44, 0.8);
+  border: 1px solid rgba(22, 139, 255, 0.22);
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.stock-identity-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.stock-identity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stock-symbol-badge {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.stock-name-text {
+  font-size: 1rem;
+  color: #aebfd0;
+  font-weight: 500;
+}
+
+.stock-exchange-tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: rgba(14, 40, 68, 0.8);
+  border: 1px solid rgba(22, 139, 255, 0.2);
+  border-radius: 3px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #5f7b98;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stock-meta-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.stock-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stock-status-validated {
+  background: rgba(0, 217, 163, 0.14);
+  border: 1px solid rgba(0, 217, 163, 0.35);
+  color: #00d9a3;
+}
+
+.stock-status-testing {
+  background: rgba(0, 184, 217, 0.14);
+  border: 1px solid rgba(0, 184, 217, 0.35);
+  color: #00b8d9;
+}
+
+.stock-status-insufficient {
+  background: rgba(14, 40, 68, 0.8);
+  border: 1px solid rgba(22, 139, 255, 0.25);
+  color: #7b96b2;
+}
+
+.stock-status-rejected {
+  background: rgba(255, 77, 109, 0.14);
+  border: 1px solid rgba(255, 77, 109, 0.35);
+  color: #ff4d6d;
+}
+
+.stock-eligibility-tag {
+  font-size: 0.6875rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(14, 40, 68, 0.5);
+  border: 1px solid rgba(22, 139, 255, 0.18);
+  color: #aebfd0;
+}
+
+.stock-eligibility-tag.is-eligible {
+  color: #00d9a3;
+  border-color: rgba(0, 217, 163, 0.3);
+}
+
+/* Context Metrics & Actions Right Side */
+.stock-context-metrics {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stock-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.stock-price-label {
+  font-size: 0.6875rem;
+  color: #5f7b98;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.stock-price-val {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.stock-change-pill {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-top: 0.125rem;
+}
+
+.stock-change-pill.positive {
+  color: #00d9a3;
+}
+
+.stock-change-pill.negative {
+  color: #ff4d6d;
+}
+
+.stock-signal-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stock-signal-badge.buy {
+  background: rgba(0, 217, 163, 0.18);
+  border: 1px solid rgba(0, 217, 163, 0.45);
+  color: #00d9a3;
+  box-shadow: 0 0 12px rgba(0, 217, 163, 0.15);
+}
+
+.stock-signal-badge.sell {
+  background: rgba(255, 77, 109, 0.18);
+  border: 1px solid rgba(255, 77, 109, 0.45);
+  color: #ff4d6d;
+  box-shadow: 0 0 12px rgba(255, 77, 109, 0.15);
+}
+
+.stock-signal-badge.no-trade {
+  background: rgba(14, 40, 68, 0.8);
+  border: 1px solid rgba(22, 139, 255, 0.28);
+  color: #aebfd0;
+}
+
+.stock-watchlist-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.875rem;
+  background: rgba(14, 40, 68, 0.6);
+  border: 1px solid rgba(22, 139, 255, 0.25);
+  border-radius: 4px;
+  color: #aebfd0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.stock-watchlist-btn:hover {
+  background: rgba(22, 139, 255, 0.16);
+  border-color: rgba(22, 139, 255, 0.45);
+  color: #eef5fb;
+}
+
+.stock-watchlist-btn.is-active {
+  background: rgba(8, 124, 255, 0.22);
+  border-color: #087cff;
+  color: #087cff;
+}
+
+/* 3. Primary Analysis Grid */
+.analysis-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+  .analysis-main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Chart Panel */
+.analysis-chart-panel {
+  background: rgba(8, 26, 44, 0.7);
+  border: 1px solid rgba(22, 139, 255, 0.18);
+  border-radius: 6px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.analysis-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.analysis-chart-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.analysis-chart-title h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.analysis-timeframe-tabs {
+  display: flex;
+  background: #040e1a;
+  border: 1px solid rgba(22, 139, 255, 0.2);
+  border-radius: 4px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.analysis-timeframe-btn {
+  background: transparent;
+  border: none;
+  color: #5f7b98;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.analysis-timeframe-btn:hover {
+  color: #aebfd0;
+}
+
+.analysis-timeframe-btn.is-active {
+  background: #0d2c4d;
+  color: #00d9a3;
+}
+
+/* Signal & Decision Card */
+.analysis-decision-card {
+  background: rgba(8, 26, 44, 0.7);
+  border: 1px solid rgba(22, 139, 255, 0.18);
+  border-radius: 6px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.decision-card-tag {
+  font-size: 0.6875rem;
+  color: #5f7b98;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.decision-signal-dominant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  border-radius: 6px;
+  text-align: center;
+  gap: 0.375rem;
+}
+
+.decision-signal-dominant.buy {
+  background: radial-gradient(circle, rgba(0, 217, 163, 0.18) 0%, rgba(8, 26, 44, 0.4) 100%);
+  border: 1px solid rgba(0, 217, 163, 0.4);
+}
+
+.decision-signal-dominant.sell {
+  background: radial-gradient(circle, rgba(255, 77, 109, 0.18) 0%, rgba(8, 26, 44, 0.4) 100%);
+  border: 1px solid rgba(255, 77, 109, 0.4);
+}
+
+.decision-signal-dominant.no-trade {
+  background: rgba(14, 40, 68, 0.5);
+  border: 1px solid rgba(22, 139, 255, 0.2);
+}
+
+.dominant-signal-text {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.dominant-signal-sub {
+  font-size: 0.75rem;
+  color: #aebfd0;
+}
+
+.decision-reason-box {
+  background: #040e1a;
+  border: 1px solid rgba(22, 139, 255, 0.18);
+  border-radius: 4px;
+  padding: 0.875rem;
+}
+
+.decision-reason-box span {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #5f7b98;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.375rem;
+}
+
+.decision-reason-box p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #eef5fb;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.decision-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.decision-stat-box {
+  background: rgba(14, 40, 68, 0.4);
+  border: 1px solid rgba(22, 139, 255, 0.14);
+  border-radius: 4px;
+  padding: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.decision-stat-box span {
+  font-size: 0.6875rem;
+  color: #5f7b98;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.decision-stat-box strong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #eef5fb;
+}
+
+/* 4. Secondary Grid: Validation & Historical Data */
+.analysis-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .analysis-secondary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.analysis-info-card {
+  background: rgba(8, 26, 44, 0.7);
+  border: 1px solid rgba(22, 139, 255, 0.18);
+  border-radius: 6px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.info-card-header h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.validation-gates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gate-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: #040e1a;
+  border: 1px solid rgba(22, 139, 255, 0.12);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+}
+
+.gate-name {
+  color: #aebfd0;
+  font-weight: 500;
+}
+
+.gate-badge-pass {
+  color: #00d9a3;
+  font-weight: 700;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+}
+
+.gate-badge-fail {
+  color: #ff4d6d;
+  font-weight: 700;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+}
+
+.validation-issues-box {
+  background: rgba(255, 77, 109, 0.08);
+  border: 1px solid rgba(255, 77, 109, 0.25);
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.validation-issues-box strong {
+  display: block;
+  font-size: 0.75rem;
+  color: #ff4d6d;
+  margin-bottom: 0.375rem;
+}
+
+.validation-issues-box ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.75rem;
+  color: #aebfd0;
+}
+
+.readiness-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.readiness-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: #040e1a;
+  border: 1px solid rgba(22, 139, 255, 0.12);
+  border-radius: 4px;
+  padding: 0.625rem 0.75rem;
+}
+
+.readiness-stat-item span {
+  font-size: 0.6875rem;
+  color: #5f7b98;
+  text-transform: uppercase;
+}
+
+.readiness-stat-item strong {
+  font-size: 0.875rem;
+  color: #eef5fb;
+}
+
+/* Validate Action Button */
+.run-validate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(22, 139, 255, 0.18);
+  border: 1px solid #168bff;
+  border-radius: 4px;
+  color: #eef5fb;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: auto;
+}
+
+.run-validate-btn:hover:not(:disabled) {
+  background: rgba(22, 139, 255, 0.32);
+}
+
+.run-validate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .analysis-nav-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .analysis-breadcrumbs {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .analysis-back-btn {
+    min-height: 40px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .analysis-top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .stock-switcher-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stock-switcher-select {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+  }
+
+  .analysis-refresh-btn {
+    min-height: 42px;
+    padding: 0.5rem 0.875rem;
+    flex-shrink: 0;
+  }
+
+  .stock-context-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .stock-context-metrics {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .stock-price-block {
+    align-items: flex-start;
+  }
+
+  .stock-action-group {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .stock-watchlist-btn {
+    flex: 1;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .run-validate-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .readiness-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-chart-title h2 {
+    font-size: 1rem;
+  }
+
+  .analysis-timeframe-btn {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}

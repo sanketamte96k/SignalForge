@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   addStockToSector,
   createSector,
@@ -8,6 +8,7 @@ import {
   fetchSectors,
 } from './api'
 import './SectorsView.css'
+import { LoadingState, EmptyState } from './StateViews'
 
 function SectorsView() {
   const [sectors, setSectors] = useState([])
@@ -328,16 +329,17 @@ function SectorsView() {
           </form>
 
           {loading ? (
-            <div className="sectors-empty-state">
-              Loading sectors...
-            </div>
+            <LoadingState
+              compact
+              title="Loading Sectors..."
+              description="Fetching custom sector groups..."
+            />
           ) : sectors.length === 0 ? (
-            <div className="sectors-empty-state">
-              <strong>No custom sectors yet</strong>
-              <span>
-                Create your first sector above to organize stocks.
-              </span>
-            </div>
+            <EmptyState
+              compact
+              title="No Custom Sectors Yet"
+              description="Create your first sector above to organize stocks."
+            />
           ) : (
             <div className="sector-cards">
               {sectors.map((sector) => (

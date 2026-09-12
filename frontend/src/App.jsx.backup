@@ -1,0 +1,1561 @@
+import { useMemo, useState } from 'react'
+import './App.css'
+
+const navItems = [
+  ['Dashboard', 'dashboard'],
+  ['NIFTY Analysis', 'chart'],
+  ['Stock Scanner', 'search'],
+  ['Sectors', 'bars'],
+  ['Watchlists', 'bookmark'],
+  ['Add Stock', 'plus'],
+  ['Validation', 'check'],
+  ['Charts', 'candles'],
+  ['Paper Trading', 'briefcase'],
+  ['Reports', 'report'],
+  ['Settings', 'settings'],
+]
+
+const signals = [
+  ['RELIANCE', '2,856.40', 'BUY', '+2.14%', '02:58 PM', 'NIFTY 50'],
+  ['TCS', '3,420.15', 'BUY', '+1.87%', '02:47 PM', 'NIFTY 50'],
+  ['HDFCBANK', '1,612.30', 'SELL', '-1.23%', '02:41 PM', 'Banking'],
+  ['INFY', '1,482.75', 'BUY', '+1.56%', '02:33 PM', 'NIFTY 50'],
+  ['ICICIBANK', '1,098.20', 'BUY', '+1.34%', '02:21 PM', 'Banking'],
+]
+
+const sectors = [
+  ['IT', '+1.18%', 92, true],
+  ['Banking', '+0.96%', 76, true],
+  ['Auto', '+0.67%', 54, true],
+  ['FMCG', '+0.34%', 39, true],
+  ['Pharma', '+0.21%', 22, true],
+  ['Metal', '-0.48%', 45, false],
+  ['Realty', '-0.62%', 52, false],
+  ['Energy', '-0.29%', 27, false],
+]
+
+const watchlists = {
+  'My Watchlist': [
+    ['RELIANCE', '2,856.40', '+2.14%', 'BUY'],
+    ['TCS', '3,420.15', '+1.87%', 'BUY'],
+    ['HDFCBANK', '1,612.30', '-1.23%', 'SELL'],
+    ['INFY', '1,482.75', '+1.56%', 'BUY'],
+    ['ICICIBANK', '1,098.20', '+1.34%', 'BUY'],
+  ],
+  Tech: [
+    ['TCS', '3,420.15', '+1.87%', 'BUY'],
+    ['INFY', '1,482.75', '+1.56%', 'BUY'],
+    ['WIPRO', '512.40', '+0.92%', 'BUY'],
+    ['HCLTECH', '1,643.20', '+0.68%', 'BUY'],
+  ],
+  Banking: [
+    ['HDFCBANK', '1,612.30', '-1.23%', 'SELL'],
+    ['ICICIBANK', '1,098.20', '+1.34%', 'BUY'],
+    ['SBIN', '824.50', '+0.82%', 'BUY'],
+    ['AXISBANK', '1,184.25', '+0.54%', 'BUY'],
+  ],
+  'High Volatility': [
+    ['RELIANCE', '2,856.40', '+2.14%', 'BUY'],
+    ['ADANIENT', '2,412.80', '-1.91%', 'SELL'],
+    ['TATAMOTORS', '978.40', '+1.72%', 'BUY'],
+    ['BEL', '384.25', '+1.44%', 'BUY'],
+  ],
+}
+
+const activity = [
+  ['02:58 PM', 'BUY', 'Signal generated for RELIANCE', 'buy'],
+  ['02:47 PM', 'BUY', 'Signal generated for TCS', 'buy'],
+  ['02:41 PM', 'SELL', 'Signal generated for HDFCBANK', 'sell'],
+  ['02:30 PM', 'VALIDATED', 'TATAMOTORS passed validation', 'validated'],
+  ['02:18 PM', 'ALERT', 'NIFTY 50 crossed above EMA20', 'alert'],
+]
+
+const timeframeData = {
+  '5m': {
+    close: '24,213.45',
+    change: '+28.35 (+0.12%)',
+    rsi: '62.14',
+    signal: 'BUY',
+    price: '24,210.50',
+    time: '03:03 PM',
+    reason: 'Micro Pullback & Re-entry at EMA 20',
+    emaConf: 'Bullish — Price holding firmly above EMA 20/50',
+    rsiMom: 'Bullish — RSI 62.1 trending upward with positive momentum',
+    volConf: 'Confirmed — Buyer volume expansion (+18% vs 20MA)',
+    mtfAlign: 'Aligned — Confluence with 15m & 30m trend bias',
+    slPrice: '24,120.00',
+    slPct: '-0.37%',
+    t1Price: '24,320.00',
+    t1Pct: '+0.45%',
+    t2Price: '24,430.00',
+    t2Pct: '+0.91%',
+  },
+  '10m': {
+    close: '24,208.10',
+    change: '+23.00 (+0.10%)',
+    rsi: '59.80',
+    signal: 'BUY',
+    price: '24,205.00',
+    time: '03:00 PM',
+    reason: 'Bull Flag Breakout Retest Validated',
+    emaConf: 'Bullish — Golden EMA 20/50 fan expansion',
+    rsiMom: 'Bullish — RSI 59.8 maintaining bullish regime',
+    volConf: 'Confirmed — Absorption of selling volume on retest',
+    mtfAlign: 'Aligned — 15m & 1H momentum pointing upward',
+    slPrice: '24,110.00',
+    slPct: '-0.39%',
+    t1Price: '24,310.00',
+    t1Pct: '+0.43%',
+    t2Price: '24,420.00',
+    t2Pct: '+0.89%',
+  },
+  '15m': {
+    close: '24,213.45',
+    change: '+28.35 (+0.12%)',
+    rsi: '62.14',
+    signal: 'BUY',
+    price: '24,210.50',
+    time: '03:00 PM',
+    reason: 'MTF Alignment & Breakout Continuation',
+    emaConf: 'Bullish — Price cleanly above EMA 20, 50, and 200',
+    rsiMom: 'Bullish — RSI 62.1 with sustained upward momentum',
+    volConf: 'Confirmed — Breakout volume confirmed at 12.4M',
+    mtfAlign: 'Aligned — Strong multi-timeframe consensus on 15m/1H/1D',
+    slPrice: '24,120.00',
+    slPct: '-0.37%',
+    t1Price: '24,320.00',
+    t1Pct: '+0.45%',
+    t2Price: '24,430.00',
+    t2Pct: '+0.91%',
+  },
+  '30m': {
+    close: '24,195.80',
+    change: '+45.60 (+0.19%)',
+    rsi: '64.50',
+    signal: 'BUY',
+    price: '24,190.00',
+    time: '02:30 PM',
+    reason: 'Ascending Triangle Continuation Pattern',
+    emaConf: 'Bullish — EMA 20 acting as dynamic structural support',
+    rsiMom: 'Bullish — RSI 64.5 indicating active institutional demand',
+    volConf: 'Confirmed — Volume +14% above 20-period moving average',
+    mtfAlign: 'Aligned — Harmonized with 1H & Daily trend bias',
+    slPrice: '24,080.00',
+    slPct: '-0.46%',
+    t1Price: '24,350.00',
+    t1Pct: '+0.66%',
+    t2Price: '24,480.00',
+    t2Pct: '+1.20%',
+  },
+  '1H': {
+    close: '24,180.25',
+    change: '+78.90 (+0.33%)',
+    rsi: '52.20',
+    signal: 'NO TRADE',
+    price: '24,175.00',
+    time: '02:00 PM',
+    reason: 'Consolidation Range Near Key Resistance (24,200)',
+    emaConf: 'Neutral — Price oscillating tightly around EMA 20',
+    rsiMom: 'Neutral — RSI 52.2 hovering at midpoint without directional edge',
+    volConf: 'Pending — Volume contraction inside trading range',
+    mtfAlign: 'Divergent — Lower TF bullish, higher TF awaiting breakout',
+    slPrice: '—',
+    slPct: 'No Active Level',
+    t1Price: '—',
+    t1Pct: 'No Active Level',
+    t2Price: '—',
+    t2Pct: 'No Active Level',
+  },
+  '4H': {
+    close: '24,110.60',
+    change: '-32.40 (-0.13%)',
+    rsi: '41.80',
+    signal: 'SELL',
+    price: '24,100.00',
+    time: '01:00 PM',
+    reason: 'Bearish Divergence at Swing High & EMA 50 Rejection',
+    emaConf: 'Bearish — Price rejected at downward sloping EMA 50',
+    rsiMom: 'Bearish — RSI 41.8 breakdown below 50 equilibrium',
+    volConf: 'Confirmed — Red candle distribution volume rising',
+    mtfAlign: 'Aligned — 4H and Daily showing bearish pressure',
+    slPrice: '24,280.00',
+    slPct: '+0.75%',
+    t1Price: '23,920.00',
+    t1Pct: '-0.75%',
+    t2Price: '23,750.00',
+    t2Pct: '-1.45%',
+  },
+  '1D': {
+    close: '24,213.45',
+    change: '+182.30 (+0.76%)',
+    rsi: '67.40',
+    signal: 'BUY',
+    price: '24,050.00',
+    time: '09:15 AM',
+    reason: 'Macro Trend Continuation from Weekly Support',
+    emaConf: 'Bullish — Price cleanly above EMA 20, EMA 50, and EMA 200',
+    rsiMom: 'Bullish — RSI 67.4 firmly in bullish expansion territory',
+    volConf: 'Confirmed — Strong institutional accumulation day',
+    mtfAlign: 'Aligned — Primary macro market regime is decisively bullish',
+    slPrice: '23,850.00',
+    slPct: '-0.83%',
+    t1Price: '24,500.00',
+    t1Pct: '+1.87%',
+    t2Price: '24,800.00',
+    t2Pct: '+3.12%',
+  },
+}
+
+function App() {
+  const [activeNav, setActiveNav] = useState('Dashboard')
+  const [activeTimeframe, setActiveTimeframe] = useState('15m')
+  const [activeSignalFilter, setActiveSignalFilter] = useState('All')
+  const [search, setSearch] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const currentTimeframe = timeframeData[activeTimeframe]
+
+  const filteredSignals = useMemo(() => {
+    let list = signals
+
+    if (activeSignalFilter === 'NIFTY 50') {
+      list = list.filter((s) => s[5] === 'NIFTY 50')
+    } else if (activeSignalFilter === 'Watchlists') {
+      const watchlistSymbols = new Set(
+        Object.values(watchlists).flatMap((arr) => arr.map((item) => item[0])),
+      )
+      list = list.filter((s) => watchlistSymbols.has(s[0]))
+    } else if (activeSignalFilter === 'Sectors') {
+      list = list.filter((s) => s[5] !== 'NIFTY 50')
+    }
+
+    const query = search.trim().toLowerCase()
+    if (!query) {
+      return list
+    }
+
+    return list.filter((row) =>
+      row.slice(0, 5).some((value) => value.toLowerCase().includes(query)),
+    )
+  }, [search, activeSignalFilter])
+
+  const watchlistStocks = watchlists['My Watchlist']
+
+  function handleNavigation(item) {
+    setActiveNav(item)
+    setSidebarOpen(false)
+  }
+
+  const signalClass =
+    currentTimeframe.signal === 'BUY'
+      ? 'buy'
+      : currentTimeframe.signal === 'SELL'
+      ? 'sell'
+      : 'no-trade'
+
+  return (
+    <div className="terminal">
+      {/* Mobile backdrop for drawer dismiss */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* 1. Left Sidebar */}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-brand">
+          <div className="logo-mark">
+            <Icon type="arrow-up-right" />
+          </div>
+
+          <div>
+            <div className="logo-name">SignalForge</div>
+            <div className="logo-tagline">SCAN. ANALYZE. PROFIT.</div>
+          </div>
+        </div>
+
+        <div className="sidebar-scroll">
+          <div className="sidebar-title">MARKET WORKSPACE</div>
+
+          <nav className="sidebar-nav">
+            {navItems.map(([label, icon]) => (
+              <button
+                type="button"
+                key={label}
+                className={`sidebar-item ${
+                  activeNav === label ? 'active' : ''
+                }`}
+                onClick={() => handleNavigation(label)}
+              >
+                <Icon type={icon} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-system-info">
+            <div className="system-pill">
+              <span className="live-dot" />
+              <span>ALGO ENGINE ACTIVE</span>
+            </div>
+            <div className="system-sub">Signal Mode: MTF Precision</div>
+          </div>
+
+          <div className="sidebar-user">
+            <div className="user-avatar">SA</div>
+
+            <div className="user-details">
+              <strong>SignalForge Terminal</strong>
+              <span>Analytics Pro</span>
+            </div>
+
+            <button type="button" aria-label="User menu" className="user-more-btn">
+              <Icon type="more-horizontal" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <main className="main">
+        {/* Top Search / Header & Market Status Data */}
+        <header className="top-header">
+          <button
+            type="button"
+            className="mobile-toggle"
+            aria-label="Open navigation"
+            onClick={() => setSidebarOpen((value) => !value)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <div className="top-logo-mobile">
+            <span className="mobile-logo-mark">
+              <Icon type="arrow-up-right" />
+            </span>
+            <strong>SignalForge</strong>
+          </div>
+
+          <label className="global-search">
+            <Icon type="search" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search stocks, sectors, or watchlists..."
+              aria-label="Search stocks, sectors, or watchlists"
+            />
+          </label>
+
+          <div className="market-close">
+            <span className="red-dot" />
+            <strong>Market Close In</strong>
+            <span className="market-countdown">01:26:37</span>
+          </div>
+
+          <div className="top-market-data">
+            <TopMarket
+              icon="fii"
+              label="FII / DII"
+              value="+1,256 Cr"
+              change="+0.42%"
+            />
+
+            <TopMarket
+              icon="globe"
+              label="Global Markets"
+              value="S&P 500"
+              change="+0.82%"
+            />
+
+            <TopMarket
+              icon="barrel"
+              label="Crude Oil"
+              value="$78.24"
+              change="+0.36%"
+            />
+
+            <TopMarket
+              icon="currency"
+              label="USD / INR"
+              value="83.27"
+              change="-0.12%"
+              negative
+            />
+          </div>
+
+          <div className="header-actions">
+            <button
+              type="button"
+              className="notification-btn"
+              aria-label="Notifications"
+            >
+              <Icon type="bell" />
+              <span className="notification-badge">3</span>
+            </button>
+
+            <button
+              type="button"
+              className="header-user-btn"
+              aria-label="Account profile"
+            >
+              <div className="header-avatar">SA</div>
+              <Icon type="chevron-down" />
+            </button>
+          </div>
+        </header>
+
+        <div className="content">
+          {/* Top Section: LARGE NIFTY 50 CHART (67-70%) + NIFTY 50 LIVE SIGNAL (30-33%) */}
+          <section className="main-grid">
+            {/* Large NIFTY 50 Analysis Panel */}
+            <div className="nifty-panel panel">
+              <div className="panel-header nifty-header">
+                <div className="nifty-title">
+                  <h1>NIFTY 50</h1>
+
+                  <div className="timeframe-tabs">
+                    {Object.keys(timeframeData).map((timeframe) => (
+                      <button
+                        type="button"
+                        key={timeframe}
+                        className={
+                          activeTimeframe === timeframe ? 'active' : ''
+                        }
+                        onClick={() => setActiveTimeframe(timeframe)}
+                      >
+                        {timeframe}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="chart-actions">
+                  <button type="button">
+                    <Icon type="indicator" />
+                    <span>Indicators</span>
+                  </button>
+
+                  <button type="button">
+                    <Icon type="template" />
+                    <span>Templates</span>
+                  </button>
+
+                  <button type="button" aria-label="Fullscreen" title="Fullscreen">
+                    <Icon type="fullscreen" />
+                  </button>
+                </div>
+              </div>
+
+              {/* OHLC Row */}
+              <div className="ohlc-row">
+                <span>
+                  O <strong>24,185.10</strong>
+                </span>
+                <span className="positive">
+                  H <strong>24,220.35</strong>
+                </span>
+                <span className="negative">
+                  L <strong>24,175.60</strong>
+                </span>
+                <span className="positive">
+                  C <strong>{currentTimeframe.close}</strong>
+                </span>
+                <span className={`ohlc-change ${currentTimeframe.change.startsWith('-') ? 'negative' : 'positive'}`}>
+                  {currentTimeframe.change}
+                </span>
+              </div>
+
+              {/* Chart Legend */}
+              <div className="chart-legend">
+                <span className="legend-item blue">
+                  <span className="legend-marker marker-blue" />
+                  EMA 20 <strong>24,185.12</strong>
+                </span>
+                <span className="legend-item orange">
+                  <span className="legend-marker marker-orange" />
+                  EMA 50 <strong>24,142.67</strong>
+                </span>
+                <span className="legend-item purple">
+                  <span className="legend-marker marker-purple" />
+                  EMA 200 <strong>24,010.34</strong>
+                </span>
+                <span className="legend-item volume">
+                  <span className="legend-marker marker-volume" />
+                  Volume <strong>12.4M</strong>
+                </span>
+              </div>
+
+              {/* Candlestick-style chart (Expanded Height) */}
+              <div className="candlestick-chart">
+                <PriceChart />
+              </div>
+
+              {/* RSI panel (Enhanced & Readable) */}
+              <div className="rsi-panel">
+                <div className="rsi-label">
+                  RSI (14) <strong>{currentTimeframe.rsi}</strong>
+                </div>
+                <RsiChart />
+              </div>
+            </div>
+
+            {/* NIFTY 50 — Live Signal Panel */}
+            <div className="signal-panel panel">
+              <div className="panel-header signal-panel-header">
+                <div className="signal-header-left">
+                  <h2>NIFTY 50 — Live Signal</h2>
+                </div>
+                <div className="signal-header-right">
+                  <span className="signal-live-badge">
+                    <span className="signal-live-dot" />
+                    Live
+                  </span>
+                  <span className="signal-tf-tag">{activeTimeframe}</span>
+                </div>
+              </div>
+
+              <div className="signal-content">
+                {/* 1. Visually Dominant BUY / SELL / NO TRADE status */}
+                <div className="signal-badge-section">
+                  <div className="signal-tag-label">ALGORITHMIC SIGNAL</div>
+                  <div className={`signal-dominant-box ${signalClass}`}>
+                    <div className="signal-dominant-text">{currentTimeframe.signal}</div>
+                    <div className="signal-dominant-sub">
+                      {currentTimeframe.signal === 'BUY'
+                        ? 'BULLISH MTF CONFLUENCE'
+                        : currentTimeframe.signal === 'SELL'
+                        ? 'BEARISH DISTRIBUTION'
+                        : 'WAIT FOR TRADE SETUP'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Key Instrument & Price Metrics */}
+                <div className="signal-metrics-list">
+                  <div className="signal-metric-row">
+                    <span className="detail-muted">Instrument</span>
+                    <strong className="instrument-title">NIFTY 50 Index</strong>
+                  </div>
+                  <div className="signal-metric-row">
+                    <span className="detail-muted">Current Price</span>
+                    <strong className="numeric-val tabular-num">{currentTimeframe.price}</strong>
+                  </div>
+                  <div className="signal-metric-row">
+                    <span className="detail-muted">Signal Timestamp</span>
+                    <strong className="numeric-val tabular-num">{currentTimeframe.time}</strong>
+                  </div>
+                  <div className="signal-metric-row">
+                    <span className="detail-muted">Selected Timeframe</span>
+                    <strong className="timeframe-tag">{activeTimeframe}</strong>
+                  </div>
+                  <div className="signal-metric-row">
+                    <span className="detail-muted">Signal Reason</span>
+                    <strong className="reason-val">{currentTimeframe.reason}</strong>
+                  </div>
+                </div>
+
+                {/* 3. Confirmation Factors */}
+                <div className="confirmation-section">
+                  <div className="confirmation-header">
+                    <span className="detail-muted-title">CONFIRMATION FACTORS</span>
+                    <span className="confirmation-status-pill">
+                      {currentTimeframe.signal === 'BUY' || currentTimeframe.signal === 'SELL'
+                        ? '4 / 4 Confirmed'
+                        : '2 / 4 Pending'}
+                    </span>
+                  </div>
+
+                  <div className="factor-list">
+                    <div className={`factor-item ${currentTimeframe.signal === 'NO TRADE' ? 'factor-neutral' : 'factor-confirmed'}`}>
+                      <span className="factor-icon-wrap">
+                        <Icon type={currentTimeframe.signal === 'NO TRADE' ? 'alert-circle' : 'check-small'} />
+                      </span>
+                      <div className="factor-text">
+                        <strong>EMA Confirmation</strong>
+                        <span>{currentTimeframe.emaConf}</span>
+                      </div>
+                    </div>
+
+                    <div className={`factor-item ${currentTimeframe.signal === 'NO TRADE' ? 'factor-neutral' : 'factor-confirmed'}`}>
+                      <span className="factor-icon-wrap">
+                        <Icon type={currentTimeframe.signal === 'NO TRADE' ? 'alert-circle' : 'check-small'} />
+                      </span>
+                      <div className="factor-text">
+                        <strong>RSI + Momentum</strong>
+                        <span>{currentTimeframe.rsiMom}</span>
+                      </div>
+                    </div>
+
+                    <div className={`factor-item ${currentTimeframe.signal === 'NO TRADE' ? 'factor-neutral' : 'factor-confirmed'}`}>
+                      <span className="factor-icon-wrap">
+                        <Icon type={currentTimeframe.signal === 'NO TRADE' ? 'alert-circle' : 'check-small'} />
+                      </span>
+                      <div className="factor-text">
+                        <strong>Volume Confirmation</strong>
+                        <span>{currentTimeframe.volConf}</span>
+                      </div>
+                    </div>
+
+                    <div className={`factor-item ${currentTimeframe.signal === 'NO TRADE' ? 'factor-neutral' : 'factor-confirmed'}`}>
+                      <span className="factor-icon-wrap">
+                        <Icon type={currentTimeframe.signal === 'NO TRADE' ? 'alert-circle' : 'check-small'} />
+                      </span>
+                      <div className="factor-text">
+                        <strong>Multi-Timeframe Alignment</strong>
+                        <span>{currentTimeframe.mtfAlign}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Stop Loss, Target 1, Target 2 with Percentage Distances */}
+                <div className="trade-levels-section">
+                  <span className="detail-muted-title">EXECUTION TARGETS & STOP LOSS</span>
+                  <div className="trade-levels-grid">
+                    <div className="trade-level-card sl">
+                      <div className="level-badge sl-badge">SL</div>
+                      <div className="level-info">
+                        <span className="level-title">Stop Loss</span>
+                        <strong className="negative tabular-num">{currentTimeframe.slPrice}</strong>
+                        <span className="level-pct negative tabular-num">{currentTimeframe.slPct}</span>
+                      </div>
+                    </div>
+
+                    <div className="trade-level-card t1">
+                      <div className="level-badge t1-badge">T1</div>
+                      <div className="level-info">
+                        <span className="level-title">Target 1</span>
+                        <strong className="positive tabular-num">{currentTimeframe.t1Price}</strong>
+                        <span className="level-pct positive tabular-num">{currentTimeframe.t1Pct}</span>
+                      </div>
+                    </div>
+
+                    <div className="trade-level-card t2">
+                      <div className="level-badge t2-badge">T2</div>
+                      <div className="level-info">
+                        <span className="level-title">Target 2</span>
+                        <strong className="positive tabular-num">{currentTimeframe.t2Price}</strong>
+                        <span className="level-pct positive tabular-num">{currentTimeframe.t2Pct}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. View Full Analysis Action */}
+                <button type="button" className="full-analysis-btn">
+                  <span>View Full Analysis</span>
+                  <Icon type="arrow-right" />
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Lower Section: Top Signals Today, Sector Performance, Watchlists */}
+          <section className="lower-grid">
+            {/* Top Signals Today */}
+            <div className="panel signals-panel">
+              <PanelTitle title="Top Signals Today" action="View All" />
+
+              <div className="filter-tabs">
+                {['All', 'NIFTY 50', 'Watchlists', 'Sectors'].map(
+                  (tab) => (
+                    <button
+                      type="button"
+                      className={activeSignalFilter === tab ? 'active' : ''}
+                      key={tab}
+                      onClick={() => setActiveSignalFilter(tab)}
+                    >
+                      {tab}
+                    </button>
+                  ),
+                )}
+              </div>
+
+              <div className="table-wrapper">
+                <div className="signals-table">
+                  <div className="table-head">
+                    <span>Symbol</span>
+                    <span className="text-right">Price</span>
+                    <span className="text-center">Signal</span>
+                    <span className="text-right">Change</span>
+                    <span className="text-right">Time</span>
+                  </div>
+
+                  {filteredSignals.map(
+                    ([symbol, price, signal, change, time]) => (
+                      <div className="signal-row" key={symbol}>
+                        <strong>{symbol}</strong>
+                        <span className="text-right tabular-num">{price}</span>
+                        <div className="badge-cell">
+                          <SignalBadge value={signal} />
+                        </div>
+                        <span
+                          className={`text-right tabular-num ${
+                            change.startsWith('+')
+                              ? 'positive'
+                              : 'negative'
+                          }`}
+                        >
+                          {change}
+                        </span>
+                        <span className="text-right tabular-num text-muted">{time}</span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Sector Performance */}
+            <div className="panel sector-panel">
+              <PanelTitle
+                title="Sector Performance"
+                action="View All"
+                extra={
+                  <div className="period-selector">
+                    <span>1D</span>
+                    <Icon type="chevron-down" />
+                  </div>
+                }
+              />
+
+              <div className="table-wrapper">
+                <div className="sector-heading">
+                  <span>Sector</span>
+                  <span className="text-right">Change</span>
+                  <span className="text-left">Relative Trend</span>
+                </div>
+
+                <div className="sector-list">
+                  {sectors.map(
+                    ([name, change, width, isPositive]) => (
+                      <div className="sector-row" key={name}>
+                        <span className="sector-name">{name}</span>
+                        <strong
+                          className={`text-right tabular-num ${
+                            isPositive ? 'positive' : 'negative'
+                          }`}
+                        >
+                          {change}
+                        </strong>
+                        <div className="sector-bar">
+                          <span
+                            className={
+                              isPositive
+                                ? 'positive-bar'
+                                : 'negative-bar'
+                            }
+                            style={{ width: `${width}%` }}
+                          />
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Watchlists */}
+            <div className="panel watchlist-panel">
+              <PanelTitle title="Watchlists" action="View All" />
+
+              <div className="watchlist-tabs">
+                {['My Watchlist', 'Tech', 'Banking', 'High Volatility'].map((tab) => (
+                  <button
+                    type="button"
+                    key={tab}
+                    className={tab === 'My Watchlist' ? 'active' : ''}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className="table-wrapper">
+                <div className="watchlist-table">
+                  <div className="table-head">
+                    <span>Symbol</span>
+                    <span className="text-right">Price</span>
+                    <span className="text-right">Change</span>
+                    <span className="text-center">Signal</span>
+                  </div>
+
+                  {watchlistStocks.map(
+                    ([symbol, price, change, signal]) => (
+                      <div className="watch-row" key={symbol}>
+                        <strong>{symbol}</strong>
+                        <span className="text-right tabular-num">{price}</span>
+                        <span
+                          className={`text-right tabular-num ${
+                            change.startsWith('+')
+                              ? 'positive'
+                              : 'negative'
+                          }`}
+                        >
+                          {change}
+                        </span>
+                        <div className="badge-cell">
+                          <SignalBadge value={signal} />
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Bottom Section: Stock Validation, Paper Trading, Recent Activity */}
+          <section className="bottom-grid">
+            {/* Stock Validation */}
+            <div className="panel validation-panel">
+              <PanelTitle title="Stock Validation" action="View All" />
+
+              <div className="validation-content">
+                <ValidationRing />
+
+                <div className="validation-legend">
+                  <ValidationItem
+                    label="Validated"
+                    value="42"
+                    className="validated"
+                  />
+                  <ValidationItem
+                    label="In Progress"
+                    value="5"
+                    className="progress"
+                  />
+                  <ValidationItem
+                    label="Pending"
+                    value="2"
+                    className="pending"
+                  />
+                  <ValidationItem
+                    label="Failed"
+                    value="1"
+                    className="failed"
+                  />
+                </div>
+              </div>
+
+              <button type="button" className="add-stock-button">
+                <span>Add New Stock</span>
+                <Icon type="arrow-right" />
+              </button>
+            </div>
+
+            {/* Paper Trading */}
+            <div className="panel paper-panel">
+              <PanelTitle
+                title="Paper Trading"
+                action="View All"
+                badge={
+                  <span className="paper-mode-badge">
+                    <i />
+                    Paper Mode
+                  </span>
+                }
+              />
+
+              <div className="paper-stats">
+                <Metric
+                  label="Total P&L"
+                  value="+12,430"
+                  sub="+1.24%"
+                  positive
+                />
+                <Metric label="Open Positions" value="3" />
+                <Metric label="Win Rate" value="68%" />
+                <Metric label="Total Trades" value="48" />
+              </div>
+
+              <div className="equity-chart">
+                <EquityChart />
+              </div>
+
+              <div className="months">
+                <span>Jan</span>
+                <span>Feb</span>
+                <span>Mar</span>
+                <span>Apr</span>
+                <span>May</span>
+                <span>Jun</span>
+                <span>Jul</span>
+                <span>Aug</span>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="panel activity-panel">
+              <PanelTitle title="Recent Activity" action="View All" />
+
+              <div className="table-wrapper">
+                <div className="activity-table">
+                  <div className="activity-heading">
+                    <span>Time</span>
+                    <span>Event</span>
+                    <span>Details</span>
+                  </div>
+
+                  {activity.map(
+                    ([time, event, details, type]) => (
+                      <div
+                        className="activity-row"
+                        key={`${time}-${event}`}
+                      >
+                        <span className="tabular-num text-muted">{time}</span>
+                        <strong className={`activity-badge ${type}`}>{event}</strong>
+                        <span className="activity-details">{details}</span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Institutional Footer */}
+          <footer className="footer">
+            <div className="footer-left">
+              <div className="footer-logo">
+                <Icon type="arrow-up-right" />
+              </div>
+              <strong>SignalForge</strong>
+              <span>Scan. Analyze. Profit.</span>
+            </div>
+
+            <div className="system-operational">
+              <i />
+              All Systems Operational
+            </div>
+
+            <span className="version">v1.0.0</span>
+          </footer>
+        </div>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="mobile-nav">
+          {[
+            ['Dashboard', 'dashboard'],
+            ['NIFTY', 'chart'],
+            ['Scanner', 'search'],
+            ['Watchlists', 'bookmark'],
+            ['Paper', 'briefcase'],
+          ].map(([label, icon]) => (
+            <button
+              type="button"
+              key={label}
+              className={
+                activeNav === label ||
+                (label === 'NIFTY' &&
+                  activeNav === 'NIFTY Analysis')
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                handleNavigation(
+                  label === 'NIFTY'
+                    ? 'NIFTY Analysis'
+                    : label,
+                )
+              }
+            >
+              <Icon type={icon} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+      </main>
+    </div>
+  )
+}
+
+function TopMarket({ icon, label, value, change, negative }) {
+  return (
+    <div className="top-market-item">
+      <span className="market-icon">
+        <MarketIcon type={icon} />
+      </span>
+
+      <div className="market-content">
+        <small>{label}</small>
+
+        <div className="market-row">
+          <strong>{value}</strong>
+          <span className={negative ? 'negative' : 'positive'}>
+            {change}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MarketIcon({ type }) {
+  if (type === 'fii') {
+    return (
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polygon points="8,1 15,8 8,15 1,8" />
+      </svg>
+    )
+  }
+  if (type === 'globe') {
+    return (
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="8" cy="8" r="6.5" />
+        <line x1="1.5" y1="8" x2="14.5" y2="8" />
+        <path d="M8 1.5a10 10 0 0 1 0 13 10 10 0 0 1 0-13" />
+      </svg>
+    )
+  }
+  if (type === 'barrel') {
+    return (
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <ellipse cx="8" cy="3.5" rx="5.5" ry="2" />
+        <path d="M2.5 3.5v9c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2v-9" />
+        <path d="M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2" />
+      </svg>
+    )
+  }
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5" />
+      <path d="M6 5.5h4M6 8h4M7 8a2 2 0 0 0 2-2M7.5 10.5 10 13" />
+    </svg>
+  )
+}
+
+function Icon({ type }) {
+  const icons = {
+    dashboard: (
+      <>
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </>
+    ),
+
+    chart: (
+      <>
+        <path d="M4 19V5" />
+        <path d="M4 19h17" />
+        <path d="m7 15 4-5 3 3 5-7" />
+      </>
+    ),
+
+    search: (
+      <>
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m16 16 5 5" />
+      </>
+    ),
+
+    bars: (
+      <>
+        <path d="M5 20V10" />
+        <path d="M12 20V4" />
+        <path d="M19 20v-7" />
+      </>
+    ),
+
+    bookmark: (
+      <path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18l-6-4-6 4V4Z" />
+    ),
+
+    plus: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8v8M8 12h8" />
+      </>
+    ),
+
+    check: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8 12 2.5 2.5L16 9" />
+      </>
+    ),
+
+    candles: (
+      <>
+        <path d="M6 4v5M6 15v5M4 9h4v6H4z" />
+        <path d="M12 3v4M12 13v8M10 7h4v6h-4z" />
+        <path d="M18 5v7M18 16v5M16 12h4v4h-4z" />
+      </>
+    ),
+
+    briefcase: (
+      <>
+        <rect x="3" y="7" width="18" height="13" rx="2" />
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <path d="M3 12h18" />
+      </>
+    ),
+
+    report: (
+      <>
+        <path d="M6 2h9l4 4v16H6z" />
+        <path d="M15 2v5h4M9 12h6M9 16h6M9 8h2" />
+      </>
+    ),
+
+    settings: (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19 12a7 7 0 0 0-.15-1.4l1.7-1.3-2-3.4-2 .8A7 7 0 0 0 14 5l-.3-2.1h-4L9.4 5a7 7 0 0 0-2.55 1.7l-2-.8-2 3.4 1.7 1.3A7 7 0 0 0 4.4 12c0 .48.05.95.15 1.4l-1.7 1.3 2 3.4 2-.8A7 7 0 0 0 9.4 19l.3 2.1h4L14 19a7 7 0 0 0 2.55-1.7l2 .8 2-3.4-1.7-1.3c.1-.45.15-.92.15-1.4Z" />
+      </>
+    ),
+
+    bell: (
+      <>
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+        <path d="M10 21h4" />
+      </>
+    ),
+
+    indicator: (
+      <>
+        <path d="M4 17h4M10 13h4M16 9h4" />
+        <path d="M4 17 10 11 14 15 20 6" />
+      </>
+    ),
+
+    template: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <path d="M4 9h16M9 9v11" />
+      </>
+    ),
+
+    fullscreen: (
+      <>
+        <path d="M8 3H4a1 1 0 0 0-1 1v4M16 3h4a1 1 0 0 1 1 1v4M8 21H4a1 1 0 0 1-1-1v-4M16 21h4a1 1 0 0 0 1-1v-4" />
+      </>
+    ),
+
+    'chevron-down': (
+      <path d="m6 9 6 6 6-6" />
+    ),
+
+    'check-small': (
+      <path d="m5 12 4 4 10-10" />
+    ),
+
+    'alert-circle': (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <circle cx="12" cy="16" r="0.8" fill="currentColor" />
+      </>
+    ),
+
+    'arrow-right': (
+      <>
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </>
+    ),
+
+    'arrow-up-right': (
+      <>
+        <path d="M7 17 17 7" />
+        <path d="M7 7h10v10" />
+      </>
+    ),
+
+    'more-horizontal': (
+      <>
+        <circle cx="12" cy="12" r="1.5" />
+        <circle cx="19" cy="12" r="1.5" />
+        <circle cx="5" cy="12" r="1.5" />
+      </>
+    ),
+  }
+
+  return (
+    <svg
+      className="icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {icons[type]}
+    </svg>
+  )
+}
+
+function PriceChart() {
+  const candles = [
+    [38, 74, 110, 92, 'down'],
+    [62, 87, 124, 101, 'down'],
+    [86, 96, 138, 111, 'down'],
+    [110, 106, 151, 122, 'down'],
+    [134, 115, 165, 132, 'down'],
+    [158, 124, 181, 139, 'down'],
+    [182, 133, 198, 149, 'down'],
+    [206, 142, 210, 156, 'up'],
+    [230, 143, 173, 151, 'up'],
+    [254, 136, 171, 145, 'up'],
+    [278, 132, 166, 141, 'down'],
+    [302, 127, 159, 136, 'up'],
+    [326, 121, 153, 130, 'up'],
+    [350, 117, 147, 125, 'down'],
+    [374, 111, 144, 120, 'up'],
+    [398, 104, 137, 113, 'up'],
+    [422, 98, 131, 107, 'down'],
+    [446, 95, 126, 103, 'up'],
+    [470, 90, 121, 99, 'up'],
+    [494, 86, 117, 94, 'down'],
+    [518, 82, 113, 90, 'up'],
+    [542, 77, 109, 86, 'up'],
+    [566, 73, 104, 81, 'up'],
+    [590, 69, 101, 77, 'down'],
+    [614, 64, 97, 73, 'up'],
+    [638, 60, 94, 69, 'up'],
+    [662, 56, 90, 64, 'down'],
+    [686, 52, 86, 61, 'up'],
+    [710, 47, 81, 56, 'up'],
+    [734, 42, 78, 51, 'up'],
+    [758, 37, 74, 46, 'up'],
+  ]
+
+  const volumes = [
+    34, 51, 43, 63, 48, 70, 57, 44,
+    62, 49, 76, 53, 65, 46, 58, 71,
+    52, 67, 59, 47, 74, 54, 63, 49,
+    68, 57, 72, 61, 76, 66, 84,
+  ]
+
+  return (
+    <svg
+      className="price-svg"
+      viewBox="0 0 780 330"
+      preserveAspectRatio="none"
+    >
+      {[38, 96, 154, 212, 270].map((y) => (
+        <line
+          key={y}
+          x1="0"
+          y1={y}
+          x2="780"
+          y2={y}
+          className="grid-line"
+        />
+      ))}
+
+      {[0, 130, 260, 390, 520, 650, 780].map((x) => (
+        <line
+          key={x}
+          x1={x}
+          y1="0"
+          x2={x}
+          y2="292"
+          className="vertical-grid"
+        />
+      ))}
+
+      <path
+        d="M0 205 C70 211 126 231 190 246 C248 260 298 245 350 214 C403 184 452 201 503 169 C553 137 597 150 646 117 C695 84 735 77 780 58"
+        className="ema-blue"
+      />
+
+      <path
+        d="M0 218 C72 224 128 239 190 250 C252 261 302 252 352 229 C405 204 451 214 505 185 C555 158 600 166 650 137 C700 108 742 98 780 80"
+        className="ema-orange"
+      />
+
+      <path
+        d="M0 253 C105 251 186 256 270 251 C360 246 441 239 522 218 C607 196 695 177 780 154"
+        className="ema-purple"
+      />
+
+      {candles.map(
+        ([x, top, low, close, direction], index) => {
+          const high = Math.max(top - 18, 10)
+          const candleLow = Math.min(low + 18, 286)
+          const width = 8
+          const bodyTop = Math.min(top, close)
+          const bodyHeight = Math.max(
+            Math.abs(close - top),
+            5,
+          )
+          const candleColor =
+            direction === 'up' ? '#00d9a3' : '#ff4f5e'
+
+          return (
+            <g key={index}>
+              <line
+                x1={x}
+                y1={high}
+                x2={x}
+                y2={candleLow}
+                stroke={candleColor}
+                strokeWidth="1.4"
+              />
+
+              <rect
+                x={x - width / 2}
+                y={bodyTop}
+                width={width}
+                height={bodyHeight}
+                fill={candleColor}
+                rx="1"
+              />
+            </g>
+          )
+        },
+      )}
+
+      {volumes.map((height, index) => {
+        const x = 14 + index * 25.2
+        const candle = candles[index]
+        const color =
+          candle?.[4] === 'up'
+            ? 'volume-green'
+            : 'volume-red'
+
+        return (
+          <rect
+            key={`volume-${index}`}
+            x={x}
+            y={294 - height}
+            width="10"
+            height={height}
+            rx="1"
+            className={color}
+          />
+        )
+      })}
+
+      <line
+        x1="758"
+        y1="0"
+        x2="758"
+        y2="292"
+        className="current-price-line"
+      />
+
+      <rect
+        x="704"
+        y="27"
+        width="76"
+        height="22"
+        rx="4"
+        className="price-label-box"
+      />
+
+      <text
+        x="742"
+        y="42"
+        textAnchor="middle"
+        className="price-label"
+      >
+        24,213.45
+      </text>
+    </svg>
+  )
+}
+
+function RsiChart() {
+  return (
+    <svg viewBox="0 0 780 80" preserveAspectRatio="none">
+      <line
+        x1="0"
+        y1="16"
+        x2="780"
+        y2="16"
+        className="rsi-grid"
+      />
+
+      <line
+        x1="0"
+        y1="40"
+        x2="780"
+        y2="40"
+        className="rsi-grid"
+      />
+
+      <line
+        x1="0"
+        y1="64"
+        x2="780"
+        y2="64"
+        className="rsi-grid"
+      />
+
+      <path
+        d="M0 49
+        C20 45 32 52 49 47
+        S76 52 94 44
+        S122 50 141 42
+        S168 48 188 40
+        S217 46 239 37
+        S269 41 290 35
+        S321 40 344 32
+        S375 37 397 30
+        S429 34 451 27
+        S483 32 507 25
+        S538 30 561 23
+        S593 28 615 21
+        S648 27 670 20
+        S714 28 780 22"
+        className="rsi-line"
+      />
+    </svg>
+  )
+}
+
+function EquityChart() {
+  return (
+    <svg viewBox="0 0 680 130" preserveAspectRatio="none">
+      <defs>
+        <linearGradient
+          id="equityGradient"
+          x1="0"
+          x2="0"
+          y1="0"
+          y2="1"
+        >
+          <stop
+            offset="0%"
+            stopColor="rgba(0, 217, 163, 0.25)"
+          />
+
+          <stop
+            offset="100%"
+            stopColor="rgba(0, 217, 163, 0)"
+          />
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M0 112
+        C35 105 48 108 72 99
+        S110 103 134 91
+        S172 94 194 84
+        S232 89 256 75
+        S295 79 320 68
+        S357 70 382 57
+        S418 62 445 49
+        S480 54 506 39
+        S545 43 570 31
+        S616 35 640 23
+        S660 25 680 15
+        L680 130
+        L0 130Z"
+        fill="url(#equityGradient)"
+      />
+
+      <path
+        d="M0 112
+        C35 105 48 108 72 99
+        S110 103 134 91
+        S172 94 194 84
+        S232 89 256 75
+        S295 79 320 68
+        S357 70 382 57
+        S418 62 445 49
+        S480 54 506 39
+        S545 43 570 31
+        S616 35 640 23
+        S660 25 680 15"
+        className="equity-line"
+      />
+    </svg>
+  )
+}
+
+function SignalBadge({ value }) {
+  return (
+    <span
+      className={`signal-badge ${value
+        .toLowerCase()
+        .replace(' ', '-')}`}
+    >
+      {value}
+    </span>
+  )
+}
+
+function PanelTitle({ title, action, badge, extra }) {
+  return (
+    <div className="panel-title">
+      <div className="panel-title-left">
+        <h2>{title}</h2>
+        {badge}
+      </div>
+      <div className="panel-title-right">
+        {extra}
+        {action && <button type="button" className="panel-action-btn">{action}</button>}
+      </div>
+    </div>
+  )
+}
+
+function ValidationRing() {
+  return (
+    <div className="validation-ring">
+      <svg viewBox="0 0 120 120">
+        <circle
+          cx="60"
+          cy="60"
+          r="48"
+          className="ring-background"
+        />
+
+        <circle
+          cx="60"
+          cy="60"
+          r="48"
+          className="ring-progress"
+        />
+      </svg>
+
+      <div className="ring-text">
+        <strong>42 / 50</strong>
+        <span>Validated</span>
+      </div>
+    </div>
+  )
+}
+
+function ValidationItem({ label, value, className }) {
+  return (
+    <div className="validation-item">
+      <span className={`validation-dot ${className}`} />
+      <span>{label}</span>
+      <strong className="tabular-num">{value}</strong>
+    </div>
+  )
+}
+
+function Metric({ label, value, sub, positive }) {
+  return (
+    <div className="metric">
+      <span>{label}</span>
+
+      <strong className={`tabular-num ${positive ? 'positive' : ''}`}>
+        {value}
+      </strong>
+
+      {sub && (
+        <small className={`tabular-num ${positive ? 'positive' : ''}`}>
+          {sub}
+        </small>
+      )}
+    </div>
+  )
+}
+
+export default App

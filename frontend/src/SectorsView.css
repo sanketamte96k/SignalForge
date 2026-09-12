@@ -1,4 +1,4 @@
-﻿.sectors-view {
+.sectors-view {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -606,6 +606,7 @@
 
   .danger-sector-button {
     align-self: flex-start;
+    min-height: 42px;
   }
 
   .stock-search-result {
@@ -616,5 +617,11 @@
   .stock-search-meta {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .stock-search-result button {
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 11px;
   }
 }

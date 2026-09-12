@@ -82,14 +82,14 @@ button {
 
 .terminal {
   width: 100%;
-  min-height: 100vh;
-  min-height: 100svh;
+  height: 100vh;
+  height: 100svh;
   display: flex;
   background:
     radial-gradient(circle at 60% -10%, rgba(8, 105, 210, 0.09), transparent 38%),
     var(--sf-bg-deep);
   color: var(--sf-text);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* =========================================================
@@ -99,8 +99,7 @@ button {
 .sidebar {
   width: 220px;
   min-width: 220px;
-  height: 100vh;
-  height: 100svh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #03101b 0%, #020b14 100%);
@@ -339,9 +338,12 @@ button {
 .main {
   min-width: 0;
   flex: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: #020b14;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .top-header {
@@ -356,6 +358,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 20;
+  flex-shrink: 0;
 }
 
 .global-search {
@@ -1958,12 +1961,18 @@ button {
   }
 }
 
-@media (max-width: 1180px) {
-  .sidebar {
-    width: 190px;
-    min-width: 190px;
+@media (max-width: 1366px) {
+  .global-search {
+    width: 210px;
+    min-width: 170px;
   }
 
+  .top-market-item:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
   .top-market-item:nth-child(3),
   .top-market-item:nth-child(4) {
     display: none;
@@ -1971,6 +1980,19 @@ button {
 
   .market-close {
     display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .top-market-data {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .sidebar {
+    width: 190px;
+    min-width: 190px;
   }
 
   .main-grid {
@@ -1989,6 +2011,12 @@ button {
   .watchlist-panel,
   .activity-panel {
     grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .rsi-sub {
+    display: none;
   }
 }
 
@@ -2016,8 +2044,9 @@ button {
   }
 
   .mobile-toggle {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2113,7 +2142,7 @@ button {
     inset: auto 0 0;
     height: 60px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     border-top: 1px solid var(--sf-border);
     background: rgba(2, 11, 20, 0.96);
     backdrop-filter: blur(12px);
@@ -2131,11 +2160,22 @@ button {
     cursor: pointer;
     font-size: 10px;
     font-weight: 600;
+    min-width: 0;
+    padding: 4px 2px;
+  }
+
+  .mobile-nav button span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: clamp(8px, 2.1vw, 10px);
   }
 
   .mobile-nav .icon {
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
   }
 
   .mobile-nav button.active {

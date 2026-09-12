@@ -1,0 +1,507 @@
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  addStockToWatchlist,
+  createWatchlist,
+  deleteWatchlist,
+  fetchWatchlists,
+  removeStockFromWatchlist,
+  searchStocks,
+} from './api'
+import './WatchlistsView.css'
+
+function normalizeSearchResults(response) {
+  if (Array.isArray(response)) {
+    return response
+  }
+
+  if (Array.isArray(response?.results)) {
+    return response.results
+  }
+
+  if (Array.isArray(response?.stocks)) {
+    return response.stocks
+  }
+
+  return []
+}
+
+function getStockSymbol(stock) {
+  return stock?.symbol || stock?.ticker || ''
+}
+
+function getStockName(stock) {
+  return stock?.name || stock?.company_name || stock?.symbol || ''
+}
+
+function WatchlistsView() {
+  const [watchlists, setWatchlists] = useState([])
+  const [selectedName, setSelectedName] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [newWatchlistName, setNewWatchlistName] = useState('')
+  const [newWatchlistDescription, setNewWatchlistDescription] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const selectedWatchlist = useMemo(
+    () => watchlists.find((watchlist) => watchlist.name === selectedName) || null,
+    [watchlists, selectedName],
+  )
+
+  const loadWatchlists = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      const response = await fetchWatchlists()
+      const nextWatchlists = Array.isArray(response?.watchlists)
+        ? response.watchlists
+        : []
+
+      setWatchlists(nextWatchlists)
+
+      if (nextWatchlists.length === 0) {
+        setSelectedName('')
+        return
+      }
+
+      setSelectedName((current) => {
+        if (current && nextWatchlists.some((item) => item.name === current)) {
+          return current
+        }
+
+        return nextWatchlists[0].name
+      })
+    } catch (err) {
+      setError(err.message || 'Unable to load watchlists.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadWatchlists()
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [loadWatchlists])
+
+  const handleCreateWatchlist = async (event) => {
+    event.preventDefault()
+
+    const name = newWatchlistName.trim()
+    const description = newWatchlistDescription.trim()
+
+    if (!name) {
+      setError('Enter a watchlist name.')
+      return
+    }
+
+    try {
+      setActionLoading(true)
+      setError('')
+
+      await createWatchlist({
+        name,
+        description,
+      })
+
+      setNewWatchlistName('')
+      setNewWatchlistDescription('')
+
+      await loadWatchlists()
+      setSelectedName(name)
+    } catch (err) {
+      setError(err.message || 'Unable to create watchlist.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleDeleteWatchlist = async () => {
+    if (!selectedWatchlist) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Delete the "${selectedWatchlist.name}" watchlist?`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setActionLoading(true)
+      setError('')
+
+      await deleteWatchlist(selectedWatchlist.name)
+      await loadWatchlists()
+    } catch (err) {
+      setError(err.message || 'Unable to delete watchlist.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleSearch = async (event) => {
+    event.preventDefault()
+
+    const query = searchQuery.trim()
+
+    if (!query) {
+      setSearchResults([])
+      return
+    }
+
+    try {
+      setSearchLoading(true)
+      setError('')
+
+      const response = await searchStocks(query)
+      setSearchResults(normalizeSearchResults(response))
+    } catch (err) {
+      setError(err.message || 'Unable to search stocks.')
+      setSearchResults([])
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  const handleAddStock = async (symbol) => {
+    if (!selectedWatchlist || !symbol) {
+      return
+    }
+
+    try {
+      setActionLoading(true)
+      setError('')
+
+      await addStockToWatchlist(selectedWatchlist.name, symbol)
+
+      await loadWatchlists()
+      setSelectedName(selectedWatchlist.name)
+    } catch (err) {
+      setError(err.message || `Unable to add ${symbol}.`)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleRemoveStock = async (symbol) => {
+    if (!selectedWatchlist || !symbol) {
+      return
+    }
+
+    try {
+      setActionLoading(true)
+      setError('')
+
+      await removeStockFromWatchlist(selectedWatchlist.name, symbol)
+
+      await loadWatchlists()
+      setSelectedName(selectedWatchlist.name)
+    } catch (err) {
+      setError(err.message || `Unable to remove ${symbol}.`)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const selectedSymbols = useMemo(
+    () => new Set(selectedWatchlist?.symbols || []),
+    [selectedWatchlist],
+  )
+
+  return (
+    <main className="watchlists-page">
+      <section className="watchlists-header">
+        <div>
+          <span className="watchlists-eyebrow">MARKET ORGANIZATION</span>
+          <h1>Watchlists</h1>
+          <p>
+            Build focused stock lists for monitoring, research, and future
+            validation.
+          </p>
+        </div>
+
+        <div className="watchlists-summary">
+          <div className="watchlists-summary-card">
+            <span>WATCHLISTS</span>
+            <strong>{watchlists.length}</strong>
+          </div>
+
+          <div className="watchlists-summary-card">
+            <span>SELECTED STOCKS</span>
+            <strong>{selectedWatchlist?.symbols?.length || 0}</strong>
+          </div>
+        </div>
+      </section>
+
+      {error && (
+        <div className="watchlists-alert" role="alert">
+          <span className="watchlists-alert-dot" />
+          <span>{error}</span>
+          <button type="button" onClick={() => setError('')}>
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <section className="watchlists-layout">
+        <aside className="watchlists-sidebar">
+          <div className="watchlists-panel-heading">
+            <div>
+              <span className="watchlists-panel-label">YOUR LISTS</span>
+              <h2>Watchlists</h2>
+            </div>
+            <span className="watchlists-count">{watchlists.length}</span>
+          </div>
+
+          {loading ? (
+            <div className="watchlists-loading-list">
+              <div className="watchlists-skeleton" />
+              <div className="watchlists-skeleton" />
+              <div className="watchlists-skeleton" />
+            </div>
+          ) : watchlists.length === 0 ? (
+            <div className="watchlists-empty-sidebar">
+              <div className="watchlists-empty-icon">＋</div>
+              <h3>No watchlists yet</h3>
+              <p>Create your first list using the form below.</p>
+            </div>
+          ) : (
+            <div className="watchlists-list">
+              {watchlists.map((watchlist) => {
+                const isSelected = watchlist.name === selectedName
+
+                return (
+                  <button
+                    className={`watchlist-list-item ${
+                      isSelected ? 'is-selected' : ''
+                    }`}
+                    key={watchlist.name}
+                    type="button"
+                    onClick={() => setSelectedName(watchlist.name)}
+                  >
+                    <span className="watchlist-list-icon">★</span>
+
+                    <span className="watchlist-list-content">
+                      <strong>{watchlist.name}</strong>
+                      <small>
+                        {watchlist.symbols?.length || 0} stocks
+                      </small>
+                    </span>
+
+                    <span className="watchlist-list-arrow">›</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <form
+            className="watchlist-create-form"
+            onSubmit={handleCreateWatchlist}
+          >
+            <span className="watchlists-panel-label">CREATE WATCHLIST</span>
+
+            <input
+              type="text"
+              value={newWatchlistName}
+              onChange={(event) => setNewWatchlistName(event.target.value)}
+              placeholder="Watchlist name"
+              maxLength={80}
+            />
+
+            <input
+              type="text"
+              value={newWatchlistDescription}
+              onChange={(event) =>
+                setNewWatchlistDescription(event.target.value)
+              }
+              placeholder="Description (optional)"
+              maxLength={200}
+            />
+
+            <button
+              className="watchlist-primary-button"
+              type="submit"
+              disabled={actionLoading}
+            >
+              {actionLoading ? 'Creating...' : 'Create Watchlist'}
+            </button>
+          </form>
+        </aside>
+
+        <section className="watchlists-main-panel">
+          {!selectedWatchlist ? (
+            <div className="watchlists-no-selection">
+              <div className="watchlists-no-selection-icon">★</div>
+              <h2>Select or create a watchlist</h2>
+              <p>
+                Create a list to organize stocks you want to monitor.
+              </p>
+            </div>
+          ) : (
+            <>
+              <header className="selected-watchlist-header">
+                <div className="selected-watchlist-title">
+                  <div className="selected-watchlist-icon">★</div>
+
+                  <div>
+                    <span className="watchlists-panel-label">
+                      SELECTED WATCHLIST
+                    </span>
+                    <h2>{selectedWatchlist.name}</h2>
+                    {selectedWatchlist.description && (
+                      <p>{selectedWatchlist.description}</p>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  className="watchlist-danger-button"
+                  type="button"
+                  onClick={handleDeleteWatchlist}
+                  disabled={actionLoading}
+                >
+                  Delete
+                </button>
+              </header>
+
+              <div className="watchlist-search-section">
+                <div>
+                  <span className="watchlists-panel-label">ADD STOCK</span>
+                  <h3>Search NSE instruments</h3>
+                </div>
+
+                <form className="watchlist-search-form" onSubmit={handleSearch}>
+                  <div className="watchlist-search-input-wrap">
+                    <span className="watchlist-search-icon">⌕</span>
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search symbol or company..."
+                    />
+                  </div>
+
+                  <button
+                    className="watchlist-search-button"
+                    type="submit"
+                    disabled={searchLoading}
+                  >
+                    {searchLoading ? 'Searching...' : 'Search'}
+                  </button>
+                </form>
+
+                {searchResults.length > 0 && (
+                  <div className="watchlist-search-results">
+                    {searchResults.map((stock) => {
+                      const symbol = getStockSymbol(stock)
+                      const alreadyAdded = selectedSymbols.has(symbol)
+
+                      return (
+                        <div
+                          className="watchlist-search-result"
+                          key={symbol || getStockName(stock)}
+                        >
+                          <div className="watchlist-stock-identity">
+                            <strong>{symbol || '—'}</strong>
+                            <span>{getStockName(stock)}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            disabled={
+                              actionLoading || !symbol || alreadyAdded
+                            }
+                            onClick={() => handleAddStock(symbol)}
+                          >
+                            {alreadyAdded ? 'Added' : 'Add'}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {!searchLoading &&
+                  searchQuery.trim() &&
+                  searchResults.length === 0 && (
+                    <div className="watchlist-search-empty">
+                      No matching instruments found.
+                    </div>
+                  )}
+              </div>
+
+              <div className="watchlist-stocks-section">
+                <div className="watchlist-stocks-heading">
+                  <div>
+                    <span className="watchlists-panel-label">
+                      WATCHLIST CONTENT
+                    </span>
+                    <h3>Stocks</h3>
+                  </div>
+
+                  <span className="watchlist-stock-count">
+                    {selectedWatchlist.symbols?.length || 0}
+                  </span>
+                </div>
+
+                {!selectedWatchlist.symbols?.length ? (
+                  <div className="watchlist-empty-stocks">
+                    <div className="watchlists-empty-icon">＋</div>
+                    <h3>No stocks in this watchlist</h3>
+                    <p>
+                      Search for an NSE instrument above and add it to this
+                      list.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="watchlist-stock-grid">
+                    {selectedWatchlist.symbols.map((symbol) => (
+                      <article className="watchlist-stock-card" key={symbol}>
+                        <div className="watchlist-stock-card-icon">N</div>
+
+                        <div className="watchlist-stock-card-content">
+                          <strong>{symbol}</strong>
+                          <span>NSE instrument</span>
+                        </div>
+
+                        <button
+                          className="watchlist-remove-button"
+                          type="button"
+                          disabled={actionLoading}
+                          onClick={() => handleRemoveStock(symbol)}
+                          aria-label={`Remove ${symbol}`}
+                        >
+                          ×
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="watchlist-disclosure">
+                <span>i</span>
+                <p>
+                  Watchlists organize instruments for monitoring. Stocks added
+                  here do not automatically become signal-eligible; validation
+                  is required before SignalForge can generate trading signals.
+                </p>
+              </div>
+            </>
+          )}
+        </section>
+      </section>
+    </main>
+  )
+}
+
+export default WatchlistsView
