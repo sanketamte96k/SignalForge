@@ -1,0 +1,306 @@
+/* ============================================================
+   ToastContext.css
+   SignalForge Toast / Notification System
+   Strictly aligned with the locked SignalForge dark terminal theme.
+   ============================================================ */
+
+/* ============================================================
+   Container — fixed stack in the top-right of the viewport,
+   clearing the fixed 64px header and 240px sidebar.
+   On mobile (≤860px), repositioned to top-center below header,
+   above the 60px mobile bottom nav bar.
+   ============================================================ */
+
+.sf-toast-container {
+  position: fixed;
+  top: 76px;          /* header height (64px) + 12px gap */
+  right: 20px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 340px;
+  max-width: calc(100vw - 40px);
+  pointer-events: none;
+}
+
+/* ============================================================
+   Individual Toast Card
+   ============================================================ */
+
+.sf-toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px 14px 14px;
+  border-radius: var(--sf-radius);
+  border: 1px solid transparent;
+  background: var(--sf-panel-2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  pointer-events: all;
+  min-height: 56px;
+  max-width: 340px;
+  word-break: break-word;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ---- Type variants ---- */
+
+.sf-toast--success {
+  border-color: rgba(0, 224, 168, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 224, 168, 0.07) 0%,
+    var(--sf-panel-2) 60%
+  );
+}
+
+.sf-toast--success .sf-toast__icon {
+  color: var(--sf-green);
+}
+
+.sf-toast--success .sf-toast__progress-bar {
+  background: var(--sf-green);
+}
+
+.sf-toast--error {
+  border-color: rgba(255, 79, 94, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 79, 94, 0.08) 0%,
+    var(--sf-panel-2) 60%
+  );
+}
+
+.sf-toast--error .sf-toast__icon {
+  color: var(--sf-red);
+}
+
+.sf-toast--error .sf-toast__progress-bar {
+  background: var(--sf-red);
+}
+
+.sf-toast--warning {
+  border-color: rgba(255, 159, 36, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 159, 36, 0.07) 0%,
+    var(--sf-panel-2) 60%
+  );
+}
+
+.sf-toast--warning .sf-toast__icon {
+  color: var(--sf-orange);
+}
+
+.sf-toast--warning .sf-toast__progress-bar {
+  background: var(--sf-orange);
+}
+
+.sf-toast--info {
+  border-color: rgba(8, 124, 255, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(8, 124, 255, 0.07) 0%,
+    var(--sf-panel-2) 60%
+  );
+}
+
+.sf-toast--info .sf-toast__icon {
+  color: var(--sf-blue-bright);
+}
+
+.sf-toast--info .sf-toast__progress-bar {
+  background: var(--sf-blue-bright);
+}
+
+/* ============================================================
+   Enter / Exit Animations
+   ============================================================ */
+
+@keyframes sf-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes sf-toast-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 120px;
+    margin-bottom: 0;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(36px) scale(0.94);
+    max-height: 0;
+    margin-bottom: -8px;
+  }
+}
+
+.sf-toast--enter {
+  animation: sf-toast-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.sf-toast--exit {
+  animation: sf-toast-exit 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* ============================================================
+   Icon
+   ============================================================ */
+
+.sf-toast__icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.sf-toast__icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ============================================================
+   Body
+   ============================================================ */
+
+.sf-toast__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sf-toast__title {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sf-text-bright);
+  line-height: 1.3;
+}
+
+.sf-toast__message {
+  display: block;
+  font-size: 12.5px;
+  color: var(--sf-text);
+  line-height: 1.45;
+}
+
+/* ============================================================
+   Close Button
+   ============================================================ */
+
+.sf-toast__close {
+  flex-shrink: 0;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sf-text-muted);
+  font-size: 12px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  margin-top: -1px;
+  margin-right: -2px;
+  line-height: 1;
+}
+
+.sf-toast__close:hover {
+  color: var(--sf-text-bright);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sf-toast__close:focus-visible {
+  outline: 2px solid var(--sf-blue);
+  outline-offset: 1px;
+}
+
+/* ============================================================
+   Progress Bar
+   ============================================================ */
+
+.sf-toast__progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 0 0 var(--sf-radius) var(--sf-radius);
+  overflow: hidden;
+}
+
+.sf-toast__progress-bar {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  transition: width 0.1s linear;
+}
+
+/* ============================================================
+   Responsive — Mobile ≤ 860px
+   Top-center, below the fixed header, well above mobile nav.
+   ============================================================ */
+
+@media (max-width: 860px) {
+  .sf-toast-container {
+    top: 72px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: 420px;
+    margin: 0 auto;
+    /* Keep centered via left+right auto simulation via fixed positioning */
+  }
+
+  .sf-toast {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* Prevent any toast from going below the 60px bottom nav on mobile */
+@media (max-width: 860px) {
+  .sf-toast-container {
+    max-height: calc(100dvh - 72px - 60px - 16px);
+    overflow: hidden;
+  }
+}
+
+/* Very small screens — keep readable */
+@media (max-width: 400px) {
+  .sf-toast-container {
+    right: 8px;
+    left: 8px;
+    top: 68px;
+  }
+
+  .sf-toast__title {
+    font-size: 10px;
+  }
+
+  .sf-toast__message {
+    font-size: 12px;
+  }
+}

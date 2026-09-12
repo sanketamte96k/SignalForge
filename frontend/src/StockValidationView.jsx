@@ -6,6 +6,8 @@ import {
 } from './api'
 import './StockValidationView.css'
 import { LoadingState, EmptyState } from './StateViews'
+import { useToast } from './useToast'
+import { sanitizeErrorMessage } from './stateUtils'
 
 const GATES = [
   ['DATA_AVAILABILITY', 'Data Availability'],
@@ -51,6 +53,7 @@ function formatNumber(value) {
 }
 
 function StockValidationView() {
+  const toast = useToast()
   const [symbol, setSymbol] = useState('')
   const [result, setResult] = useState(null)
   const [readiness, setReadiness] = useState(null)
@@ -102,11 +105,13 @@ function StockValidationView() {
       setError('Enter a stock symbol.')
       setResult(null)
       setReadiness(null)
+      toast.warning('Enter a stock symbol to validate.', { title: 'Input Required' })
       return
     }
 
     setLoading(true)
     setError(null)
+    toast.info(`Validation started for ${normalized}.`, { title: 'Validating' })
 
     try {
       const readinessData = await fetchStockReadiness(normalized)
@@ -115,22 +120,24 @@ function StockValidationView() {
 
       if (!readinessData.ready) {
         setResult(null)
-        setError(
-          'Validation is blocked because historical stock data is not ready.',
-        )
+        const blockedMsg = 'Validation is blocked because historical stock data is not ready.'
+        setError(blockedMsg)
+        toast.warning(blockedMsg, { title: 'Data Not Ready' })
         return
       }
 
       const data = await validateStock(normalized)
 
       setResult(data)
+      const statusMsg = data?.status === 'VALIDATED'
+        ? `${normalized} passed validation.`
+        : `${normalized} validation status: ${data?.status || 'complete'}.`
+      toast.success(statusMsg, { title: 'Validation Complete' })
     } catch (requestError) {
       setResult(null)
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Validation request failed.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Validation request failed.')
+      setError(msg)
+      toast.error(msg, { title: 'Validation Failed' })
     } finally {
       setLoading(false)
     }

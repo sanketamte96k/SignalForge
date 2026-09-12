@@ -8,6 +8,8 @@ import {
 } from './api'
 import './PaperTradingView.css'
 import { LoadingState, ErrorState, EmptyState } from './StateViews'
+import { useToast } from './useToast'
+import { sanitizeErrorMessage } from './stateUtils'
 
 function formatCurrency(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -140,6 +142,7 @@ function SectionHeader({
 
 
 function PaperTradingView() {
+  const toast = useToast()
   const [status, setStatus] = useState(null)
   const [report, setReport] = useState(null)
   const [trades, setTrades] = useState([])
@@ -200,12 +203,11 @@ function PaperTradingView() {
     try {
       await startPaperTrading()
       await loadPaperTradingData()
+      toast.success('Paper Trading session started.', { title: 'Session Active' })
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Paper Trading replay failed.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Paper Trading replay failed.')
+      setError(msg)
+      toast.error(msg, { title: 'Session Failed' })
     } finally {
       setStarting(false)
     }
@@ -222,12 +224,11 @@ function PaperTradingView() {
     try {
       await resetPaperTrading()
       await loadPaperTradingData()
+      toast.success('Paper Trading session reset.', { title: 'Session Reset' })
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Unable to reset Paper Trading.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Unable to reset Paper Trading.')
+      setError(msg)
+      toast.error(msg, { title: 'Reset Failed' })
     } finally {
       setResetting(false)
     }

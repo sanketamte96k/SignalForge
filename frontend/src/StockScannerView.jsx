@@ -17,6 +17,8 @@ import {
   filterScannerItems,
   sortScannerItems,
 } from './scannerUtils'
+import { useToast } from './useToast'
+import { sanitizeErrorMessage } from './stateUtils'
 
 const SIGNAL_FILTERS = ['ALL', 'BUY', 'SELL', 'NO TRADE']
 const STATUS_FILTERS = ['ALL', 'VALIDATED', 'TESTING', 'FAILED']
@@ -96,6 +98,7 @@ function ScannerStat({ label, value, tone = 'neutral' }) {
 }
 
 function StockScannerView({ onSelectStock, focusTrigger = 0 }) {
+  const toast = useToast()
   const searchInputRef = useRef(null)
   const [scannerData, setScannerData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -213,7 +216,10 @@ function StockScannerView({ onSelectStock, focusTrigger = 0 }) {
       const wlData = await fetchWatchlists()
       const lists = Array.isArray(wlData?.watchlists) ? wlData.watchlists : []
       const defaultList = lists.find((w) => w.name === 'My Watchlist') || lists[0]
-      if (!defaultList) return
+      if (!defaultList) {
+        toast.warning('No watchlist found. Create one in the Watchlists section.')
+        return
+      }
 
       const isInList = Array.isArray(defaultList.stocks) && defaultList.stocks.some(
         (s) => String(s.symbol || s).toUpperCase() === sym.toUpperCase(),
@@ -221,15 +227,17 @@ function StockScannerView({ onSelectStock, focusTrigger = 0 }) {
 
       if (isInList) {
         await removeStockFromWatchlist(defaultList.name, sym)
+        toast.success(`${sym} removed from "${defaultList.name}".`)
       } else {
         await addStockToWatchlist(defaultList.name, sym)
+        toast.success(`${sym} added to "${defaultList.name}".`)
       }
-    } catch {
-      // Retain existing state on error
+    } catch (err) {
+      toast.error(sanitizeErrorMessage(err, 'Unable to update watchlist.'))
     } finally {
       setWatchlistLoading(false)
     }
-  }, [watchlistLoading])
+  }, [watchlistLoading, toast])
 
   // Focus search trigger from external navigation
   useEffect(() => {
@@ -292,7 +300,10 @@ function StockScannerView({ onSelectStock, focusTrigger = 0 }) {
       if (e.key === 'Enter' || e.key === 'a' || e.key === 'A') {
         if (selectedSymbol && onSelectStock) {
           e.preventDefault()
+          toast.info(`Analysis started for ${selectedSymbol}.`)
           onSelectStock(selectedSymbol)
+        } else if (!selectedSymbol) {
+          toast.warning('Select a stock row before analyzing.', { title: 'No Stock Selected' })
         }
         return
       }
@@ -309,7 +320,7 @@ function StockScannerView({ onSelectStock, focusTrigger = 0 }) {
 
     window.addEventListener('keydown', handleScannerKeyDown)
     return () => window.removeEventListener('keydown', handleScannerKeyDown)
-  }, [processedItems, selectedSymbol, search, onSelectStock, handleToggleWatchlist])
+  }, [processedItems, selectedSymbol, search, onSelectStock, handleToggleWatchlist, toast])
 
   const totalStocks = Number(scannerData?.total_stocks) || items.length
   const eligibleStocks = Number(scannerData?.signal_eligible_stocks) || 0

@@ -9,8 +9,11 @@ import {
 } from './api'
 import './SectorsView.css'
 import { LoadingState, EmptyState } from './StateViews'
+import { useToast } from './useToast'
+import { sanitizeErrorMessage } from './stateUtils'
 
 function SectorsView() {
+  const toast = useToast()
   const [sectors, setSectors] = useState([])
   const [selectedSector, setSelectedSector] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -95,12 +98,11 @@ function SectorsView() {
       setNewSectorDescription('')
       setSectors((current) => [...current, sector])
       setSelectedSector(sector)
+      toast.success(`Sector "${name}" created.`)
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Unable to create sector.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Unable to create sector.')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
@@ -123,20 +125,20 @@ function SectorsView() {
     setError(null)
 
     try {
-      await deleteSector(selectedSector.name)
+      const deletedName = selectedSector.name
+      await deleteSector(deletedName)
 
       const remaining = sectors.filter(
-        (sector) => sector.name !== selectedSector.name,
+        (sector) => sector.name !== deletedName,
       )
 
       setSectors(remaining)
       setSelectedSector(remaining[0] ?? null)
+      toast.success(`Sector "${deletedName}" deleted.`)
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Unable to delete sector.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Unable to delete sector.')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
@@ -199,12 +201,11 @@ function SectorsView() {
       setSelectedSector(updatedSector)
       setStockSearch('')
       setSearchResults([])
+      toast.success(`${symbol} added to "${selectedSector.name}".`)
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Unable to add stock.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Unable to add stock.')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
@@ -233,12 +234,11 @@ function SectorsView() {
       )
 
       setSelectedSector(updatedSector)
+      toast.success(`${symbol} removed from "${selectedSector.name}".`)
     } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'Unable to remove stock.',
-      )
+      const msg = sanitizeErrorMessage(requestError, 'Unable to remove stock.')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }

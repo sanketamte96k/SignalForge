@@ -25,6 +25,8 @@ import {
   isModifierKey,
   findNextTimeframe,
 } from './keyboardShortcuts'
+import { useToast } from './useToast'
+import { sanitizeErrorMessage } from './stateUtils'
 
 const TIMEFRAMES = ['5m', '10m', '15m', '30m']
 
@@ -33,6 +35,7 @@ function StockAnalysisView({
   onBack,
   onSelectStock,
 }) {
+  const toast = useToast()
   const currentSymbol = (initialSymbol || 'RELIANCE').trim().toUpperCase()
 
   // Data states
@@ -188,20 +191,22 @@ function StockAnalysisView({
     try {
       if (isInWatchlist) {
         await removeStockFromWatchlist(defaultWatchlist.name, currentSymbol)
+        toast.success(`${currentSymbol} removed from "${defaultWatchlist.name}".`)
       } else {
         await addStockToWatchlist(defaultWatchlist.name, currentSymbol)
+        toast.success(`${currentSymbol} added to "${defaultWatchlist.name}".`)
       }
       // Refresh watchlists state
       const updated = await fetchWatchlists()
       if (Array.isArray(updated?.watchlists)) {
         setWatchlists(updated.watchlists)
       }
-    } catch {
-      // Keep existing watchlist state on error
+    } catch (err) {
+      toast.error(sanitizeErrorMessage(err, 'Unable to update watchlist.'))
     } finally {
       setWatchlistLoading(false)
     }
-  }, [defaultWatchlist, watchlistLoading, isInWatchlist, currentSymbol])
+  }, [defaultWatchlist, watchlistLoading, isInWatchlist, currentSymbol, toast])
 
   // Analysis Keyboard Shortcuts
   useEffect(() => {
@@ -254,8 +259,9 @@ function StockAnalysisView({
       setValidationData(result)
       const readiness = await fetchStockReadiness(currentSymbol)
       setReadinessData(readiness)
-    } catch {
-      // Retain existing validation data on error
+      toast.success(`${currentSymbol} validation complete.`, { title: 'Validation Done' })
+    } catch (err) {
+      toast.error(sanitizeErrorMessage(err, 'Validation request failed.'), { title: 'Validation Failed' })
     } finally {
       setValidating(false)
     }

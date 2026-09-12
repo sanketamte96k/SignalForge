@@ -9,6 +9,8 @@ import {
 } from './api'
 import './WatchlistsView.css'
 import { LoadingState, EmptyState } from './StateViews'
+import { useToast } from './useToast'
+import { sanitizeErrorMessage } from './stateUtils'
 
 function normalizeSearchResults(response) {
   if (Array.isArray(response)) {
@@ -35,6 +37,7 @@ function getStockName(stock) {
 }
 
 function WatchlistsView() {
+  const toast = useToast()
   const [watchlists, setWatchlists] = useState([])
   const [selectedName, setSelectedName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -112,8 +115,11 @@ function WatchlistsView() {
 
       await loadWatchlists()
       setSelectedName(name)
+      toast.success(`Watchlist "${name}" created.`)
     } catch (err) {
-      setError(err.message || 'Unable to create watchlist.')
+      const msg = sanitizeErrorMessage(err, 'Unable to create watchlist.')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
@@ -132,14 +138,18 @@ function WatchlistsView() {
       return
     }
 
+    const deletedName = selectedWatchlist.name
     try {
       setActionLoading(true)
       setError('')
 
-      await deleteWatchlist(selectedWatchlist.name)
+      await deleteWatchlist(deletedName)
       await loadWatchlists()
+      toast.success(`Watchlist "${deletedName}" deleted.`)
     } catch (err) {
-      setError(err.message || 'Unable to delete watchlist.')
+      const msg = sanitizeErrorMessage(err, 'Unable to delete watchlist.')
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
@@ -182,8 +192,11 @@ function WatchlistsView() {
 
       await loadWatchlists()
       setSelectedName(selectedWatchlist.name)
+      toast.success(`${symbol} added to "${selectedWatchlist.name}".`)
     } catch (err) {
-      setError(err.message || `Unable to add ${symbol}.`)
+      const msg = sanitizeErrorMessage(err, `Unable to add ${symbol}.`)
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
@@ -202,8 +215,11 @@ function WatchlistsView() {
 
       await loadWatchlists()
       setSelectedName(selectedWatchlist.name)
+      toast.success(`${symbol} removed from "${selectedWatchlist.name}".`)
     } catch (err) {
-      setError(err.message || `Unable to remove ${symbol}.`)
+      const msg = sanitizeErrorMessage(err, `Unable to remove ${symbol}.`)
+      setError(msg)
+      toast.error(msg)
     } finally {
       setActionLoading(false)
     }
