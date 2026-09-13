@@ -50,6 +50,7 @@ export function LoadingState({
       className={`sf-state-container sf-loading-state ${compact ? 'sf-state-compact' : ''} ${className}`}
       role="status"
       aria-live="polite"
+      aria-busy="true"
       aria-label={ariaLabel || title}
     >
       <LoadingSpinner size={compact ? 'small' : 'medium'} />

@@ -304,6 +304,7 @@ function SectorsView() {
                 setNewSectorName(event.target.value)
               }
               placeholder="Sector name"
+              aria-label="Sector name"
               maxLength={80}
               disabled={actionLoading}
             />
@@ -315,6 +316,7 @@ function SectorsView() {
                 setNewSectorDescription(event.target.value)
               }
               placeholder="Description (optional)"
+              aria-label="Sector description"
               maxLength={160}
               disabled={actionLoading}
             />
@@ -407,6 +409,7 @@ function SectorsView() {
                   className="danger-sector-button"
                   onClick={handleDeleteSector}
                   disabled={actionLoading}
+                  aria-label={`Delete ${selectedSector.name} sector`}
                 >
                   Delete
                 </button>
@@ -432,6 +435,7 @@ function SectorsView() {
                     value={stockSearch}
                     onChange={handleSearchStocks}
                     placeholder="Search NSE stock by symbol or name..."
+                    aria-label="Search NSE stocks to add to sector"
                     disabled={actionLoading}
                   />
                 </div>
@@ -469,6 +473,11 @@ function SectorsView() {
                               }
                               disabled={
                                 alreadyAdded || actionLoading
+                              }
+                              aria-label={
+                                alreadyAdded
+                                  ? `${stock.symbol} already added to ${selectedSector.name}`
+                                  : `Add ${stock.symbol} to ${selectedSector.name}`
                               }
                             >
                               {alreadyAdded ? 'Added' : 'Add'}

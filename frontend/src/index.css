@@ -63,13 +63,18 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font-family: inherit;
 }
 
 button:focus-visible,
-input:focus-visible {
-  outline: 1px solid #168bff;
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #168bff;
   outline-offset: 2px;
 }
 

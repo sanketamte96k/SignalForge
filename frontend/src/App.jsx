@@ -514,13 +514,14 @@ function App() {
         <div className="sidebar-scroll">
           <div className="sidebar-title">MARKET WORKSPACE</div>
 
-          <nav className="sidebar-nav">
+          <nav className="sidebar-nav" aria-label="Main Navigation">
             {navItems.map(([label, icon]) => (
               <button
                 type="button"
                 key={label}
                 className={`sidebar-item ${activeNav === label ? 'active' : ''
                   }`}
+                aria-current={activeNav === label ? 'page' : undefined}
                 onClick={() =>
                   handleNavigation(
                     label === 'Scanner' ? 'Stock Scanner' : label,
@@ -564,7 +565,8 @@ function App() {
           <button
             type="button"
             className="mobile-toggle"
-            aria-label="Open navigation"
+            aria-label={sidebarOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={sidebarOpen}
             onClick={() => setSidebarOpen((value) => !value)}
           >
             <span />
@@ -729,12 +731,12 @@ function App() {
                     </div>
 
                     <div className="chart-actions">
-                      <button type="button">
+                      <button type="button" aria-label="Chart indicators">
                         <Icon type="indicator" />
                         <span>Indicators</span>
                       </button>
 
-                      <button type="button">
+                      <button type="button" aria-label="Chart templates">
                         <Icon type="template" />
                         <span>Templates</span>
                       </button>
@@ -1284,7 +1286,7 @@ function App() {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="mobile-nav">
+        <nav className="mobile-nav" aria-label="Mobile Navigation">
           {[
             ['Dashboard', 'dashboard'],
             ['NIFTY', 'chart'],
@@ -1292,36 +1294,38 @@ function App() {
             ['Analysis', 'candles'],
             ['Watchlists', 'bookmark'],
             ['Paper', 'briefcase'],
-          ].map(([label, icon]) => (
-            <button
-              type="button"
-              key={label}
-              className={
-                activeNav === label ||
-                  (label === 'NIFTY' && activeNav === 'NIFTY Analysis') ||
-                  (label === 'Scanner' && activeNav === 'Stock Scanner') ||
-                  (label === 'Analysis' && activeNav === 'Stock Analysis')
-                  ? 'active'
-                  : ''
-              }
-              onClick={() =>
-                handleNavigation(
-                  label === 'NIFTY'
-                    ? 'NIFTY Analysis'
-                    : label === 'Scanner'
-                      ? 'Stock Scanner'
-                      : label === 'Analysis'
-                        ? 'Stock Analysis'
-                        : label === 'Paper'
-                          ? 'Paper Trading'
-                          : label,
-                )
-              }
-            >
-              <Icon type={icon} />
-              <span>{label}</span>
-            </button>
-          ))}
+          ].map(([label, icon]) => {
+            const isItemActive =
+              activeNav === label ||
+              (label === 'NIFTY' && activeNav === 'NIFTY Analysis') ||
+              (label === 'Scanner' && activeNav === 'Stock Scanner') ||
+              (label === 'Analysis' && activeNav === 'Stock Analysis')
+
+            return (
+              <button
+                type="button"
+                key={label}
+                className={isItemActive ? 'active' : ''}
+                aria-current={isItemActive ? 'page' : undefined}
+                onClick={() =>
+                  handleNavigation(
+                    label === 'NIFTY'
+                      ? 'NIFTY Analysis'
+                      : label === 'Scanner'
+                        ? 'Stock Scanner'
+                        : label === 'Analysis'
+                          ? 'Stock Analysis'
+                          : label === 'Paper'
+                            ? 'Paper Trading'
+                            : label,
+                  )
+                }
+              >
+                <Icon type={icon} />
+                <span>{label}</span>
+              </button>
+            )
+          })}
         </nav>
 
         {/* Keyboard Shortcuts Help Dialog Modal */}

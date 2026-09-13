@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "vite-node test/state_views.test.js && vite-node test/chart_ux.test.js && vite-node test/scanner_ux.test.js && vite-node test/analysis_workflow.test.js && vite-node test/responsive_layout.test.js && vite-node test/keyboard_shortcuts.test.js && vite-node test/toast_notifications.test.js",
+    "test": "vite-node test/state_views.test.js && vite-node test/chart_ux.test.js && vite-node test/scanner_ux.test.js && vite-node test/analysis_workflow.test.js && vite-node test/responsive_layout.test.js && vite-node test/keyboard_shortcuts.test.js && vite-node test/toast_notifications.test.js && vite-node test/accessibility_ux.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

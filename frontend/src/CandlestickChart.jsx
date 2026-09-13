@@ -496,6 +496,8 @@ export function CandlestickChart({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        <title>{`${chartData?.symbol || symbol} ${timeframe} Candlestick and Volume Chart`}</title>
+        <desc>{`Interactive chart showing ${visibleCandles.length} candles from ${formatShortTime(first?.timestamp)} to ${formatShortTime(last?.timestamp)} with EMA 20, EMA 50, and volume.`}</desc>
         <rect
           x="0"
           y="0"
@@ -617,6 +619,8 @@ export function CandlestickChart({
         {matchedSignal && (
           <g
             className={`chart-signal-marker signal-marker-${matchedSignal.isBuy ? 'buy' : 'sell'}`}
+            role="note"
+            aria-label={`${matchedSignal.type} signal at ${formatShortTime(matchedSignal.candle.timestamp)}`}
             transform={`translate(${matchedSignal.index * xStep + xStep / 2}, ${
               matchedSignal.isBuy
                 ? yPrice(Number(matchedSignal.candle.low)) + 14
@@ -904,6 +908,8 @@ export function RsiChart({
         role="img"
         aria-label={`${chartData?.symbol || symbol} ${timeframe} real RSI 14 indicator chart with synchronized crosshair`}
       >
+        <title>{`${chartData?.symbol || symbol} ${timeframe} RSI 14 Indicator Chart`}</title>
+        <desc>{`Real RSI(14) indicator series showing momentum levels with overbought band at 70 and oversold band at 30.`}</desc>
         <rect
           x="0"
           y="0"

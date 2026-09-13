@@ -231,7 +231,7 @@ function WatchlistsView() {
   )
 
   return (
-    <main className="watchlists-page">
+    <div className="watchlists-page">
       <section className="watchlists-header">
         <div>
           <span className="watchlists-eyebrow">MARKET ORGANIZATION</span>
@@ -328,6 +328,7 @@ function WatchlistsView() {
               value={newWatchlistName}
               onChange={(event) => setNewWatchlistName(event.target.value)}
               placeholder="Watchlist name"
+              aria-label="Watchlist name"
               maxLength={80}
             />
 
@@ -338,6 +339,7 @@ function WatchlistsView() {
                 setNewWatchlistDescription(event.target.value)
               }
               placeholder="Description (optional)"
+              aria-label="Watchlist description"
               maxLength={200}
             />
 
@@ -382,6 +384,7 @@ function WatchlistsView() {
                   type="button"
                   onClick={handleDeleteWatchlist}
                   disabled={actionLoading}
+                  aria-label={`Delete ${selectedWatchlist.name} watchlist`}
                 >
                   Delete
                 </button>
@@ -401,6 +404,7 @@ function WatchlistsView() {
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
                       placeholder="Search symbol or company..."
+                      aria-label="Search NSE instruments by symbol or company name"
                     />
                   </div>
 
@@ -435,6 +439,11 @@ function WatchlistsView() {
                               actionLoading || !symbol || alreadyAdded
                             }
                             onClick={() => handleAddStock(symbol)}
+                            aria-label={
+                              alreadyAdded
+                                ? `${symbol} already added to ${selectedWatchlist.name}`
+                                : `Add ${symbol} to ${selectedWatchlist.name}`
+                            }
                           >
                             {alreadyAdded ? 'Added' : 'Add'}
                           </button>
@@ -510,7 +519,7 @@ function WatchlistsView() {
           )}
         </section>
       </section>
-    </main>
+    </div>
   )
 }
 

@@ -5,9 +5,12 @@ import { SHORTCUT_GROUPS } from './keyboardShortcuts'
 export default function KeyboardShortcutsModal({ isOpen, onClose }) {
   const modalRef = useRef(null)
   const closeBtnRef = useRef(null)
+  const triggerRef = useRef(null)
 
   useEffect(() => {
     if (!isOpen) return
+
+    triggerRef.current = document.activeElement
 
     // Focus close button on open
     const timer = setTimeout(() => {
@@ -21,6 +24,28 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
         e.preventDefault()
         e.stopPropagation()
         onClose()
+        return
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable.length > 0) {
+          const first = focusable[0]
+          const last = focusable[focusable.length - 1]
+          if (e.shiftKey) {
+            if (document.activeElement === first || !modalRef.current.contains(document.activeElement)) {
+              e.preventDefault()
+              last.focus()
+            }
+          } else {
+            if (document.activeElement === last || !modalRef.current.contains(document.activeElement)) {
+              e.preventDefault()
+              first.focus()
+            }
+          }
+        }
       }
     }
 
@@ -28,6 +53,9 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
     return () => {
       clearTimeout(timer)
       window.removeEventListener('keydown', handleKeyDown)
+      if (triggerRef.current && typeof triggerRef.current.focus === 'function') {
+        triggerRef.current.focus()
+      }
     }
   }, [isOpen, onClose])
 
