@@ -157,6 +157,17 @@ function App() {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [hoveredCandle, setHoveredCandle] = useState(null)
 
+  // Stable callbacks passed to chart children — avoid re-registering chart
+  // effects every time the hovered candle changes.
+  const handleHoverChange = useCallback((index, candle) => {
+    setHoveredIndex(index)
+    setHoveredCandle(candle)
+  }, [])
+
+  const handleRsiHoverChange = useCallback((index) => {
+    setHoveredIndex(index)
+  }, [])
+
   // Dashboard state
   const [niftyLatest, setNiftyLatest] = useState(null)
   const [niftySignal, setNiftySignal] = useState(null)
@@ -352,114 +363,129 @@ function App() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
   }, [showShortcutsModal, activeNav, handleNavigation])
 
-  // Dashboard signal calculations
-  let displaySignal = '�'
-  let signalSubtitle = 'NO ACTIVE TRADE SETUP'
-  let signalClass = 'no-trade'
+  // Dashboard signal/price/badge derivations — memoized so they only
+  // recompute when API state changes, not on every chart hover.
+  const dashboardDisplay = useMemo(() => {
+    let displaySignal = '\u2014'
+    let signalSubtitle = 'NO ACTIVE TRADE SETUP'
+    let signalClass = 'no-trade'
 
-  if (niftyLoading) {
-    displaySignal = 'LOADING�'
-    signalSubtitle = 'FETCHING STRATEGY STATE'
-    signalClass = 'loading'
-  } else if (!niftySignal || niftyError) {
-    displaySignal = 'API UNAVAILABLE'
-    signalSubtitle = niftyError || 'BACKEND SERVICE DISCONNECTED'
-    signalClass = 'unavailable'
-  } else {
-    const rawSignal = String(niftySignal.signal || '').toUpperCase().trim()
-    if (rawSignal === 'BUY') {
-      displaySignal = 'BUY'
-      signalSubtitle = 'BUY SIGNAL FROM STRATEGY ENGINE'
-      signalClass = 'buy'
-    } else if (rawSignal === 'SELL') {
-      displaySignal = 'SELL'
-      signalSubtitle = 'SELL SIGNAL FROM STRATEGY ENGINE'
-      signalClass = 'sell'
-    } else if (rawSignal === 'NO_TRADE') {
-      displaySignal = 'NO TRADE'
-      signalSubtitle = 'NO ACTIVE TRADE SETUP'
-      signalClass = 'no-trade'
-    } else if (rawSignal) {
-      displaySignal = rawSignal.replace(/_/g, ' ')
-      signalSubtitle = 'STRATEGY ENGINE STATE'
-      signalClass = 'no-trade'
-    } else {
-      displaySignal = 'NOT AVAILABLE'
-      signalSubtitle = 'NO SIGNAL FIELD RETURNED'
+    if (niftyLoading) {
+      displaySignal = 'LOADING\u2026'
+      signalSubtitle = 'FETCHING STRATEGY STATE'
+      signalClass = 'loading'
+    } else if (!niftySignal || niftyError) {
+      displaySignal = 'API UNAVAILABLE'
+      signalSubtitle = niftyError || 'BACKEND SERVICE DISCONNECTED'
       signalClass = 'unavailable'
+    } else {
+      const rawSignal = String(niftySignal.signal || '').toUpperCase().trim()
+      if (rawSignal === 'BUY') {
+        displaySignal = 'BUY'
+        signalSubtitle = 'BUY SIGNAL FROM STRATEGY ENGINE'
+        signalClass = 'buy'
+      } else if (rawSignal === 'SELL') {
+        displaySignal = 'SELL'
+        signalSubtitle = 'SELL SIGNAL FROM STRATEGY ENGINE'
+        signalClass = 'sell'
+      } else if (rawSignal === 'NO_TRADE') {
+        displaySignal = 'NO TRADE'
+        signalSubtitle = 'NO ACTIVE TRADE SETUP'
+        signalClass = 'no-trade'
+      } else if (rawSignal) {
+        displaySignal = rawSignal.replace(/_/g, ' ')
+        signalSubtitle = 'STRATEGY ENGINE STATE'
+        signalClass = 'no-trade'
+      } else {
+        displaySignal = 'NOT AVAILABLE'
+        signalSubtitle = 'NO SIGNAL FIELD RETURNED'
+        signalClass = 'unavailable'
+      }
     }
-  }
 
-  const apiPrice =
-    typeof niftySignal?.price === 'number'
-      ? niftySignal.price
-      : typeof niftyLatest?.close === 'number'
-        ? niftyLatest.close
-        : null
+    const apiPrice =
+      typeof niftySignal?.price === 'number'
+        ? niftySignal.price
+        : typeof niftyLatest?.close === 'number'
+          ? niftyLatest.close
+          : null
 
-  const displayPrice =
-    niftyLoading
-      ? 'Loading�'
-      : apiPrice !== null
-        ? apiPrice.toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-        : '�'
+    const displayPrice =
+      niftyLoading
+        ? 'Loading\u2026'
+        : apiPrice !== null
+          ? apiPrice.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+          : '\u2014'
 
-  const rawTimestamp =
-    niftySignal?.timestamp || niftyLatest?.timestamp || null
+    const rawTimestamp =
+      niftySignal?.timestamp || niftyLatest?.timestamp || null
 
-  const displayTimestamp =
-    niftyLoading
-      ? 'Loading�'
-      : rawTimestamp
-        ? formatApiTimestamp(rawTimestamp)
-        : '�'
+    const displayTimestamp =
+      niftyLoading
+        ? 'Loading\u2026'
+        : rawTimestamp
+          ? formatApiTimestamp(rawTimestamp)
+          : '\u2014'
 
-  const displayReason =
-    niftyLoading
-      ? 'Loading�'
-      : niftyError && !niftySignal
-        ? 'API Unavailable'
-        : '�'
+    const displayReason =
+      niftyLoading
+        ? 'Loading\u2026'
+        : niftyError && !niftySignal
+          ? 'API Unavailable'
+          : '\u2014'
 
-  const hasCandleData =
-    typeof niftyLatest?.open === 'number' &&
-    typeof niftyLatest?.close === 'number'
+    const hasCandleData =
+      typeof niftyLatest?.open === 'number' &&
+      typeof niftyLatest?.close === 'number'
 
-  const candleDiff = hasCandleData
-    ? niftyLatest.close - niftyLatest.open
-    : null
-
-  const candlePct =
-    hasCandleData && niftyLatest.open > 0
-      ? (candleDiff / niftyLatest.open) * 100
+    const candleDiff = hasCandleData
+      ? niftyLatest.close - niftyLatest.open
       : null
 
-  const candleClass =
-    candleDiff !== null
-      ? candleDiff >= 0
-        ? 'positive'
-        : 'negative'
-      : ''
+    const candlePct =
+      hasCandleData && niftyLatest.open > 0
+        ? (candleDiff / niftyLatest.open) * 100
+        : null
 
-  const candleText =
-    candleDiff !== null
-      ? `${candleDiff >= 0 ? '+' : ''}${candleDiff.toFixed(2)} (${candleDiff >= 0 ? '+' : ''}${candlePct.toFixed(2)}%)`
-      : 'Change �'
+    const candleClass =
+      candleDiff !== null
+        ? candleDiff >= 0
+          ? 'positive'
+          : 'negative'
+        : ''
 
-  const badgeType = niftyLoading
-    ? 'loading'
-    : niftyError && !niftySignal
-      ? 'error'
-      : 'historical'
+    const candleText =
+      candleDiff !== null
+        ? `${candleDiff >= 0 ? '+' : ''}${candleDiff.toFixed(2)} (${candleDiff >= 0 ? '+' : ''}${candlePct.toFixed(2)}%)`
+        : 'Change \u2014'
 
-  const badgeText = niftyLoading
-    ? 'Connecting'
-    : niftyError && !niftySignal
-      ? 'API Unavailable'
-      : 'Historical API'
+    const badgeType = niftyLoading
+      ? 'loading'
+      : niftyError && !niftySignal
+        ? 'error'
+        : 'historical'
+
+    const badgeText = niftyLoading
+      ? 'Connecting'
+      : niftyError && !niftySignal
+        ? 'API Unavailable'
+        : 'Historical API'
+
+    return {
+      displaySignal, signalSubtitle, signalClass,
+      displayPrice, displayTimestamp, displayReason,
+      candleClass, candleText, badgeType, badgeText,
+    }
+  }, [niftyLoading, niftySignal, niftyLatest, niftyError])
+
+  const {
+    displaySignal, signalSubtitle, signalClass,
+    displayPrice, displayTimestamp, displayReason,
+    candleClass, candleText, badgeType, badgeText,
+  } = dashboardDisplay
 
   return (
     <div className="terminal">
@@ -771,10 +797,7 @@ function App() {
                       viewRange={chartViewRange}
                       onViewRangeChange={setChartViewRange}
                       hoverIndex={hoveredIndex}
-                      onHoverChange={(index, candle) => {
-                        setHoveredIndex(index)
-                        setHoveredCandle(candle)
-                      }}
+                      onHoverChange={handleHoverChange}
                     />
                   </div>
 
@@ -790,9 +813,7 @@ function App() {
                       timeframe={activeTimeframe}
                       viewRange={chartViewRange}
                       hoverIndex={hoveredIndex}
-                      onHoverChange={(index) => {
-                        setHoveredIndex(index)
-                      }}
+                      onHoverChange={handleRsiHoverChange}
                     />
                   </div>
                 </div>
@@ -2025,164 +2046,165 @@ function MarketIcon({ type }) {
   )
 }
 
+// Module-level constant — created once at import time, not on every render.
+const ICON_PATHS = {
+  dashboard: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </>
+  ),
+
+  chart: (
+    <>
+      <path d="M4 19V5" />
+      <path d="M4 19h17" />
+      <path d="m7 15 4-5 3 3 5-7" />
+    </>
+  ),
+
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 5 5" />
+    </>
+  ),
+
+  bars: (
+    <>
+      <path d="M5 20V10" />
+      <path d="M12 20V4" />
+      <path d="M19 20v-7" />
+    </>
+  ),
+
+  bookmark: (
+    <path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18l-6-4-6 4V4Z" />
+  ),
+
+  plus: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v8M8 12h8" />
+    </>
+  ),
+
+  check: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8 12 2.5 2.5L16 9" />
+    </>
+  ),
+
+  candles: (
+    <>
+      <path d="M6 4v5M6 15v5M4 9h4v6H4z" />
+      <path d="M12 3v4M12 13v8M10 7h4v6h-4z" />
+      <path d="M18 5v7M18 16v5M16 12h4v4h-4z" />
+    </>
+  ),
+
+  briefcase: (
+    <>
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M3 12h18" />
+    </>
+  ),
+
+  report: (
+    <>
+      <path d="M6 2h9l4 4v16H6z" />
+      <path d="M15 2v5h4M9 12h6M9 16h6M9 8h2" />
+    </>
+  ),
+
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19 12a7 7 0 0 0-.15-1.4l1.7-1.3-2-3.4-2 .8A7 7 0 0 0 14 5l-.3-2.1h-4L9.4 5a7 7 0 0 0-2.55 1.7l-2-.8-2 3.4 1.7 1.3A7 7 0 0 0 4.4 12c0 .48.05.95.15 1.4l-1.7 1.3 2 3.4 2-.8A7 7 0 0 0 9.4 19l.3 2.1h4L14 19a7 7 0 0 0 2.55-1.7l2 .8 2-3.4-1.7-1.3c.1-.45.15-.92.15-1.4Z" />
+    </>
+  ),
+
+  bell: (
+    <>
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+      <path d="M10 21h4" />
+    </>
+  ),
+
+  indicator: (
+    <>
+      <path d="M4 17h4M10 13h4M16 9h4" />
+      <path d="M4 17 10 11 14 15 20 6" />
+    </>
+  ),
+
+  template: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M4 9h16M9 9v11" />
+    </>
+  ),
+
+  fullscreen: (
+    <>
+      <path d="M8 3H4a1 1 0 0 0-1 1v4M16 3h4a1 1 0 0 1 1 1v4M8 21H4a1 1 0 0 1-1-1v-4M16 21h4a1 1 0 0 0 1-1v-4" />
+    </>
+  ),
+
+  'chevron-down': <path d="m6 9 6 6 6-6" />,
+
+  'check-small': <path d="m5 12 4 4 10-10" />,
+
+  'alert-circle': (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <circle cx="12" cy="16" r="0.8" fill="currentColor" />
+    </>
+  ),
+
+  keyboard: (
+    <>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+    </>
+  ),
+
+  'arrow-right': (
+    <>
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </>
+  ),
+
+  'arrow-up-right': (
+    <>
+      <path d="M7 17 17 7" />
+      <path d="M7 7h10v10" />
+    </>
+  ),
+
+  'more-horizontal': (
+    <>
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="19" cy="12" r="1.5" />
+      <circle cx="5" cy="12" r="1.5" />
+    </>
+  ),
+
+  refresh: (
+    <>
+      <path d="M21 12a9 9 0 1 1-2.6-6.4L21 8" />
+      <path d="M21 3v5h-5" />
+    </>
+  ),
+}
+
 function Icon({ type }) {
-  const icons = {
-    dashboard: (
-      <>
-        <rect x="3" y="3" width="7" height="7" rx="1.5" />
-        <rect x="14" y="3" width="7" height="7" rx="1.5" />
-        <rect x="3" y="14" width="7" height="7" rx="1.5" />
-        <rect x="14" y="14" width="7" height="7" rx="1.5" />
-      </>
-    ),
-
-    chart: (
-      <>
-        <path d="M4 19V5" />
-        <path d="M4 19h17" />
-        <path d="m7 15 4-5 3 3 5-7" />
-      </>
-    ),
-
-    search: (
-      <>
-        <circle cx="11" cy="11" r="6.5" />
-        <path d="m16 16 5 5" />
-      </>
-    ),
-
-    bars: (
-      <>
-        <path d="M5 20V10" />
-        <path d="M12 20V4" />
-        <path d="M19 20v-7" />
-      </>
-    ),
-
-    bookmark: (
-      <path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18l-6-4-6 4V4Z" />
-    ),
-
-    plus: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 8v8M8 12h8" />
-      </>
-    ),
-
-    check: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="m8 12 2.5 2.5L16 9" />
-      </>
-    ),
-
-    candles: (
-      <>
-        <path d="M6 4v5M6 15v5M4 9h4v6H4z" />
-        <path d="M12 3v4M12 13v8M10 7h4v6h-4z" />
-        <path d="M18 5v7M18 16v5M16 12h4v4h-4z" />
-      </>
-    ),
-
-    briefcase: (
-      <>
-        <rect x="3" y="7" width="18" height="13" rx="2" />
-        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-        <path d="M3 12h18" />
-      </>
-    ),
-
-    report: (
-      <>
-        <path d="M6 2h9l4 4v16H6z" />
-        <path d="M15 2v5h4M9 12h6M9 16h6M9 8h2" />
-      </>
-    ),
-
-    settings: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19 12a7 7 0 0 0-.15-1.4l1.7-1.3-2-3.4-2 .8A7 7 0 0 0 14 5l-.3-2.1h-4L9.4 5a7 7 0 0 0-2.55 1.7l-2-.8-2 3.4 1.7 1.3A7 7 0 0 0 4.4 12c0 .48.05.95.15 1.4l-1.7 1.3 2 3.4 2-.8A7 7 0 0 0 9.4 19l.3 2.1h4L14 19a7 7 0 0 0 2.55-1.7l2 .8 2-3.4-1.7-1.3c.1-.45.15-.92.15-1.4Z" />
-      </>
-    ),
-
-    bell: (
-      <>
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-        <path d="M10 21h4" />
-      </>
-    ),
-
-    indicator: (
-      <>
-        <path d="M4 17h4M10 13h4M16 9h4" />
-        <path d="M4 17 10 11 14 15 20 6" />
-      </>
-    ),
-
-    template: (
-      <>
-        <rect x="4" y="4" width="16" height="16" rx="2" />
-        <path d="M4 9h16M9 9v11" />
-      </>
-    ),
-
-    fullscreen: (
-      <>
-        <path d="M8 3H4a1 1 0 0 0-1 1v4M16 3h4a1 1 0 0 1 1 1v4M8 21H4a1 1 0 0 1-1-1v-4M16 21h4a1 1 0 0 0 1-1v-4" />
-      </>
-    ),
-
-    'chevron-down': <path d="m6 9 6 6 6-6" />,
-
-    'check-small': <path d="m5 12 4 4 10-10" />,
-
-    'alert-circle': (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <line x1="12" y1="8" x2="12" y2="12" />
-        <circle cx="12" cy="16" r="0.8" fill="currentColor" />
-      </>
-    ),
-
-    keyboard: (
-      <>
-        <rect x="2" y="4" width="20" height="16" rx="2" />
-        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
-      </>
-    ),
-
-    'arrow-right': (
-      <>
-        <path d="M5 12h14" />
-        <path d="m13 6 6 6-6 6" />
-      </>
-    ),
-
-    'arrow-up-right': (
-      <>
-        <path d="M7 17 17 7" />
-        <path d="M7 7h10v10" />
-      </>
-    ),
-
-    'more-horizontal': (
-      <>
-        <circle cx="12" cy="12" r="1.5" />
-        <circle cx="19" cy="12" r="1.5" />
-        <circle cx="5" cy="12" r="1.5" />
-      </>
-    ),
-
-    refresh: (
-      <>
-        <path d="M21 12a9 9 0 1 1-2.6-6.4L21 8" />
-        <path d="M21 3v5h-5" />
-      </>
-    ),
-  }
-
   return (
     <svg
       className="icon"
@@ -2194,7 +2216,7 @@ function Icon({ type }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {icons[type]}
+      {ICON_PATHS[type]}
     </svg>
   )
 }

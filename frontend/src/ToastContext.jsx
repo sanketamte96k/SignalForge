@@ -14,6 +14,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -209,13 +210,16 @@ export function ToastProvider({ children }) {
     [],
   )
 
-  const api = {
+  // Stable api object — only changes when addToast/dismiss change (never).
+  // Without useMemo, every toast add/dismiss causes all useToast() consumers
+  // to re-render because a new api object reference is created each render.
+  const api = useMemo(() => ({
     success: (message, opts) => addToast({ type: 'success', message, ...opts }),
     error: (message, opts) => addToast({ type: 'error', message, ...opts }),
     warning: (message, opts) => addToast({ type: 'warning', message, ...opts }),
     info: (message, opts) => addToast({ type: 'info', message, ...opts }),
     dismiss,
-  }
+  }), [addToast, dismiss])
 
   return (
     <ToastContext.Provider value={api}>
