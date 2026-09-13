@@ -560,14 +560,16 @@ export function CandlestickChart({
           return (
             <g
               key={`${candle.timestamp}-${index}`}
-              className={`candle-group ${isUp ? 'candle-up' : 'candle-down'} ${isHovered ? 'candle-hovered' : ''}`}
+              className={`candle-group ${isUp ? 'candle-up chart-candle-up' : 'candle-down chart-candle-down'} ${isHovered ? 'candle-hovered' : ''}`}
             >
               <line
                 x1={wickX}
                 y1={highY}
                 x2={wickX}
                 y2={lowY}
-                className="candle-wick"
+                className={`candle-wick ${isUp ? 'chart-candle-up' : 'chart-candle-down'}`}
+                stroke={isUp ? '#00d9a3' : '#ff5f67'}
+                strokeWidth="1"
               />
               <rect
                 x={x}
@@ -575,21 +577,41 @@ export function CandlestickChart({
                 width={candleWidth}
                 height={bodyHeight}
                 rx={1}
-                className="candle-body"
+                className={`candle-body ${isUp ? 'chart-candle-up' : 'chart-candle-down'}`}
+                fill={isUp ? '#00d9a3' : '#ff5f67'}
+                stroke={isUp ? '#00d9a3' : '#ff5f67'}
+                strokeWidth="1"
               />
               <rect
                 x={x}
                 y={barY}
                 width={candleWidth}
                 height={barHeight}
-                className="volume-bar"
+                className="volume-bar chart-volume-bar"
+                fill="rgba(99, 151, 190, 0.24)"
               />
             </g>
           )
         })}
 
-        {ema20Path && <path d={ema20Path} className="ema-line ema-20" />}
-        {ema50Path && <path d={ema50Path} className="ema-line ema-50" />}
+        {ema20Path && (
+          <path
+            d={ema20Path}
+            className="ema-line ema-20 chart-ema20"
+            fill="none"
+            stroke="#24a8ff"
+            strokeWidth="1.8"
+          />
+        )}
+        {ema50Path && (
+          <path
+            d={ema50Path}
+            className="ema-line ema-50 chart-ema50"
+            fill="none"
+            stroke="#ffad42"
+            strokeWidth="1.8"
+          />
+        )}
 
         {/* Signal Marker if matched to a candle */}
         {matchedSignal && (

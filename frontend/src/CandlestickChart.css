@@ -72,22 +72,55 @@
   vector-effect: non-scaling-stroke;
 }
 
-.chart-candle-up {
+.chart-candle-up,
+.candle-up,
+.candle-up .candle-body,
+.candle-up .candle-wick,
+.candle-group.candle-up .candle-body,
+.candle-group.candle-up .candle-wick {
   fill: #00d9a3;
   stroke: #00d9a3;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
-.chart-candle-down {
+.chart-candle-down,
+.candle-down,
+.candle-down .candle-body,
+.candle-down .candle-wick,
+.candle-group.candle-down .candle-body,
+.candle-group.candle-down .candle-wick {
   fill: #ff5f67;
   stroke: #ff5f67;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
-.chart-volume-bar {
+.candle-body {
+  rx: 1;
+  shape-rendering: geometricPrecision;
+}
+
+.candle-wick {
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-volume-bar,
+.volume-bar {
   fill: rgba(99, 151, 190, 0.24);
+}
+
+.candle-hovered .candle-body {
+  filter: brightness(1.25);
+}
+
+.candle-hovered .candle-wick {
+  stroke-width: 1.5;
+}
+
+.candle-hovered .volume-bar {
+  fill: rgba(99, 151, 190, 0.45);
 }
 
 .chart-price-label {
@@ -144,19 +177,31 @@
 
 
 .chart-ema20,
-.chart-ema50 {
+.chart-ema50,
+.chart-ema200,
+.ema-line {
   fill: none;
   stroke-width: 1.8;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
 
-.chart-ema20 {
+.chart-ema20,
+.ema-line.ema-20,
+.ema-20 {
   stroke: #24a8ff;
 }
 
-.chart-ema50 {
+.chart-ema50,
+.ema-line.ema-50,
+.ema-50 {
   stroke: #ffad42;
+}
+
+.chart-ema200,
+.ema-line.ema-200,
+.ema-200 {
+  stroke: #b56cff;
 }
 
 .chart-overlay-legend {
