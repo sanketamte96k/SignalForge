@@ -31,6 +31,7 @@ export function CandlestickChart({
   const [isPanning, setIsPanning] = useState(false)
   const [panStart, setPanStart] = useState(null)
   const [localHoverY, setLocalHoverY] = useState(null)
+  const [localHoverOffset, setLocalHoverOffset] = useState(null)
   const svgRef = useRef(null)
 
   const loadChart = useCallback(async () => {
@@ -251,25 +252,39 @@ export function CandlestickChart({
       ? hoverIndex - currentRange.start
       : null
 
+  const effectiveHoverOffset =
+    activeHoverOffset !== null ? activeHoverOffset : localHoverOffset
+
   const activeHoverCandle =
-    activeHoverOffset !== null ? visibleCandles[activeHoverOffset] : null
+    effectiveHoverOffset !== null ? visibleCandles[effectiveHoverOffset] : null
 
   // Crosshair coordinates
   const crosshairX =
-    activeHoverOffset !== null
-      ? activeHoverOffset * xStep + xStep / 2
+    effectiveHoverOffset !== null
+      ? effectiveHoverOffset * xStep + xStep / 2
       : null
 
   const crosshairY =
     localHoverY !== null
       ? Math.max(chartTop, Math.min(chartBottom, localHoverY))
       : activeHoverCandle
-        ? yPrice(activeHoverCandle.close)
+        ? yPrice(Number(activeHoverCandle.close))
         : null
 
   const crosshairPrice =
     crosshairY !== null
       ? calculateCrosshairPrice(crosshairY, chartTop, chartBottom, minPrice, maxPrice)
+      : null
+
+  const badgeWidth = 70
+  const badgeHeight = 20
+  const badgeX = width - badgeWidth - 4
+  const clampedBadgeY =
+    crosshairY !== null
+      ? Math.max(
+          chartTop - 2,
+          Math.min(chartBottom - badgeHeight + 2, crosshairY - badgeHeight / 2),
+        )
       : null
 
   // ---------------------------------------------------------------------------
@@ -310,6 +325,7 @@ export function CandlestickChart({
     const idx = findCandleIndexAtX(scaledX, width, visibleCandles.length)
     const actualIndex = currentRange.start + idx
     const candle = visibleCandles[idx]
+    setLocalHoverOffset(idx)
     if (onHoverChange) {
       onHoverChange(actualIndex, candle)
     }
@@ -320,6 +336,7 @@ export function CandlestickChart({
       setPanStart(null)
     }
     setLocalHoverY(null)
+    setLocalHoverOffset(null)
     if (onHoverChange) {
       onHoverChange(null, null)
     }
@@ -349,10 +366,14 @@ export function CandlestickChart({
       updateRange(next)
 
       const mouseX = Math.max(0, Math.min(rect.width, e.touches[0].clientX - rect.left))
+      const mouseY = Math.max(0, Math.min(rect.height, e.touches[0].clientY - rect.top))
       const scaledX = (mouseX / rect.width) * width
+      const scaledY = (mouseY / rect.height) * height
+      setLocalHoverY(scaledY)
       const idx = findCandleIndexAtX(scaledX, width, visibleCandles.length)
       const actualIndex = currentRange.start + idx
       const candle = visibleCandles[idx]
+      setLocalHoverOffset(idx)
       if (onHoverChange) {
         onHoverChange(actualIndex, candle)
       }
@@ -362,6 +383,8 @@ export function CandlestickChart({
   const handleTouchEnd = useCallback(() => {
     setIsPanning(false)
     setPanStart(null)
+    setLocalHoverY(null)
+    setLocalHoverOffset(null)
     if (onHoverChange) {
       onHoverChange(null, null)
     }
@@ -557,7 +580,7 @@ export function CandlestickChart({
           )
           const barY = volumeBottom - barHeight
 
-          const isHovered = activeHoverOffset === index
+          const isHovered = effectiveHoverOffset === index
 
           return (
             <g
@@ -646,7 +669,7 @@ export function CandlestickChart({
           </g>
         )}
 
-        {/* Synchronized Crosshair */}
+        {/* Synchronized Crosshair & Right Axis Price Badge */}
         {crosshairX !== null && crosshairY !== null && (
           <g className="chart-crosshair-group" pointerEvents="none">
             <line
@@ -663,25 +686,29 @@ export function CandlestickChart({
               y2={crosshairY}
               className="chart-crosshair-h"
             />
-            {crosshairPrice !== null && (
-              <>
+            {crosshairPrice !== null && clampedBadgeY !== null && (
+              <g
+                className="crosshair-price-axis-marker"
+                role="note"
+                aria-label={`Crosshair price ${formatChartPrice(crosshairPrice)}`}
+              >
                 <rect
-                  x={width - 64}
-                  y={crosshairY - 9}
-                  width={60}
-                  height={18}
+                  x={badgeX}
+                  y={clampedBadgeY}
+                  width={badgeWidth}
+                  height={badgeHeight}
                   rx={3}
                   className="crosshair-badge"
                 />
                 <text
-                  x={width - 34}
-                  y={crosshairY + 4}
+                  x={badgeX + badgeWidth / 2}
+                  y={clampedBadgeY + badgeHeight / 2 + 3.5}
                   textAnchor="middle"
                   className="crosshair-badge-text"
                 >
                   {formatChartPrice(crosshairPrice)}
                 </text>
-              </>
+              </g>
             )}
           </g>
         )}

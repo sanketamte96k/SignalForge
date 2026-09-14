@@ -399,10 +399,36 @@
 
 .chart-crosshair-v,
 .chart-crosshair-h {
-  stroke: rgba(143, 175, 198, 0.45);
+  stroke: rgba(0, 210, 255, 0.55);
   stroke-width: 1;
   stroke-dasharray: 4 3;
   vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.chart-crosshair-group {
+  pointer-events: none;
+}
+
+.crosshair-price-axis-marker {
+  pointer-events: none;
+}
+
+.crosshair-badge {
+  fill: #081a2e;
+  stroke: #00d2ff;
+  stroke-width: 1.4;
+  rx: 3px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+.crosshair-badge-text {
+  fill: #ffffff;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, 'Roboto Mono', monospace, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   pointer-events: none;
 }
 

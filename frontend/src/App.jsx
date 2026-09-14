@@ -15,7 +15,10 @@ import SectorsView from './SectorsView'
 import WatchlistsView from './WatchlistsView'
 import StockScannerView from './StockScannerView'
 import StockAnalysisView from './StockAnalysisView'
+import SettingsView from './SettingsView'
+import { loadSettings, applySettingsToDOM } from './settingsUtils'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
+import SignalForgeLogo from './SignalForgeLogo'
 import {
   isEditableTarget,
   isModifierKey,
@@ -144,6 +147,11 @@ function App() {
   const [activeSignalFilter, setActiveSignalFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Initialize saved user layout density
+  useEffect(() => {
+    applySettingsToDOM(loadSettings())
+  }, [])
 
   const handleSelectStock = useCallback((symbol) => {
     if (symbol) {
@@ -502,7 +510,7 @@ function App() {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
           <div className="logo-mark">
-            <Icon type="arrow-up-right" />
+            <SignalForgeLogo size={36} />
           </div>
 
           <div>
@@ -576,7 +584,7 @@ function App() {
 
           <div className="top-logo-mobile">
             <span className="mobile-logo-mark">
-              <Icon type="arrow-up-right" />
+              <SignalForgeLogo size={24} />
             </span>
             <strong>SignalForge</strong>
           </div>
@@ -687,6 +695,8 @@ function App() {
             <WatchlistsView />
           ) : activeNav === 'Paper Trading' || activeNav === 'Paper' ? (
             <PaperTradingView />
+          ) : activeNav === 'Settings' ? (
+            <SettingsView onNavigate={handleNavigation} />
           ) : (
             <>
               {/* Top Section: LARGE NIFTY 50 CHART + NIFTY 50 STRATEGY SIGNAL */}
