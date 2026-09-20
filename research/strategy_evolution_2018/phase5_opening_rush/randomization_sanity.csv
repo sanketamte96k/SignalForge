@@ -1,0 +1,9 @@
+metric,value
+Candidate Actual Expectancy (Rs.),11.82
+Random Permutation Mean Expectancy (Rs.),-21.72
+Random Permutation Std Dev (Rs.),30.45
+Candidate Actual Win Rate (%),34.39
+Random Permutation Mean Win Rate (%),49.27
+Candidate Actual Profit Factor,1.0274
+Permutation p-value (Fraction >= Candidate),0.14
+Permutation Edge Superior to Noise?,True

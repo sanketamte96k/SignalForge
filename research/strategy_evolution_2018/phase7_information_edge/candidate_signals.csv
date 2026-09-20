@@ -1,0 +1,2801 @@
+datetime,symbol,direction,setup_type,quality_score,decision_state,structure_score,mtf_score,location_score,momentum_score,rr_score,entry_price,stop_price,target_price,net_pnl,exit_reason,explanation_card
+2018-01-01 11:06:00,HDFCBANK,LONG,BREAKOUT_RETEST,80.0,SIGNAL_CANDIDATE,20.0,20.0,4.0,20.0,16.0,939.18,938.67,940.1,-2859.89,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   4 / 20
+  ✓ Support dist: 3.1 ATR | Resistance dist: 0.2 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 86%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹939.18
+Stop:         ₹938.67
+Target:       ₹940.10
+Invalidation: Breakdown below ₹938.67 structural level
+------------------------------------------------------------"
+2018-01-01 11:20:00,TCS,SHORT,TREND_PULLBACK,82.3,SIGNAL_CANDIDATE,18.3,20.0,8.0,20.0,16.0,1333.32,1334.97,1330.23,-1828.39,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      82 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    18 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.4 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.33 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,333.32
+Stop:         ₹1,334.97
+Target:       ₹1,330.23
+Invalidation: Breakout above ₹1,334.97 structural ceiling
+------------------------------------------------------------"
+2018-01-01 11:25:00,TCS,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,1333.32,1334.86,1330.43,-1885.28,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 2.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 69%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,333.32
+Stop:         ₹1,334.86
+Target:       ₹1,330.43
+Invalidation: Breakout above ₹1,334.86 structural ceiling
+------------------------------------------------------------"
+2018-01-01 12:50:00,ICICIBANK,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,311.3,311.58,310.8,-1202.88,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 0.6 ATR | Resistance dist: 2.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.37 | Conviction: 67%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹311.30
+Stop:         ₹311.58
+Target:       ₹310.80
+Invalidation: Breakout above ₹311.58 structural ceiling
+------------------------------------------------------------"
+2018-01-01 13:24:00,RELIANCE,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,907.65,908.49,906.08,-2100.2,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.54 | Conviction: 68%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹907.65
+Stop:         ₹908.49
+Target:       ₹906.08
+Invalidation: Breakout above ₹908.49 structural ceiling
+------------------------------------------------------------"
+2018-01-01 13:38:00,INFY,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,519.13,519.6,518.25,702.62,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.2 ATR | Resistance dist: 1.0 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 40%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹519.13
+Stop:         ₹519.60
+Target:       ₹518.25
+Invalidation: Breakout above ₹519.60 structural ceiling
+------------------------------------------------------------"
+2018-01-01 14:55:00,INFY,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,518.1,518.58,517.24,664.66,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 2.9 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 69%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹518.10
+Stop:         ₹518.58
+Target:       ₹517.24
+Invalidation: Breakout above ₹518.58 structural ceiling
+------------------------------------------------------------"
+2018-01-01 15:20:00,RELIANCE,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,900.91,902.71,897.54,-825.41,EOD,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.3 ATR | Resistance dist: 2.0 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.41 | Conviction: 59%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹900.91
+Stop:         ₹902.71
+Target:       ₹897.54
+Invalidation: Breakout above ₹902.71 structural ceiling
+------------------------------------------------------------"
+2018-01-01 15:23:00,INFY,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,516.9,517.89,515.05,-188.39,EOD,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.3 ATR | Resistance dist: 1.5 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.48 | Conviction: 48%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹516.90
+Stop:         ₹517.89
+Target:       ₹515.05
+Invalidation: Breakout above ₹517.89 structural ceiling
+------------------------------------------------------------"
+2018-01-01 15:24:00,INFY,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,516.55,517.52,514.72,-88.31,EOD,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 0.9 ATR | Resistance dist: 2.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.43 | Conviction: 83%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹516.55
+Stop:         ₹517.52
+Target:       ₹514.72
+Invalidation: Breakout above ₹517.52 structural ceiling
+------------------------------------------------------------"
+2018-01-02 10:42:00,INFY,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,516.63,517.17,515.61,-1976.32,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.3 ATR | Resistance dist: 2.0 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.88 | Conviction: 89%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹516.63
+Stop:         ₹517.17
+Target:       ₹515.61
+Invalidation: Breakout above ₹517.17 structural ceiling
+------------------------------------------------------------"
+2018-01-02 11:29:00,TCS,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,1323.3,1324.49,1321.07,742.56,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.8 ATR | Resistance dist: 2.2 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.00 | Conviction: 91%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,323.30
+Stop:         ₹1,324.49
+Target:       ₹1,321.07
+Invalidation: Breakout above ₹1,324.49 structural ceiling
+------------------------------------------------------------"
+2018-01-02 13:50:00,HDFCBANK,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,16.0,20.0,8.0,20.0,16.0,931.78,932.69,930.07,-2042.77,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    16 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.20 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹931.78
+Stop:         ₹932.69
+Target:       ₹930.07
+Invalidation: Breakout above ₹932.69 structural ceiling
+------------------------------------------------------------"
+2018-01-02 14:28:00,INFY,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,512.38,512.95,511.31,-1918.99,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.9 ATR | Resistance dist: 1.7 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.98 | Conviction: 83%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹512.38
+Stop:         ₹512.95
+Target:       ₹511.31
+Invalidation: Breakout above ₹512.95 structural ceiling
+------------------------------------------------------------"
+2018-01-02 14:29:00,INFY,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,512.3,512.82,511.33,-2005.61,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.9 ATR | Resistance dist: 2.1 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.89 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹512.30
+Stop:         ₹512.82
+Target:       ₹511.33
+Invalidation: Breakout above ₹512.82 structural ceiling
+------------------------------------------------------------"
+2018-01-03 11:23:00,ICICIBANK,LONG,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,315.95,315.73,316.37,-1091.68,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ CHOCH_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.5 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.48 | Conviction: 91%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹315.95
+Stop:         ₹315.73
+Target:       ₹316.37
+Invalidation: Breakdown below ₹315.73 structural level
+------------------------------------------------------------"
+2018-01-03 12:35:00,INFY,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,511.3,511.82,510.33,-2003.69,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 0.7 ATR | Resistance dist: 2.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.72 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹511.30
+Stop:         ₹511.82
+Target:       ₹510.33
+Invalidation: Breakout above ₹511.82 structural ceiling
+------------------------------------------------------------"
+2018-01-03 12:44:00,INFY,SHORT,BREAKOUT_RETEST,83.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,15.0,16.0,511.0,511.45,510.18,-1942.45,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.2 ATR | Resistance dist: 2.9 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.38 | Conviction: 56%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹511.00
+Stop:         ₹511.45
+Target:       ₹510.18
+Invalidation: Breakout above ₹511.45 structural ceiling
+------------------------------------------------------------"
+2018-01-03 12:45:00,INFY,SHORT,BREAKOUT_RETEST,85.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,20.0,16.0,511.0,511.41,510.26,-1862.41,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      85 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.4 ATR | Resistance dist: 3.2 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.25 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹511.00
+Stop:         ₹511.41
+Target:       ₹510.26
+Invalidation: Breakout above ₹511.41 structural ceiling
+------------------------------------------------------------"
+2018-01-03 12:48:00,INFY,SHORT,BREAKOUT_RETEST,80.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,15.0,16.0,510.98,511.29,510.42,-1662.27,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.7 ATR | Resistance dist: 3.3 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.93 | Conviction: 77%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹510.98
+Stop:         ₹511.29
+Target:       ₹510.42
+Invalidation: Breakout above ₹511.29 structural ceiling
+------------------------------------------------------------"
+2018-01-03 13:13:00,HDFCBANK,SHORT,TREND_PULLBACK,82.0,SIGNAL_CANDIDATE,14.0,20.0,12.0,20.0,16.0,929.58,930.18,928.46,298.17,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      82 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    14 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.8 ATR | Resistance dist: 1.9 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹929.58
+Stop:         ₹930.18
+Target:       ₹928.46
+Invalidation: Breakout above ₹930.18 structural ceiling
+------------------------------------------------------------"
+2018-01-03 13:52:00,INFY,SHORT,TREND_PULLBACK,82.8,SIGNAL_CANDIDATE,14.8,20.0,12.0,20.0,16.0,510.58,510.94,509.91,-1761.52,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    15 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.7 ATR | Resistance dist: 3.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.28 | Conviction: 73%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹510.58
+Stop:         ₹510.94
+Target:       ₹509.91
+Invalidation: Breakout above ₹510.94 structural ceiling
+------------------------------------------------------------"
+2018-01-03 14:37:00,HDFCBANK,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,927.55,928.35,926.1,-2179.94,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 73%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹927.55
+Stop:         ₹928.35
+Target:       ₹926.10
+Invalidation: Breakout above ₹928.35 structural ceiling
+------------------------------------------------------------"
+2018-01-03 14:40:00,INFY,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,510.03,510.62,508.93,-1883.95,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.6 ATR | Resistance dist: 2.2 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.35 | Conviction: 56%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹510.03
+Stop:         ₹510.62
+Target:       ₹508.93
+Invalidation: Breakout above ₹510.62 structural ceiling
+------------------------------------------------------------"
+2018-01-03 14:41:00,INFY,SHORT,BREAKOUT_RETEST,80.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,12.0,16.0,509.98,510.54,508.96,-1930.41,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.4 ATR | Resistance dist: 2.3 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.33 | Conviction: 15%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹509.98
+Stop:         ₹510.54
+Target:       ₹508.96
+Invalidation: Breakout above ₹510.54 structural ceiling
+------------------------------------------------------------"
+2018-01-03 14:42:00,HDFCBANK,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,927.1,928.08,925.34,54.87,EOD,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.38 | Conviction: 87%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹927.10
+Stop:         ₹928.08
+Target:       ₹925.34
+Invalidation: Breakout above ₹928.08 structural ceiling
+------------------------------------------------------------"
+2018-01-03 14:43:00,HDFCBANK,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,927.08,928.01,925.41,37.42,EOD,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.29 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹927.08
+Stop:         ₹928.01
+Target:       ₹925.41
+Invalidation: Breakout above ₹928.01 structural ceiling
+------------------------------------------------------------"
+2018-01-03 14:44:00,INFY,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,509.73,510.27,508.76,-1963.55,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 2.9 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.24 | Conviction: 71%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹509.73
+Stop:         ₹510.27
+Target:       ₹508.76
+Invalidation: Breakout above ₹510.27 structural ceiling
+------------------------------------------------------------"
+2018-01-04 10:21:00,INFY,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,508.85,509.43,507.77,965.59,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ CHOCH_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.16 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹508.85
+Stop:         ₹509.43
+Target:       ₹507.77
+Invalidation: Breakout above ₹509.43 structural ceiling
+------------------------------------------------------------"
+2018-01-04 12:22:00,ICICIBANK,LONG,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,314.6,314.35,315.05,-1148.95,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.9 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 67%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹314.60
+Stop:         ₹314.35
+Target:       ₹315.05
+Invalidation: Breakdown below ₹314.35 structural level
+------------------------------------------------------------"
+2018-01-04 12:23:00,ICICIBANK,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,314.8,314.53,315.3,-1189.33,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 3.8 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.24 | Conviction: 80%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹314.80
+Stop:         ₹314.53
+Target:       ₹315.30
+Invalidation: Breakdown below ₹314.53 structural level
+------------------------------------------------------------"
+2018-01-04 13:39:00,TCS,SHORT,FAILED_BREAKOUT,80.6,SIGNAL_CANDIDATE,17.6,15.0,20.0,12.0,16.0,1322.47,1323.33,1320.91,-2556.53,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    SHORT
+Setup:        FAILED_BREAKOUT
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    18 / 20
+  ✓ FAILED_BREAKOUT_BEARISH
+MTF Context:  15 / 20
+  ✓ 1m bullish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   20 / 20
+  ✓ Support dist: 3.3 ATR | Resistance dist: 0.0 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.43 | Conviction: 14%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,322.47
+Stop:         ₹1,323.33
+Target:       ₹1,320.91
+Invalidation: Breakout above ₹1,323.33 structural ceiling
+------------------------------------------------------------"
+2018-01-04 13:44:00,INFY,SHORT,BREAKOUT_RETEST,83.0,SIGNAL_CANDIDATE,20.0,15.0,12.0,20.0,16.0,506.03,506.62,504.97,-1877.17,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  15 / 20
+  ✓ 1m range
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.3 ATR | Resistance dist: 1.9 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.48 | Conviction: 68%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹506.03
+Stop:         ₹506.62
+Target:       ₹504.97
+Invalidation: Breakout above ₹506.62 structural ceiling
+------------------------------------------------------------"
+2018-01-04 14:51:00,INFY,SHORT,FAILED_BREAKOUT,80.6,SIGNAL_CANDIDATE,17.6,15.0,20.0,12.0,16.0,506.33,507.05,505.04,-1722.65,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    SHORT
+Setup:        FAILED_BREAKOUT
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    18 / 20
+  ✓ FAILED_BREAKOUT_BEARISH
+MTF Context:  15 / 20
+  ✓ 1m bullish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   20 / 20
+  ✓ Support dist: 2.3 ATR | Resistance dist: 0.3 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.59 | Conviction: 25%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹506.33
+Stop:         ₹507.05
+Target:       ₹505.04
+Invalidation: Breakout above ₹507.05 structural ceiling
+------------------------------------------------------------"
+2018-01-05 11:00:00,HDFCBANK,LONG,BREAKOUT_RETEST,80.0,SIGNAL_CANDIDATE,20.0,20.0,4.0,20.0,16.0,932.0,931.37,933.14,-2498.39,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   4 / 20
+  ✓ Support dist: 2.1 ATR | Resistance dist: 0.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.21 | Conviction: 69%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹932.00
+Stop:         ₹931.37
+Target:       ₹933.14
+Invalidation: Breakdown below ₹931.37 structural level
+------------------------------------------------------------"
+2018-01-05 11:09:00,HDFCBANK,LONG,FAILED_BREAKOUT,80.6,SIGNAL_CANDIDATE,17.6,15.0,20.0,12.0,16.0,931.05,930.42,932.18,-2496.89,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        FAILED_BREAKOUT
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    18 / 20
+  ✓ FAILED_BREAKOUT_BULLISH
+MTF Context:  15 / 20
+  ✓ 1m bearish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   20 / 20
+  ✓ Support dist: 0.3 ATR | Resistance dist: 2.3 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.15 | Conviction: 0%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹931.05
+Stop:         ₹930.42
+Target:       ₹932.18
+Invalidation: Breakdown below ₹930.42 structural level
+------------------------------------------------------------"
+2018-01-05 11:36:00,ICICIBANK,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,13.0,20.0,12.0,20.0,16.0,313.0,313.31,312.43,494.57,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.2 ATR | Resistance dist: 3.7 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.18 | Conviction: 83%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹313.00
+Stop:         ₹313.31
+Target:       ₹312.43
+Invalidation: Breakout above ₹313.31 structural ceiling
+------------------------------------------------------------"
+2018-01-05 12:00:00,ICICIBANK,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,311.75,312.11,311.08,-1363.86,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 4.4 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.24 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹311.75
+Stop:         ₹312.11
+Target:       ₹311.08
+Invalidation: Breakout above ₹312.11 structural ceiling
+------------------------------------------------------------"
+2018-01-05 12:07:00,TCS,LONG,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,1345.9,1344.65,1348.25,-2096.22,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 3.5 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.22 | Conviction: 74%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,345.90
+Stop:         ₹1,344.65
+Target:       ₹1,348.25
+Invalidation: Breakdown below ₹1,344.65 structural level
+------------------------------------------------------------"
+2018-01-08 09:18:00,TCS,LONG,BREAKOUT_RETEST,83.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,15.0,16.0,1346.45,1344.23,1350.44,1168.7,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.4 ATR | Resistance dist: 1.8 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.68 | Conviction: 41%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,346.45
+Stop:         ₹1,344.23
+Target:       ₹1,350.44
+Invalidation: Breakdown below ₹1,344.23 structural level
+------------------------------------------------------------"
+2018-01-08 10:42:00,TCS,LONG,BREAKOUT_RETEST,80.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,15.0,16.0,1360.62,1358.97,1363.59,-1843.94,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 3.0 ATR | Resistance dist: 2.0 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.98 | Conviction: 92%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,360.62
+Stop:         ₹1,358.97
+Target:       ₹1,363.59
+Invalidation: Breakdown below ₹1,358.97 structural level
+------------------------------------------------------------"
+2018-01-08 13:18:00,INFY,LONG,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,513.5,513.21,514.02,-1626.71,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.1 ATR | Resistance dist: 1.2 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.49 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹513.50
+Stop:         ₹513.21
+Target:       ₹514.02
+Invalidation: Breakdown below ₹513.21 structural level
+------------------------------------------------------------"
+2018-01-08 15:02:00,INFY,LONG,TREND_PULLBACK,82.4,SIGNAL_CANDIDATE,19.4,20.0,12.0,15.0,16.0,517.28,516.61,518.54,1087.2,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      82 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    19 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.4 ATR | Resistance dist: 1.3 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.23 | Conviction: 62%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹517.28
+Stop:         ₹516.61
+Target:       ₹518.54
+Invalidation: Breakdown below ₹516.61 structural level
+------------------------------------------------------------"
+2018-01-09 11:15:00,ICICIBANK,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,311.35,311.66,310.77,-1263.01,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 2.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.64 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹311.35
+Stop:         ₹311.66
+Target:       ₹310.77
+Invalidation: Breakout above ₹311.66 structural ceiling
+------------------------------------------------------------"
+2018-01-09 12:10:00,ICICIBANK,SHORT,TREND_PULLBACK,83.3,SIGNAL_CANDIDATE,19.3,20.0,8.0,20.0,16.0,311.15,311.37,310.74,-1082.52,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    19 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 5.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.22 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹311.15
+Stop:         ₹311.37
+Target:       ₹310.74
+Invalidation: Breakout above ₹311.37 structural ceiling
+------------------------------------------------------------"
+2018-01-09 12:23:00,ICICIBANK,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,13.0,20.0,12.0,20.0,16.0,311.45,311.74,310.9,-1223.19,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.6 ATR | Resistance dist: 2.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.48 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹311.45
+Stop:         ₹311.74
+Target:       ₹310.90
+Invalidation: Breakout above ₹311.74 structural ceiling
+------------------------------------------------------------"
+2018-01-09 13:24:00,ICICIBANK,SHORT,TREND_PULLBACK,88.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,20.0,16.0,311.55,311.79,311.09,-1123.34,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      88 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.3 ATR | Resistance dist: 2.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.39 | Conviction: 67%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹311.55
+Stop:         ₹311.79
+Target:       ₹311.09
+Invalidation: Breakout above ₹311.79 structural ceiling
+------------------------------------------------------------"
+2018-01-09 13:26:00,ICICIBANK,SHORT,BREAKOUT_RETEST,88.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,20.0,16.0,311.55,311.78,311.14,-1103.33,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      88 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.3 ATR | Resistance dist: 2.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.34 | Conviction: 67%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹311.55
+Stop:         ₹311.78
+Target:       ₹311.14
+Invalidation: Breakout above ₹311.78 structural ceiling
+------------------------------------------------------------"
+2018-01-09 14:12:00,HDFCBANK,LONG,TREND_PULLBACK,85.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,20.0,16.0,934.0,933.34,935.24,-2434.41,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      85 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.5 ATR | Resistance dist: 1.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.22 | Conviction: 70%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹934.00
+Stop:         ₹933.34
+Target:       ₹935.24
+Invalidation: Breakdown below ₹933.34 structural level
+------------------------------------------------------------"
+2018-01-10 13:24:00,ICICIBANK,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,310.65,310.98,310.04,-1301.63,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ CHOCH_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.8 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.23 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹310.65
+Stop:         ₹310.98
+Target:       ₹310.04
+Invalidation: Breakout above ₹310.98 structural ceiling
+------------------------------------------------------------"
+2018-01-10 14:22:00,INFY,LONG,BREAKOUT_RETEST,83.0,SIGNAL_CANDIDATE,20.0,15.0,12.0,20.0,16.0,524.5,523.41,526.46,-1500.0,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  15 / 20
+  ✓ 1m range
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.6 ATR | Resistance dist: 1.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.54 | Conviction: 96%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹524.50
+Stop:         ₹523.41
+Target:       ₹526.46
+Invalidation: Breakdown below ₹523.41 structural level
+------------------------------------------------------------"
+2018-01-10 14:37:00,HDFCBANK,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,932.28,931.7,933.36,233.74,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.1 ATR | Resistance dist: 0.9 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.42 | Conviction: 65%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹932.28
+Stop:         ₹931.70
+Target:       ₹933.36
+Invalidation: Breakdown below ₹931.70 structural level
+------------------------------------------------------------"
+2018-01-10 14:51:00,ICICIBANK,SHORT,BREAKOUT_RETEST,80.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,12.0,16.0,311.15,311.53,310.47,-1402.68,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.7 ATR | Resistance dist: 2.4 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.36 | Conviction: 14%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹311.15
+Stop:         ₹311.53
+Target:       ₹310.47
+Invalidation: Breakout above ₹311.53 structural ceiling
+------------------------------------------------------------"
+2018-01-10 14:58:00,TCS,LONG,TREND_PULLBACK,80.2,SIGNAL_CANDIDATE,12.2,20.0,12.0,20.0,16.0,1394.43,1392.13,1398.74,1244.42,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    12 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 3.0 ATR | Resistance dist: 1.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.24 | Conviction: 79%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,394.43
+Stop:         ₹1,392.13
+Target:       ₹1,398.74
+Invalidation: Breakdown below ₹1,392.13 structural level
+------------------------------------------------------------"
+2018-01-11 09:17:00,TCS,LONG,FAILED_BREAKOUT,80.6,SIGNAL_CANDIDATE,17.6,15.0,20.0,12.0,16.0,1398.95,1395.42,1405.31,1383.08,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        FAILED_BREAKOUT
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    18 / 20
+  ✓ FAILED_BREAKOUT_BULLISH
+MTF Context:  15 / 20
+  ✓ 1m bearish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   20 / 20
+  ✓ Support dist: 0.1 ATR | Resistance dist: 3.6 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.68 | Conviction: 8%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,398.95
+Stop:         ₹1,395.42
+Target:       ₹1,405.31
+Invalidation: Breakdown below ₹1,395.42 structural level
+------------------------------------------------------------"
+2018-01-11 10:54:00,ICICIBANK,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,309.05,309.25,308.68,102.27,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.26 | Conviction: 71%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹309.05
+Stop:         ₹309.25
+Target:       ₹308.68
+Invalidation: Breakout above ₹309.25 structural ceiling
+------------------------------------------------------------"
+2018-01-11 11:29:00,INFY,LONG,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,530.42,530.1,531.02,118.56,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ CHOCH_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.2 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.22 | Conviction: 86%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹530.42
+Stop:         ₹530.10
+Target:       ₹531.02
+Invalidation: Breakdown below ₹530.10 structural level
+------------------------------------------------------------"
+2018-01-11 11:51:00,INFY,LONG,BREAKOUT_RETEST,80.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,15.0,16.0,531.25,530.9,531.88,176.87,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.5 ATR | Resistance dist: 2.6 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 40%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹531.25
+Stop:         ₹530.90
+Target:       ₹531.88
+Invalidation: Breakdown below ₹530.90 structural level
+------------------------------------------------------------"
+2018-01-11 12:33:00,TCS,LONG,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,1397.72,1396.8,1399.44,329.06,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.2 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,397.72
+Stop:         ₹1,396.80
+Target:       ₹1,399.44
+Invalidation: Breakdown below ₹1,396.80 structural level
+------------------------------------------------------------"
+2018-01-11 12:36:00,HDFCBANK,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,933.65,932.95,934.97,530.77,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 3.4 ATR | Resistance dist: 0.7 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.25 | Conviction: 77%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹933.65
+Stop:         ₹932.95
+Target:       ₹934.97
+Invalidation: Breakdown below ₹932.95 structural level
+------------------------------------------------------------"
+2018-01-11 13:37:00,ICICIBANK,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,20.0,20.0,4.0,20.0,16.0,308.8,309.05,308.34,-1137.85,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   4 / 20
+  ✓ Support dist: 0.2 ATR | Resistance dist: 3.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.16 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹308.80
+Stop:         ₹309.05
+Target:       ₹308.34
+Invalidation: Breakout above ₹309.05 structural ceiling
+------------------------------------------------------------"
+2018-01-12 09:40:00,HDFCBANK,LONG,BREAKOUT_RETEST,81.2,SIGNAL_CANDIDATE,17.2,20.0,8.0,20.0,16.0,938.25,937.47,939.66,-2222.3,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.6 ATR | Resistance dist: 0.8 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 87%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹938.25
+Stop:         ₹937.47
+Target:       ₹939.66
+Invalidation: Breakdown below ₹937.47 structural level
+------------------------------------------------------------"
+2018-01-12 11:12:00,ICICIBANK,LONG,TREND_PULLBACK,83.5,SIGNAL_CANDIDATE,19.5,20.0,8.0,20.0,16.0,313.55,313.22,314.18,-1306.77,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 3.2 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.34 | Conviction: 83%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹313.55
+Stop:         ₹313.22
+Target:       ₹314.18
+Invalidation: Breakdown below ₹313.22 structural level
+------------------------------------------------------------"
+2018-01-12 11:18:00,ICICIBANK,LONG,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,313.3,313.0,313.87,-1246.3,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.5 ATR | Resistance dist: 1.4 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.22 | Conviction: 50%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹313.30
+Stop:         ₹313.00
+Target:       ₹313.87
+Invalidation: Breakdown below ₹313.00 structural level
+------------------------------------------------------------"
+2018-01-12 13:40:00,ICICIBANK,LONG,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,313.15,312.76,313.87,-1425.91,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.1 ATR | Resistance dist: 1.8 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.07 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹313.15
+Stop:         ₹312.76
+Target:       ₹313.87
+Invalidation: Breakdown below ₹312.76 structural level
+------------------------------------------------------------"
+2018-01-12 13:45:00,INFY,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,13.0,20.0,12.0,20.0,16.0,539.5,538.49,541.4,-1553.51,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 4.0 ATR | Resistance dist: 1.7 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.56 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹539.50
+Stop:         ₹538.49
+Target:       ₹541.40
+Invalidation: Breakdown below ₹538.49 structural level
+------------------------------------------------------------"
+2018-01-12 14:11:00,ICICIBANK,LONG,BREAKOUT_RETEST,81.2,SIGNAL_CANDIDATE,17.2,20.0,8.0,20.0,16.0,316.45,315.93,317.39,1178.18,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 5.0 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.36 | Conviction: 93%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹316.45
+Stop:         ₹315.93
+Target:       ₹317.39
+Invalidation: Breakdown below ₹315.93 structural level
+------------------------------------------------------------"
+2018-01-12 14:26:00,RELIANCE,LONG,BREAKOUT_RETEST,85.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,20.0,16.0,939.45,938.5,941.17,-2007.2,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      85 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 4.0 ATR | Resistance dist: 1.4 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 94%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹939.45
+Stop:         ₹938.50
+Target:       ₹941.17
+Invalidation: Breakdown below ₹938.50 structural level
+------------------------------------------------------------"
+2018-01-15 09:19:00,RELIANCE,LONG,BREAKOUT_RETEST,80.2,SIGNAL_CANDIDATE,17.2,15.0,12.0,20.0,16.0,942.07,940.2,945.43,1270.28,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  15 / 20
+  ✓ 1m bullish
+  ✓ 5m range
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.8 ATR | Resistance dist: 2.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.66 | Conviction: 68%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹942.07
+Stop:         ₹940.20
+Target:       ₹945.43
+Invalidation: Breakdown below ₹940.20 structural level
+------------------------------------------------------------"
+2018-01-15 12:44:00,INFY,LONG,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,541.85,541.35,542.76,-2103.2,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 3.2 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.26 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹541.85
+Stop:         ₹541.35
+Target:       ₹542.76
+Invalidation: Breakdown below ₹541.35 structural level
+------------------------------------------------------------"
+2018-01-15 12:49:00,INFY,LONG,BREAKOUT_RETEST,80.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,12.0,16.0,541.3,540.81,542.18,-2082.11,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.0 ATR | Resistance dist: 2.1 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.20 | Conviction: 15%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹541.30
+Stop:         ₹540.81
+Target:       ₹542.18
+Invalidation: Breakdown below ₹540.81 structural level
+------------------------------------------------------------"
+2018-01-15 14:54:00,ICICIBANK,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,328.2,327.67,329.19,1227.22,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.4 ATR | Resistance dist: 1.2 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.49 | Conviction: 70%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹328.20
+Stop:         ₹327.67
+Target:       ₹329.19
+Invalidation: Breakdown below ₹327.67 structural level
+------------------------------------------------------------"
+2018-01-15 14:56:00,ICICIBANK,LONG,BREAKOUT_RETEST,80.0,SIGNAL_CANDIDATE,20.0,20.0,12.0,12.0,16.0,328.2,327.76,328.99,902.81,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.6 ATR | Resistance dist: 1.4 ATR
+Momentum:     12 / 20
+  ✓ ATR ratio: 1.27 | Conviction: 25%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹328.20
+Stop:         ₹327.76
+Target:       ₹328.99
+Invalidation: Breakdown below ₹327.76 structural level
+------------------------------------------------------------"
+2018-01-15 15:00:00,ICICIBANK,LONG,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,328.3,327.88,329.05,822.65,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.5 ATR | Resistance dist: 1.2 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.18 | Conviction: 86%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹328.30
+Stop:         ₹327.88
+Target:       ₹329.05
+Invalidation: Breakdown below ₹327.88 structural level
+------------------------------------------------------------"
+2018-01-15 15:01:00,ICICIBANK,LONG,TREND_PULLBACK,83.0,SIGNAL_CANDIDATE,19.0,20.0,8.0,20.0,16.0,328.85,328.34,329.8,1196.52,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    19 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 3.4 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.37 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹328.85
+Stop:         ₹328.34
+Target:       ₹329.80
+Invalidation: Breakdown below ₹328.34 structural level
+------------------------------------------------------------"
+2018-01-15 15:15:00,TCS,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,1374.53,1375.44,1372.89,777.72,EOD,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 7.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.48 | Conviction: 83%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,374.53
+Stop:         ₹1,375.44
+Target:       ₹1,372.89
+Invalidation: Breakout above ₹1,375.44 structural ceiling
+------------------------------------------------------------"
+2018-01-16 10:58:00,ICICIBANK,LONG,BREAKOUT_RETEST,83.0,SIGNAL_CANDIDATE,20.0,15.0,12.0,20.0,16.0,328.3,327.76,329.26,1148.39,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  15 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m range
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.6 ATR | Resistance dist: 1.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.47 | Conviction: 87%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹328.30
+Stop:         ₹327.76
+Target:       ₹329.26
+Invalidation: Breakdown below ₹327.76 structural level
+------------------------------------------------------------"
+2018-01-16 11:52:00,TCS,LONG,BREAKOUT_RETEST,80.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,15.0,16.0,1424.68,1422.81,1428.04,-1778.86,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 3.4 ATR | Resistance dist: 1.8 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.27 | Conviction: 62%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,424.68
+Stop:         ₹1,422.81
+Target:       ₹1,428.04
+Invalidation: Breakdown below ₹1,422.81 structural level
+------------------------------------------------------------"
+2018-01-16 11:54:00,TCS,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,13.0,20.0,12.0,20.0,16.0,1424.25,1422.43,1427.66,-1800.59,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 3.3 ATR | Resistance dist: 2.2 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.20 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,424.25
+Stop:         ₹1,422.43
+Target:       ₹1,427.66
+Invalidation: Breakdown below ₹1,422.43 structural level
+------------------------------------------------------------"
+2018-01-16 11:55:00,TCS,LONG,BREAKOUT_RETEST,81.2,SIGNAL_CANDIDATE,17.2,20.0,8.0,20.0,16.0,1426.18,1424.31,1429.55,-1779.66,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.3 ATR | Resistance dist: 0.8 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.29 | Conviction: 86%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹1,426.18
+Stop:         ₹1,424.31
+Target:       ₹1,429.55
+Invalidation: Breakdown below ₹1,424.31 structural level
+------------------------------------------------------------"
+2018-01-16 12:25:00,RELIANCE,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,923.25,924.12,921.61,-2080.94,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.26 | Conviction: 95%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹923.25
+Stop:         ₹924.12
+Target:       ₹921.61
+Invalidation: Breakout above ₹924.12 structural ceiling
+------------------------------------------------------------"
+2018-01-16 13:11:00,INFY,LONG,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,20.0,20.0,4.0,20.0,16.0,564.67,563.72,566.45,-1612.93,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   4 / 20
+  ✓ Support dist: 3.5 ATR | Resistance dist: 0.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.53 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹564.67
+Stop:         ₹563.72
+Target:       ₹566.45
+Invalidation: Breakdown below ₹563.72 structural level
+------------------------------------------------------------"
+2018-01-16 13:38:00,TCS,LONG,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,1426.25,1424.74,1429.08,-1963.3,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ CHOCH_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 5.6 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 88%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,426.25
+Stop:         ₹1,424.74
+Target:       ₹1,429.08
+Invalidation: Breakdown below ₹1,424.74 structural level
+------------------------------------------------------------"
+2018-01-16 13:39:00,INFY,LONG,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,564.65,563.81,566.23,-1691.03,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.9 ATR | Resistance dist: 1.4 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 1.13 | Conviction: 85%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹564.65
+Stop:         ₹563.81
+Target:       ₹566.23
+Invalidation: Breakdown below ₹563.81 structural level
+------------------------------------------------------------"
+2018-01-17 09:18:00,RELIANCE,SHORT,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,908.93,911.11,904.84,1437.87,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ CHOCH_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 4.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.91 | Conviction: 89%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹908.93
+Stop:         ₹911.11
+Target:       ₹904.84
+Invalidation: Breakout above ₹911.11 structural ceiling
+------------------------------------------------------------"
+2018-01-17 09:38:00,RELIANCE,SHORT,BREAKOUT_RETEST,81.2,SIGNAL_CANDIDATE,13.2,20.0,12.0,20.0,16.0,903.68,906.08,899.35,-1394.83,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.5 ATR | Resistance dist: 5.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.47 | Conviction: 84%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹903.68
+Stop:         ₹906.08
+Target:       ₹899.35
+Invalidation: Breakout above ₹906.08 structural ceiling
+------------------------------------------------------------"
+2018-01-17 11:02:00,ICICIBANK,LONG,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,341.15,340.79,341.79,577.06,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.5 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.15 | Conviction: 83%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹341.15
+Stop:         ₹340.79
+Target:       ₹341.79
+Invalidation: Breakdown below ₹340.79 structural level
+------------------------------------------------------------"
+2018-01-18 13:29:00,ICICIBANK,LONG,TREND_PULLBACK,82.4,SIGNAL_CANDIDATE,18.4,20.0,8.0,20.0,16.0,349.65,349.06,350.76,-1611.27,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      82 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    18 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.0 ATR | Resistance dist: 0.7 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.28 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹349.65
+Stop:         ₹349.06
+Target:       ₹350.76
+Invalidation: Breakdown below ₹349.06 structural level
+------------------------------------------------------------"
+2018-01-18 13:31:00,INFY,LONG,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,576.4,575.64,577.77,-1776.87,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.1 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.23 | Conviction: 94%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹576.40
+Stop:         ₹575.64
+Target:       ₹577.77
+Invalidation: Breakdown below ₹575.64 structural level
+------------------------------------------------------------"
+2018-01-18 13:39:00,INFY,LONG,BREAKOUT_RETEST,80.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,15.0,16.0,575.45,574.84,576.55,-1962.45,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       INFY
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.9 ATR | Resistance dist: 2.1 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.94 | Conviction: 80%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹575.45
+Stop:         ₹574.84
+Target:       ₹576.55
+Invalidation: Breakdown below ₹574.84 structural level
+------------------------------------------------------------"
+2018-01-18 13:39:00,HDFCBANK,LONG,TREND_PULLBACK,82.6,SIGNAL_CANDIDATE,18.6,20.0,8.0,20.0,16.0,973.25,972.53,974.61,-2369.73,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      83 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    19 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.3 ATR | Resistance dist: 0.6 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.15 | Conviction: 80%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹973.25
+Stop:         ₹972.53
+Target:       ₹974.61
+Invalidation: Breakdown below ₹972.53 structural level
+------------------------------------------------------------"
+2018-01-18 13:44:00,HDFCBANK,LONG,TREND_PULLBACK,83.5,SIGNAL_CANDIDATE,19.5,20.0,8.0,20.0,16.0,973.48,972.72,974.9,566.24,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.6 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 98%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹973.48
+Stop:         ₹972.72
+Target:       ₹974.90
+Invalidation: Breakdown below ₹972.72 structural level
+------------------------------------------------------------"
+2018-01-18 14:13:00,HDFCBANK,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,974.15,973.16,976.0,-2003.29,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       HDFCBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 2.6 ATR | Resistance dist: 1.1 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.17 | Conviction: 70%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹974.15
+Stop:         ₹973.16
+Target:       ₹976.00
+Invalidation: Breakdown below ₹973.16 structural level
+------------------------------------------------------------"
+2018-01-18 14:33:00,RELIANCE,SHORT,TREND_PULLBACK,80.0,SIGNAL_CANDIDATE,17.0,20.0,12.0,15.0,16.0,911.46,912.39,909.71,-2000.07,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      80 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   12 / 20
+  ✓ Support dist: 1.5 ATR | Resistance dist: 2.5 ATR
+Momentum:     15 / 20
+  ✓ ATR ratio: 0.87 | Conviction: 86%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹911.46
+Stop:         ₹912.39
+Target:       ₹909.71
+Invalidation: Breakout above ₹912.39 structural ceiling
+------------------------------------------------------------"
+2018-01-18 14:50:00,RELIANCE,SHORT,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,17.0,20.0,8.0,20.0,16.0,909.88,911.18,907.44,1157.6,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 3.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.19 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹909.88
+Stop:         ₹911.18
+Target:       ₹907.44
+Invalidation: Breakout above ₹911.18 structural ceiling
+------------------------------------------------------------"
+2018-01-18 14:57:00,RELIANCE,SHORT,BREAKOUT_RETEST,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,908.59,910.61,904.95,-1470.15,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       RELIANCE
+Direction:    SHORT
+Setup:        BREAKOUT_RETEST
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BREAKOUT_RETEST_BEARISH
+MTF Context:  20 / 20
+  ✓ 1m bearish
+  ✓ 5m bearish
+  ✓ 15m bearish
+  ✓ 30m bearish
+Market Loc:   8 / 20
+  ✓ Support dist: 1.0 ATR | Resistance dist: 2.8 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.72 | Conviction: 74%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹908.59
+Stop:         ₹910.61
+Target:       ₹904.95
+Invalidation: Breakout above ₹910.61 structural ceiling
+------------------------------------------------------------"
+2018-01-18 15:03:00,TCS,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,13.0,20.0,12.0,20.0,16.0,1450.5,1448.87,1453.55,959.56,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       TCS
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 3.7 ATR | Resistance dist: 1.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.16 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹1,450.50
+Stop:         ₹1,448.87
+Target:       ₹1,453.55
+Invalidation: Breakdown below ₹1,448.87 structural level
+------------------------------------------------------------"
+2018-01-19 12:07:00,ICICIBANK,LONG,TREND_PULLBACK,81.0,SIGNAL_CANDIDATE,13.0,20.0,12.0,20.0,16.0,349.0,348.5,349.94,1161.06,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      81 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    13 / 20
+  ✓ NONE
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.2 ATR | Resistance dist: 2.5 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.40 | Conviction: 100%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹349.00
+Stop:         ₹348.50
+Target:       ₹349.94
+Invalidation: Breakdown below ₹348.50 structural level
+------------------------------------------------------------"
+2018-01-19 12:08:00,ICICIBANK,LONG,BREAKOUT_RETEST,85.2,SIGNAL_CANDIDATE,17.2,20.0,12.0,20.0,16.0,349.15,348.7,349.96,900.89,TARGET,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        BREAKOUT_RETEST
+Quality:      85 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    17 / 20
+  ✓ BREAKOUT_RETEST_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   12 / 20
+  ✓ Support dist: 2.4 ATR | Resistance dist: 2.3 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.30 | Conviction: 75%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.8
+
+Entry:        ₹349.15
+Stop:         ₹348.70
+Target:       ₹349.96
+Invalidation: Breakdown below ₹348.70 structural level
+------------------------------------------------------------"
+2018-01-19 12:11:00,ICICIBANK,LONG,TREND_PULLBACK,84.0,SIGNAL_CANDIDATE,20.0,20.0,8.0,20.0,16.0,350.55,349.9,351.77,-1558.35,STOP,"------------------------------------------------------------
+SIGNAL CANDIDATE
+
+Symbol:       ICICIBANK
+Direction:    LONG
+Setup:        TREND_PULLBACK
+Quality:      84 / 100
+Decision:     SIGNAL_CANDIDATE
+
+Structure:    20 / 20
+  ✓ BOS_BULLISH
+MTF Context:  20 / 20
+  ✓ 1m bullish
+  ✓ 5m bullish
+  ✓ 15m bullish
+  ✓ 30m bullish
+Market Loc:   8 / 20
+  ✓ Support dist: 4.4 ATR | Resistance dist: 1.0 ATR
+Momentum:     20 / 20
+  ✓ ATR ratio: 1.76 | Conviction: 90%
+Risk/Reward:  16 / 20
+  ✓ 1 : 1.9
+
+Entry:        ₹350.55
+Stop:         ₹349.90
+Target:       ₹351.77
+Invalidation: Breakdown below ₹349.90 structural level
+------------------------------------------------------------"

@@ -1,0 +1,18 @@
+model,short_name,score_threshold,trades,trades_per_day,win_rate,gross_pnl,transaction_costs,net_pnl,gross_pf,net_pf,gross_expectancy,net_expectancy,average_winner,average_loser,reward_risk_ratio,max_drawdown,max_loss_streak
+Variant A: Baseline Control,Variant A (Baseline),0.0,11222,45.8,31.73,-146346.59,229207.84,-375554.43,0.9698,0.9248,-13.04,-33.47,1297.62,652.18,1.99,239474.34,37
+Variant B: Equal-Weight Score,Variant B (Equal Weight),50.0,7683,31.4,30.81,-256715.73,156285.65,-413001.38,0.9068,0.8557,-33.41,-53.76,1034.42,538.28,1.92,111196.92,25
+Variant B: Equal-Weight Score,Variant B (Equal Weight),60.0,2936,12.0,28.88,-251168.95,59878.28,-311047.23,0.8044,0.7655,-85.55,-105.94,1197.19,635.18,1.88,86361.72,20
+Variant B: Equal-Weight Score,Variant B (Equal Weight),70.0,271,1.1,28.78,-37454.94,5584.46,-43039.4,0.7955,0.77,-138.21,-158.82,1847.4,969.62,1.91,17414.79,15
+Variant B: Equal-Weight Score,Variant B (Equal Weight),80.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0
+Variant C: Trend + Momentum Score,Variant C (Trend+Mom),50.0,4665,19.0,29.8,-278614.14,94916.46,-373530.6,0.8413,0.795,-59.72,-80.07,1042.17,556.38,1.87,98760.74,20
+Variant C: Trend + Momentum Score,Variant C (Trend+Mom),60.0,2281,9.3,30.25,-166747.3,46723.34,-213470.64,0.8595,0.8249,-73.1,-93.59,1457.47,766.26,1.9,86347.07,19
+Variant C: Trend + Momentum Score,Variant C (Trend+Mom),70.0,1013,4.1,30.21,-84786.37,20819.42,-105605.79,0.8591,0.8286,-83.7,-104.25,1668.79,871.65,1.91,54005.81,15
+Variant C: Trend + Momentum Score,Variant C (Trend+Mom),80.0,394,1.6,33.5,4273.14,8144.97,-3871.83,1.0163,0.9856,10.85,-9.83,2002.5,1023.67,1.96,61477.63,11
+Variant D: Trend+Mom+Vol+Volume Score,Variant D (Multi-Factor),50.0,4294,17.5,29.95,-260184.1,87487.04,-347671.14,0.8502,0.8067,-60.59,-80.97,1127.91,597.79,1.89,94805.98,26
+Variant D: Trend+Mom+Vol+Volume Score,Variant D (Multi-Factor),60.0,1920,7.8,30.0,-160983.37,39348.23,-200331.59,0.8435,0.8103,-83.85,-104.34,1485.73,785.8,1.89,71434.58,20
+Variant D: Trend+Mom+Vol+Volume Score,Variant D (Multi-Factor),70.0,805,3.3,31.43,-44695.87,16583.52,-61279.39,0.9116,0.8815,-55.52,-76.12,1801.92,936.89,1.92,48643.24,12
+Variant D: Trend+Mom+Vol+Volume Score,Variant D (Multi-Factor),80.0,312,1.3,33.97,4327.69,6446.46,-2118.77,1.0212,0.9898,13.87,-6.79,1947.16,1012.22,1.92,33864.03,12
+Variant E: Full Quality Score,Variant E (Full Quality),50.0,5914,24.1,30.23,-274548.25,120217.96,-394766.22,0.8677,0.8171,-46.42,-66.75,986.52,523.19,1.89,102475.39,28
+Variant E: Full Quality Score,Variant E (Full Quality),60.0,2128,8.7,30.22,-162923.22,43603.01,-206526.23,0.8551,0.8211,-76.56,-97.05,1474.67,777.6,1.9,75386.55,19
+Variant E: Full Quality Score,Variant E (Full Quality),70.0,641,2.6,31.67,-33821.29,13207.81,-47029.1,0.9164,0.8863,-52.76,-73.37,1806.18,944.48,1.91,37915.11,13
+Variant E: Full Quality Score,Variant E (Full Quality),80.0,138,0.6,30.43,-12472.52,2848.02,-15320.54,0.8677,0.8408,-90.38,-111.02,1926.32,1002.36,1.92,15269.79,11

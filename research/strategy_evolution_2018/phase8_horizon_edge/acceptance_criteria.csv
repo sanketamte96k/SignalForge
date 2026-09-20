@@ -1,0 +1,7 @@
+hypothesis,best_horizon,pos_train_exp,pos_val_exp,pos_oos_exp,oos_pf_above_1,pos_net_exp_after_cost,survives_1_5x_cost,not_single_symbol_dependent,not_single_month_dependent,no_look_ahead,chronologically_stable,reasonable_trade_frequency,mechanistically_explainable,total_passed,robust_edge_qualified
+HYPOTHESIS_A_TREND_CONTINUATION,120m,False,False,False,False,False,False,False,False,True,True,True,True,4/12,False
+HYPOTHESIS_B_PULLBACK_CONTINUATION,120m,False,False,False,False,False,False,False,False,True,True,True,True,4/12,False
+HYPOTHESIS_C_RANGE_MEAN_REVERSION,5m,False,False,False,False,False,False,False,False,True,True,True,True,4/12,False
+HYPOTHESIS_D_BREAKOUT_FOLLOW_THROUGH,120m,False,False,False,False,False,False,False,False,True,True,True,True,4/12,False
+HYPOTHESIS_E_OPENING_SESSION_MOMENTUM,30m,False,False,False,False,False,False,False,False,True,True,True,True,4/12,False
+HYPOTHESIS_F_VOLATILITY_EXPANSION,120m,False,False,False,False,False,False,False,False,True,True,True,True,4/12,False

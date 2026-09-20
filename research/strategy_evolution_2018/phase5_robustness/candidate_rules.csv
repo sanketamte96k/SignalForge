@@ -1,0 +1,8 @@
+rule_name,trades,win_rate,gross_pf,net_pf,gross_pnl,costs,net_pnl,expectancy,max_drawdown,no_infy_net_pf,no_infy_net_pnl,no_infy_expectancy
+Base H3 Candidate,1416,34.39,1.077,1.0274,45671.7,28935.78,16735.92,11.82,26418.35,0.9419,-19624.34,-17.81
+Rule 1: Opening + EMA Alignment (Trend Dir == Signal),1347,34.37,1.0686,1.0192,38686.46,27523.3,11163.16,8.29,28447.37,0.9386,-19769.17,-18.83
+Rule 2: Opening + ADX Trend (ADX >= 25),531,32.77,0.9842,0.941,-3822.2,10859.54,-14681.74,-27.65,32611.98,0.9369,-7996.35,-19.99
+Rule 3: Opening + Momentum Acceleration (ret_5 * direction > 0),1385,33.94,1.0643,1.0153,37506.83,28301.99,9204.84,6.65,29784.38,0.9137,-28673.63,-26.7
+Rule 4: Opening + Opening Range Breakout (BREAKOUT_HIGH/LOW),561,35.29,1.1125,1.0618,26450.56,11468.28,14982.28,26.71,16905.6,0.9864,-1794.32,-4.12
+Rule 5: Opening + Pullback Confirmation (dist <= 0.5 ATR),161,36.02,1.3517,1.2874,21292.81,3291.2,18001.62,111.81,7796.17,0.8542,-6202.23,-47.71
+Rule 6: Opening + Strong Slope (|ema_slope| > 0.02),1316,34.95,1.1022,1.0517,56254.74,26898.6,29356.14,22.31,26892.16,0.96,-12392.67,-12.2

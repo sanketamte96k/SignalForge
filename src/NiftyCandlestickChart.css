@@ -1,0 +1,117 @@
+.nifty-chart-card {
+  width: 100%;
+  border: 1px solid rgba(143, 155, 179, 0.14);
+  border-radius: 16px;
+  background: rgba(14, 19, 30, 0.72);
+  overflow: hidden;
+}
+
+.nifty-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px 12px;
+}
+
+.nifty-chart-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nifty-chart-title-row h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nifty-chart-header p {
+  margin: 5px 0 0;
+  color: #8f9bb3;
+  font-size: 12px;
+}
+
+.nifty-chart-badge {
+  padding: 3px 7px;
+  border: 1px solid rgba(143, 155, 179, 0.2);
+  border-radius: 5px;
+  color: #8f9bb3;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.nifty-timeframe-selector {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid rgba(143, 155, 179, 0.14);
+  border-radius: 9px;
+  background: rgba(8, 12, 20, 0.6);
+}
+
+.nifty-timeframe {
+  min-width: 43px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8f9bb3;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nifty-timeframe:hover:not(:disabled) {
+  color: #dce4f5;
+  background: rgba(143, 155, 179, 0.08);
+}
+
+.nifty-timeframe.active {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+}
+
+.nifty-timeframe:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.nifty-chart-status {
+  min-height: 18px;
+  padding: 0 20px 8px;
+  color: #68758d;
+  font-size: 11px;
+}
+
+.nifty-chart-error {
+  color: #f87171;
+}
+
+.nifty-chart-container {
+  width: 100%;
+  min-height: 420px;
+}
+
+@media (max-width: 700px) {
+  .nifty-chart-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nifty-timeframe-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nifty-timeframe {
+    flex: 1;
+  }
+
+  .nifty-chart-container {
+    min-height: 340px;
+  }
+}

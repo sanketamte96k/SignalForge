@@ -14,6 +14,7 @@ from src.data.market_data_service import (
     UnknownProviderError,
 )
 from src.data.providers.groww import GrowwProvider
+from src.data.providers.groww_auth import GrowwAuthManager
 from src.data.providers.groww_config import GrowwConfig
 from src.data.providers.groww_errors import (
     GrowwAPIError,
@@ -29,6 +30,7 @@ from src.data.stock_provider import StockDataProvider
 __all__ = [
     "CANONICAL_OHLCV_COLUMNS",
     "GrowwAPIError",
+    "GrowwAuthManager",
     "GrowwAuthenticationError",
     "GrowwConfig",
     "GrowwDataFormatError",

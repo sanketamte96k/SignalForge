@@ -1,0 +1,7 @@
+variant,profitable_symbols,profitable_months,worst_drawdown,gross_expectancy_positive,gross_pf_improvement,verdict
+Baseline Control,1/5,2/12,239474.34,False,0.0,REJECT
+RSI Confirmation,0/5,0/12,140058.55,False,-0.0463,REJECT
+Pullback Entry,1/5,5/12,145506.57,False,0.0154,REJECT
+Pullback + RSI,1/5,5/12,153361.67,False,0.0155,REJECT
+Pullback + Candle,1/5,4/12,117520.5,False,-0.001,REJECT
+ADX25 + Pullback,1/5,3/12,103267.83,False,-0.0447,REJECT

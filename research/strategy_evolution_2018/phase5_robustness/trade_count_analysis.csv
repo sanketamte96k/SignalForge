@@ -1,0 +1,9 @@
+metric,value,threshold,status
+Total Candidate Trades,1416.0,>= 500,ADEQUATE
+OOS Trades (Sep–Dec),351.0,>= 200,ADEQUATE
+Minimum Symbol Trade Count,224.0,>= 100,ADEQUATE
+Average Symbol Trade Count,283.2,>= 100,ADEQUATE
+Minimum Month Trade Count,82.0,>= 50,ADEQUATE
+Average Month Trade Count,118.0,>= 50,ADEQUATE
+T-Statistic (vs mu = 0),0.3861,> 1.96,FAIL
+P-Value (One-Sided),0.3497,< 0.05,NOT_SIGNIFICANT

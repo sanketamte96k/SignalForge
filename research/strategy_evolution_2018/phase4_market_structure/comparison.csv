@@ -1,0 +1,6 @@
+candidate_id,name,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,average_trade,max_drawdown
+baseline,Baseline Control (1m EMA Crossover),11222,31.73,-146346.59,229207.84,-375554.43,0.9248,0.9698,-33.47,380022.38
+candidate_a,Candidate A: Opening Range Breakout (15m OR),1060,43.58,11568.85,21789.15,-10220.3,0.9828,1.0198,-9.64,34944.98
+candidate_b,Candidate B: ORB + VWAP Alignment (30m OR),931,34.69,-68720.79,19149.06,-87869.84,0.8474,0.878,-94.38,92768.35
+candidate_c,Candidate C: Structure Break + Retest (BOS Retest),12061,36.07,-153948.7,246187.7,-400136.41,0.9231,0.9695,-33.18,400376.52
+candidate_d,Candidate D: Liquidity Sweep + Structure Confirmation,9281,37.8,-117359.83,189028.56,-306388.39,0.9145,0.9662,-33.01,331371.9

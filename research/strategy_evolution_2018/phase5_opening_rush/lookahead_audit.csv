@@ -1,0 +1,7 @@
+audit_item,status,details
+Entry timestamp uses strictly completed past bar,PASS,"Signals generate at Close of bar T, entry at Close T"
+No future OHLC values in feature calculations,PASS,Truncation invariance test verified (0.00e+00 max discrepancy)
+"No future indicator leakage (EMA, RSI, ATR)",PASS,Indicators calculated via expanding/rolling causal windows
+Expanding window percentile rank uses strictly past bars,PASS,df['atr_percentile'] uses expanding().rank(pct=True)
+Opening window filter strictly causal,PASS,Filter based solely on bar timestamp (09:15 <= t < 10:00)
+Deterministic execution verified,PASS,Identical MD5 hash across repeated runs

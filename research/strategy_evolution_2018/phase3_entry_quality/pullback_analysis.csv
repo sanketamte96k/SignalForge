@@ -1,0 +1,7 @@
+variant,avg_delay_minutes,median_delay_minutes,pct_delay_0_2m,pct_delay_3_5m,pct_delay_ge_6m,avg_pullback_depth_points,avg_pullback_depth_atr,mean_mae_atr,median_mae_atr,mean_mfe_atr,median_mfe_atr,mfe_ge_1_0_atr_pct,mfe_ge_1_5_atr_pct,mfe_ge_2_0_atr_pct
+Baseline Control,0.0,0.0,100.0,0.0,0.0,0.67,0.85,1.788,1.686,1.908,1.338,57.47,47.39,40.9
+RSI Confirmation,0.0,0.0,100.0,0.0,0.0,0.83,1.09,1.878,1.728,1.874,1.273,55.83,46.11,39.9
+Pullback Entry,2.78,3.0,46.37,53.63,0.0,0.91,1.12,1.816,1.686,1.913,1.344,56.19,47.76,41.67
+Pullback + RSI,2.78,3.0,46.29,53.71,0.0,0.91,1.12,1.818,1.687,1.91,1.339,56.06,47.64,41.58
+Pullback + Candle,3.02,3.0,38.7,61.3,0.0,0.86,1.08,1.939,1.75,1.91,1.312,56.19,47.38,41.96
+ADX25 + Pullback,2.91,3.0,42.72,57.28,0.0,1.08,1.2,1.844,1.706,1.854,1.212,54.48,44.96,40.15

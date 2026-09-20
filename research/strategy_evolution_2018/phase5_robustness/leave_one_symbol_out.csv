@@ -1,0 +1,6 @@
+excluded_symbol,remaining_trades,remaining_win_rate,remaining_gross_pf,remaining_net_pf,remaining_net_pnl,remaining_expectancy,excluded_symbol_pnl,excluded_symbol_share_pct,survives_without_symbol
+RELIANCE,1102,33.76,1.0559,1.0101,5147.02,4.67,11588.9,69.2,YES
+TCS,1171,35.7,1.1099,1.0615,32666.64,27.9,-15930.73,-95.2,YES
+INFY,1102,33.58,1.0085,0.9419,-19624.34,-17.81,36360.26,217.3,NO
+HDFCBANK,1192,33.56,1.0759,1.03,16755.1,14.06,-19.18,-0.1,YES
+ICICIBANK,1097,35.37,1.1099,1.0627,31999.24,29.17,-15263.33,-91.2,YES

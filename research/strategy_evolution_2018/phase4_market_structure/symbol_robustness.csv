@@ -1,0 +1,26 @@
+candidate,symbol,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,average_trade
+Baseline Control (1m EMA Crossover),RELIANCE,2571,32.48,-39700.4,52271.91,-91972.31,0.8986,0.9545,-35.77
+Baseline Control (1m EMA Crossover),TCS,1799,28.35,-63448.2,36528.71,-99976.91,0.8351,0.8907,-55.57
+Baseline Control (1m EMA Crossover),INFY,2460,34.35,62964.08,51409.62,11554.46,1.0052,1.0289,4.7
+Baseline Control (1m EMA Crossover),HDFCBANK,1825,29.53,-63114.41,36888.09,-100002.5,0.7755,0.8496,-54.8
+Baseline Control (1m EMA Crossover),ICICIBANK,2567,32.41,-43047.66,52109.51,-95157.16,0.8848,0.9456,-37.07
+Candidate A: Opening Range Breakout (15m OR),RELIANCE,221,45.25,10760.45,4540.23,6220.22,1.053,1.0937,28.15
+Candidate A: Opening Range Breakout (15m OR),TCS,195,45.13,9093.9,4011.5,5082.4,1.0466,1.085,26.06
+Candidate A: Opening Range Breakout (15m OR),INFY,204,41.18,-8687.23,4189.03,-12876.26,0.8888,0.9234,-63.12
+Candidate A: Opening Range Breakout (15m OR),HDFCBANK,220,43.18,-169.58,4513.88,-4683.46,0.9598,0.9985,-21.29
+Candidate A: Opening Range Breakout (15m OR),ICICIBANK,220,43.18,571.32,4534.51,-3963.2,0.971,1.0043,-18.01
+Candidate B: ORB + VWAP Alignment (30m OR),RELIANCE,201,36.32,-7837.21,4128.51,-11965.72,0.896,0.9303,-59.53
+Candidate B: ORB + VWAP Alignment (30m OR),TCS,166,30.72,-26242.06,3407.89,-29649.95,0.7131,0.7402,-178.61
+Candidate B: ORB + VWAP Alignment (30m OR),INFY,177,35.03,-11948.77,3643.43,-15592.21,0.8605,0.8908,-88.09
+Candidate B: ORB + VWAP Alignment (30m OR),HDFCBANK,189,33.33,-20860.23,3875.5,-24735.73,0.772,0.8031,-130.88
+Candidate B: ORB + VWAP Alignment (30m OR),ICICIBANK,198,37.37,-1832.52,4093.72,-5926.24,0.9568,0.9864,-29.93
+Candidate C: Structure Break + Retest (BOS Retest),RELIANCE,2656,36.3,-42035.17,53883.14,-95918.3,0.8828,0.9464,-36.11
+Candidate C: Structure Break + Retest (BOS Retest),TCS,2495,34.95,-49321.82,50604.97,-99926.8,0.8689,0.9324,-40.05
+Candidate C: Structure Break + Retest (BOS Retest),INFY,2546,37.12,-23098.24,51964.39,-75062.63,0.931,0.9781,-29.48
+Candidate C: Structure Break + Retest (BOS Retest),HDFCBANK,1534,32.14,-69042.6,30954.79,-99997.39,0.697,0.7768,-65.19
+Candidate C: Structure Break + Retest (BOS Retest),ICICIBANK,2830,38.06,29549.13,58780.42,-29231.3,0.9867,1.0136,-10.33
+Candidate D: Liquidity Sweep + Structure Confirmation,RELIANCE,1899,39.55,39727.25,39214.61,512.64,1.0004,1.0327,0.27
+Candidate D: Liquidity Sweep + Structure Confirmation,TCS,1870,37.91,-35631.59,37990.83,-73622.42,0.8835,0.9415,-39.37
+Candidate D: Liquidity Sweep + Structure Confirmation,INFY,1804,38.75,-4524.63,36916.72,-41441.35,0.9519,0.9946,-22.97
+Candidate D: Liquidity Sweep + Structure Confirmation,HDFCBANK,2117,36.66,-52936.84,42829.16,-95766.0,0.8235,0.8973,-45.24
+Candidate D: Liquidity Sweep + Structure Confirmation,ICICIBANK,1591,36.02,-63994.03,32077.24,-96071.27,0.6898,0.7788,-60.38

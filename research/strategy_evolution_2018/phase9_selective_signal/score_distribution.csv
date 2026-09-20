@@ -1,0 +1,2 @@
+metric,count,mean,std,min,p25,median,p75,p90,max
+quality_score,11222,76.83,7.91,41.0,71.0,77.0,83.0,87.0,97.0

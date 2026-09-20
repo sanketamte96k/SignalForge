@@ -1,0 +1,6 @@
+benchmark,trades,win_rate,net_pf,net_pnl,expectancy,max_drawdown,value_add
+Candidate: H3_OPENING_RUSH,1416,34.39,1.0274,16735.92,11.82,26418.35,PRIMARY CANDIDATE
+1. Baseline EMA Crossover (Full Session),11222,31.73,0.9248,-375554.43,-33.47,374534.42,"Candidate saves Rs. 392,290.35 in losses"
+2. Simple Opening Range Breakout,561,35.29,1.0618,14982.28,26.71,16905.6,Structural ORB achieves higher Net PF (1.0655)
+3. Buy-and-Hold Equity Baseline,5,60.0,1.05,5850.0,1170.0,18500.0,Passive 2018 benchmark gain (~5.8%)
+4. No-Trade Baseline,0,0.0,1.0,0.0,0.0,0.0,Zero capital risk

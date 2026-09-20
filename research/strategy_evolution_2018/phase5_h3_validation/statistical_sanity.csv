@@ -1,0 +1,10 @@
+metric,value
+Sample Size (N),1416
+Mean Net Expectancy (Rs.),11.82
+Standard Deviation (Rs.),1151.94
+Standard Error (SE) (Rs.),30.61
+95% Confidence Interval Lower (Rs.),-48.18
+95% Confidence Interval Upper (Rs.),71.82
+t-statistic,0.3861
+p-value (two-tailed),0.6994
+Statistically Significant at 5%?,False

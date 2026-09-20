@@ -1,0 +1,11 @@
+criterion,value,passed
+1. Positive expectancy on true OOS data (2019-2025),+Rs. 6.31,True
+2. OOS Net Profit Factor > 1.0,1.0193,True
+3. Edge survives reasonable transaction costs (1.5x),0.991,False
+4. Edge is not dependent on a single symbol (>=3 symbols profitable),3/5 symbols,True
+5. Edge appears across multiple years (>=5/8 years positive),6/8 years,True
+6. No parameter optimization / curve fitting,Fixed pre-declared 09:15-10:00,True
+7. Zero look-ahead bias / causal timestamp alignment,100% Causal,True
+8. True OOS results remain positive after removing INFY,"+Rs. 79,711.95 (Exp: +Rs. 10.52)",True
+"9. Drawdown is economically acceptable (< Rs. 150,000)","Rs. 106,663.59",True
+10. Results are 100% deterministic and reproducible,Verified,True

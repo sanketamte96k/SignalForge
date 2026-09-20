@@ -26,3 +26,12 @@ reports/*
 # OS
 .DS_Store
 Thumbs.db
+# SignalForge local research/data
+research/*
+!research/strategy_evolution_2018/
+!research/strategy_evolution_2018/**
+data/*.parquet
+data/*.csv
+temp_nse_data/
+*.parquet
+

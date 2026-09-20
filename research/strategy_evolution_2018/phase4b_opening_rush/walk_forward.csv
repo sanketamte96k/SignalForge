@@ -1,0 +1,4 @@
+fold,train_period,train_trades,train_net_pnl,train_net_pf,val_period,val_trades,val_net_pnl,val_net_pf,oos_period,oos_trades,oos_net_pnl,oos_net_pf,oos_expectancy,oos_without_infy_pnl,oos_without_infy_pf,oos_survives
+Fold 1 (Jul-Aug OOS),2018-01-01 to 2018-04-30,503,395.23,1.0014,2018-05-01 to 2018-06-30,274,7701.75,1.0678,2018-07-01 to 2018-08-31,288,7685.13,1.074,26.68,-3841.06,0.8941,YES
+Fold 2 (Sep-Oct OOS),2018-03-01 to 2018-06-30,521,6501.76,1.026,2018-07-01 to 2018-08-31,288,7685.13,1.074,2018-09-01 to 2018-10-31,183,1194.95,1.0182,6.53,-2121.17,0.8762,YES
+Fold 3 (Nov-Dec OOS),2018-05-01 to 2018-08-31,562,15386.88,1.0708,2018-09-01 to 2018-10-31,183,1194.95,1.0182,2018-11-01 to 2018-12-31,168,-241.15,0.9951,-1.44,-3326.62,0.7052,NO

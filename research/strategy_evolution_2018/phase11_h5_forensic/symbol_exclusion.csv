@@ -1,0 +1,6 @@
+excluded_symbol,remaining_trades,win_rate,net_expectancy,net_pf,net_pnl,max_drawdown,pnl_change_from_total_pct
+RELIANCE,71,42.25,312.43,1.6823,22182.29,6406.4,10.23
+TCS,61,40.98,238.56,1.485,14551.97,6406.4,-27.69
+INFY,48,35.42,11.99,1.0427,575.29,4536.72,-97.14
+HDFCBANK,71,40.85,272.54,1.5604,19350.49,7179.38,-3.84
+ICICIBANK,69,44.93,345.42,1.7636,23833.82,4472.08,18.44

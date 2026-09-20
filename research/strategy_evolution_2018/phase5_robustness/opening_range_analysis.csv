@@ -1,0 +1,4 @@
+breakout_condition,trades,win_rate,gross_pf,net_pf,gross_pnl,costs,net_pnl,expectancy,max_drawdown,no_infy_net_pf,no_infy_net_pnl,no_infy_expectancy
+BREAKOUT_HIGH,304,34.87,1.1425,1.0905,18039.76,6215.65,11824.12,38.9,16778.6,0.9931,-488.72,-2.09
+BREAKOUT_LOW,257,35.8,1.0776,1.0283,8410.8,5252.64,3158.16,12.29,14459.42,0.9788,-1305.6,-6.5
+IN_RANGE,855,33.8,1.0537,1.0047,19221.14,17467.5,1753.64,2.05,22147.9,0.9135,-17830.02,-26.73

@@ -1,0 +1,7 @@
+variant,total_trades,stop_count,stop_pct,target_count,target_pct,eod_count,eod_pct,stop_avg_loss,target_avg_win
+Baseline Control,11222,7626,67.96,3595,32.04,1,0.01,-655.11,1285.24
+RSI Confirmation,8957,6175,68.94,2781,31.05,1,0.01,-565.2,1096.89
+Pullback Entry,7199,4836,67.18,2363,32.82,0,0.0,-756.14,1462.74
+Pullback + RSI,7176,4827,67.27,2349,32.73,0,0.0,-762.8,1482.38
+Pullback + Candle,4147,2798,67.47,1349,32.53,0,0.0,-859.54,1665.31
+ADX25 + Pullback,1786,1223,68.48,563,31.52,0,0.0,-923.16,1793.2

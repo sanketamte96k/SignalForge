@@ -1,0 +1,9 @@
+year,status,trades,win_rate,gross_pf,net_pf,net_pnl,expectancy,max_drawdown,costs,profitable
+2018,VALIDATED_CLEAN,1416,34.39,1.077,1.0274,16735.92,11.82,26418.35,28935.78,True
+2019,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False
+2020,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False
+2021,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False
+2022,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False
+2023,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False
+2024,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False
+2025,NOT_AVAILABLE (Clean 1m unvalidated),0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,False

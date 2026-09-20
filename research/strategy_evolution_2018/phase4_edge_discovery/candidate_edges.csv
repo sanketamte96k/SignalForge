@@ -1,0 +1,3 @@
+feature,regime_bucket,train_trades,train_win_rate,train_gross_pf,train_net_pf,train_gross_exp,train_net_exp,train_net_pnl,test_trades,test_win_rate,test_gross_pf,test_net_pf,test_gross_exp,test_net_exp,test_net_pnl,top_symbol,pnl_without_top,multi_symbol_robust,is_candidate
+5-Minute Momentum Return,Flat (-0.1% to +0.1%),2639,34.6,1.0533,1.0103,25.56,5.07,13376.24,1821,32.4,1.11,1.0406,33.05,12.74,23193.78,INFY,-54298.32,False,False
+Consecutive Candles in Trade Direction,0 Candles (Opposite candle),1592,34.8,1.0906,1.0464,43.27,22.77,36254.49,1164,33.42,1.0637,1.0013,20.79,0.46,530.3,INFY,-23831.67,False,False

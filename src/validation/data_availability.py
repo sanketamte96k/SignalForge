@@ -36,6 +36,21 @@ class DataAvailabilityResult:
         """Return whether at least one usable candle exists."""
         return self.candle_count > 0
 
+    @property
+    def passed(self) -> bool:
+        """Return whether data availability passed without reasons/failures."""
+        return bool(self.available) and len(self.reasons) == 0
+
+    @property
+    def available_timeframes(self) -> tuple[str, ...]:
+        """Return timeframes that have at least one usable candle."""
+        return tuple(
+            tf
+            for tf, count in self.timeframe_candle_counts.items()
+            if count > 0
+        )
+
+
 
 class DataAvailabilityChecker:
     """

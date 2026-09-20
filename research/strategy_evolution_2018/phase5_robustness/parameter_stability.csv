@@ -1,0 +1,8 @@
+parameter_type,parameter_value,trades,win_rate,net_pf,net_pnl,expectancy,max_drawdown
+ADX Filter Threshold,ADX >= 20,898,32.41,0.9352,-26650.51,-29.68,46296.44
+ADX Filter Threshold,ADX >= 25,531,32.77,0.941,-14681.74,-27.65,32611.98
+ADX Filter Threshold,ADX >= 30,287,30.31,0.932,-8916.63,-31.07,16464.42
+Opening Window Variation,A (09:15–09:30),625,34.4,1.0299,8357.73,13.37,23421.94
+Opening Window Variation,B (09:15–09:45),983,35.1,1.0701,29812.12,30.33,25675.24
+Opening Window Variation,C (09:15–10:00),1416,34.39,1.0274,16735.92,11.82,26418.35
+Opening Window Variation,E (09:30–10:00),791,34.39,1.0252,8378.19,10.59,25991.24

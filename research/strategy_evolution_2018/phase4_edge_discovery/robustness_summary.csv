@@ -1,0 +1,9 @@
+candidate_id,name,train_exp,val_exp,oos_exp,survives_train,survives_val,survives_oos,oos_sample_ge_200,top_symbol,pnl_without_top_symbol,multi_symbol_pass,robust_edge,verdict
+H1_TREND_ADX_HIGH,Strong Trend Continuation (ADX >= 25),-57.72,-79.32,-87.34,False,False,False,True,HDFCBANK,-192287.05,False,False,REJECTED / INCONCLUSIVE
+H2_LOW_VOL_BREAKOUT,Low Volatility Breakout (ATR Rank <= 40),-73.99,-17.56,-3.6,False,False,False,False,RELIANCE,-66174.11,False,False,REJECTED / INCONCLUSIVE
+H3_OPENING_RUSH,Opening Session Momentum (09:15-10:00),10.42,7.64,22.67,True,True,True,True,INFY,-19624.34,False,False,REJECTED / INCONCLUSIVE
+H4_FLAT_MOM_NON_OVEREXTENDED,Non-Overextended Fresh Momentum (Ret_5 within +-0.1%),5.07,15.79,6.05,True,True,True,True,INFY,-54298.32,False,False,REJECTED / INCONCLUSIVE
+H5_EXPANDING_VOL_STRONG_BODY,Expanding Volatility + Strong Marubozu (Body >= 0.60),-93.74,-78.96,-107.92,False,False,False,True,RELIANCE,-211526.35,False,False,REJECTED / INCONCLUSIVE
+H6_FRESH_CROSSOVER_ONLY,Fresh Crossover (< 2 bars since cross),-37.09,-22.85,-38.33,False,False,False,True,INFY,-387108.89,False,False,REJECTED / INCONCLUSIVE
+H7_EXCLUDE_MIDDAY_CHOP,Midday Chop Filter (Exclude 11:00-13:00),-34.61,7.78,-33.96,False,True,False,True,INFY,-290604.37,False,False,REJECTED / INCONCLUSIVE
+H8_GAP_CONTINUATION,Morning Gap Direction Alignment,-68.66,-9.6,-51.66,False,False,False,True,INFY,-235712.66,False,False,REJECTED / INCONCLUSIVE

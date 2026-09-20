@@ -1,4 +1,4 @@
-﻿const RAW_API_BASE_URL =
+const RAW_API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
 
 const API_BASE_URL = RAW_API_BASE_URL.replace(/\/+$/, '')
@@ -253,3 +253,34 @@ export function resetPaperTrading() {
     method: 'POST',
   })
 }
+
+// ---------------------------------------------------------------------------
+// Market Intelligence & Opportunity Scoring API
+// ---------------------------------------------------------------------------
+
+export function fetchIntelligenceOverview() {
+  return fetchJson('/api/intelligence/overview')
+}
+
+export function fetchScannedOpportunities(params = {}) {
+  const query = new URLSearchParams()
+  if (params.decision) query.append('decision', params.decision)
+  if (params.bias) query.append('bias', params.bias)
+  if (params.min_opportunity) query.append('min_opportunity', params.min_opportunity)
+
+  const qs = query.toString()
+  return fetchJson(`/api/intelligence${qs ? `?${qs}` : ''}`)
+}
+
+export function fetchSymbolIntelligence(symbol) {
+  return fetchJson(`/api/intelligence/${encodeURIComponent(symbol)}`)
+}
+
+export function fetchSymbolExplanation(symbol) {
+  return fetchJson(`/api/intelligence/${encodeURIComponent(symbol)}/explanation`)
+}
+
+export function fetchSymbolIntelligenceHistory(symbol, bars = 60, step = 5) {
+  return fetchJson(`/api/intelligence/${encodeURIComponent(symbol)}/history?bars=${bars}&step=${step}`)
+}
+

@@ -1,4 +1,4 @@
-from src.universe.models import Instrument
+﻿from src.universe.models import Instrument
 from src.universe.nifty50 import load_nifty50
 from src.universe.sector import Sector
 from src.universe.validation import ValidationStatus
@@ -110,6 +110,44 @@ class UniverseManager:
         """Return whether a symbol exists in the universe."""
         normalized_symbol = self._normalize_symbol(symbol)
         return normalized_symbol in self._instrument_by_symbol
+
+    def add_instrument(
+        self,
+        symbol: str,
+        name: str,
+        exchange: str = "NSE",
+        instrument_type: str = "EQUITY",
+    ) -> Instrument:
+        """
+        Add a new instrument to the universe.
+
+        Newly added instruments always start in TESTING status and
+        therefore cannot generate trading signals until the complete
+        validation pipeline approves them.
+        """
+        normalized_symbol = self._normalize_symbol(symbol)
+        normalized_name = self._normalize_name(
+            name,
+            "instrument name",
+        )
+
+        if normalized_symbol in self._instrument_by_symbol:
+            raise ValueError(
+                f"instrument already exists: {normalized_symbol}"
+            )
+
+        instrument = Instrument(
+            symbol=normalized_symbol,
+            name=normalized_name,
+            exchange=exchange,
+            instrument_type=instrument_type,
+            validation_status=ValidationStatus.TESTING,
+        )
+
+        self._instruments.append(instrument)
+        self._instrument_by_symbol[normalized_symbol] = instrument
+
+        return instrument
 
     def search_instruments(
         self,
@@ -365,6 +403,21 @@ class UniverseManager:
         """Return the symbols belonging to a sector."""
         return self.get_sector(sector_name).symbols
 
+    def delete_sector(
+        self,
+        name: str,
+    ) -> None:
+        """Delete a sector."""
+
+        sector = self.get_sector(name)
+
+        self._sectors = [
+            existing
+            for existing in self._sectors
+            if existing.name.casefold()
+            != sector.name.casefold()
+        ]
+
     # ------------------------------------------------------------------
     # Watchlist management
     # ------------------------------------------------------------------
@@ -489,6 +542,21 @@ class UniverseManager:
     ) -> tuple[str, ...]:
         """Return the symbols belonging to a watchlist."""
         return self.get_watchlist(watchlist_name).symbols
+
+    def delete_watchlist(
+        self,
+        name: str,
+    ) -> None:
+        """Delete a watchlist."""
+
+        watchlist = self.get_watchlist(name)
+
+        self._watchlists = [
+            existing
+            for existing in self._watchlists
+            if existing.name.casefold()
+            != watchlist.name.casefold()
+        ]
 
     # ------------------------------------------------------------------
     # Internal helpers

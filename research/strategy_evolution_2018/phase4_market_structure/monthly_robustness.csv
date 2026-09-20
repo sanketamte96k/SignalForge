@@ -1,0 +1,61 @@
+candidate,month,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor
+Baseline Control (1m EMA Crossover),2018-01,1082,31.05,-74257.1,22230.98,-96488.08,0.85,0.8818
+Baseline Control (1m EMA Crossover),2018-02,901,35.41,51584.08,18523.68,33060.4,1.0675,1.1079
+Baseline Control (1m EMA Crossover),2018-03,954,33.65,-572.28,19601.53,-20173.81,0.9623,0.9989
+Baseline Control (1m EMA Crossover),2018-04,1074,32.77,-11932.55,22062.14,-33994.69,0.9436,0.9797
+Baseline Control (1m EMA Crossover),2018-05,1185,30.38,-57677.02,24236.22,-81913.24,0.8592,0.8979
+Baseline Control (1m EMA Crossover),2018-06,1064,31.86,-10984.78,21673.77,-32658.54,0.9211,0.9725
+Baseline Control (1m EMA Crossover),2018-07,1162,31.93,51954.59,23643.26,28311.33,1.072,1.1377
+Baseline Control (1m EMA Crossover),2018-08,1089,29.38,-29416.51,22164.42,-51580.93,0.8756,0.9263
+Baseline Control (1m EMA Crossover),2018-09,773,30.4,-30145.63,15692.71,-45838.33,0.8227,0.8783
+Baseline Control (1m EMA Crossover),2018-10,688,31.1,-15159.98,14018.61,-29178.59,0.8941,0.943
+Baseline Control (1m EMA Crossover),2018-11,624,30.93,-23737.95,12667.6,-36405.54,0.8251,0.881
+Baseline Control (1m EMA Crossover),2018-12,626,32.11,3998.52,12692.92,-8694.4,0.9516,1.0234
+Candidate A: Opening Range Breakout (15m OR),2018-01,98,37.76,-11137.5,2014.46,-13151.96,0.7854,0.8145
+Candidate A: Opening Range Breakout (15m OR),2018-02,83,42.17,-36.57,1705.86,-1742.43,0.9628,0.9992
+Candidate A: Opening Range Breakout (15m OR),2018-03,76,36.84,-10894.7,1560.94,-12455.64,0.7371,0.7651
+Candidate A: Opening Range Breakout (15m OR),2018-04,96,54.17,22883.42,1974.75,20908.68,1.473,1.5284
+Candidate A: Opening Range Breakout (15m OR),2018-05,98,34.69,-18178.34,2012.37,-20190.71,0.6783,0.7042
+Candidate A: Opening Range Breakout (15m OR),2018-06,91,47.25,7313.61,1869.73,5443.88,1.1157,1.1587
+Candidate A: Opening Range Breakout (15m OR),2018-07,94,50.0,14117.28,1932.7,12184.58,1.2614,1.3093
+Candidate A: Opening Range Breakout (15m OR),2018-08,92,47.83,10369.0,1892.69,8476.32,1.1748,1.2183
+Candidate A: Opening Range Breakout (15m OR),2018-09,72,38.89,-7755.68,1479.95,-9235.63,0.7935,0.823
+Candidate A: Opening Range Breakout (15m OR),2018-10,90,45.56,4975.69,1850.34,3125.35,1.064,1.104
+Candidate A: Opening Range Breakout (15m OR),2018-11,79,44.3,2543.8,1624.65,919.15,1.0208,1.0586
+Candidate A: Opening Range Breakout (15m OR),2018-12,91,41.76,-2631.16,1870.72,-4501.88,0.9153,0.9494
+Candidate B: ORB + VWAP Alignment (30m OR),2018-01,84,33.33,-9520.78,1730.7,-11251.48,0.8012,0.8283
+Candidate B: ORB + VWAP Alignment (30m OR),2018-02,73,32.88,-8066.38,1503.09,-9569.47,0.8012,0.8288
+Candidate B: ORB + VWAP Alignment (30m OR),2018-03,67,31.34,-10078.36,1378.61,-11456.98,0.7431,0.7691
+Candidate B: ORB + VWAP Alignment (30m OR),2018-04,88,47.73,24402.01,1816.09,22585.93,1.5038,1.556
+Candidate B: ORB + VWAP Alignment (30m OR),2018-05,86,32.56,-10124.8,1770.12,-11894.92,0.789,0.8165
+Candidate B: ORB + VWAP Alignment (30m OR),2018-06,81,34.57,-9095.28,1666.75,-10762.03,0.7945,0.8227
+Candidate B: ORB + VWAP Alignment (30m OR),2018-07,80,38.75,522.03,1646.54,-1124.51,0.9762,1.0113
+Candidate B: ORB + VWAP Alignment (30m OR),2018-08,81,37.04,-343.79,1667.18,-2010.97,0.9585,0.9927
+Candidate B: ORB + VWAP Alignment (30m OR),2018-09,62,19.35,-28525.69,1271.02,-29796.71,0.3565,0.3701
+Candidate B: ORB + VWAP Alignment (30m OR),2018-10,78,37.18,-1451.94,1602.47,-3054.4,0.9309,0.9664
+Candidate B: ORB + VWAP Alignment (30m OR),2018-11,71,32.39,-9398.42,1455.85,-10854.27,0.7386,0.7682
+Candidate B: ORB + VWAP Alignment (30m OR),2018-12,80,33.75,-7039.39,1640.65,-8680.04,0.8082,0.8406
+Candidate C: Structure Break + Retest (BOS Retest),2018-01,1162,34.85,-75691.49,23849.63,-99541.13,0.8498,0.8831
+Candidate C: Structure Break + Retest (BOS Retest),2018-02,978,38.34,28674.53,20059.68,8614.85,1.0173,1.0591
+Candidate C: Structure Break + Retest (BOS Retest),2018-03,988,37.15,7020.72,20271.65,-13250.93,0.9746,1.0138
+Candidate C: Structure Break + Retest (BOS Retest),2018-04,1099,39.67,80127.01,22564.13,57562.88,1.1032,1.1473
+Candidate C: Structure Break + Retest (BOS Retest),2018-05,1218,35.71,-25905.39,25029.81,-50935.21,0.9271,0.9621
+Candidate C: Structure Break + Retest (BOS Retest),2018-06,1110,35.95,-29104.22,22720.74,-51824.96,0.9057,0.9456
+Candidate C: Structure Break + Retest (BOS Retest),2018-07,1216,32.65,-99140.12,24758.18,-123898.3,0.7543,0.7967
+Candidate C: Structure Break + Retest (BOS Retest),2018-08,877,36.72,2586.81,17851.13,-15264.32,0.9525,1.0083
+Candidate C: Structure Break + Retest (BOS Retest),2018-09,807,35.32,-25571.52,16374.27,-41945.79,0.8372,0.8965
+Candidate C: Structure Break + Retest (BOS Retest),2018-10,892,35.65,-15126.31,18061.01,-33187.33,0.8618,0.9338
+Candidate C: Structure Break + Retest (BOS Retest),2018-11,862,38.28,13331.98,17440.6,-4108.63,0.9799,1.0687
+Candidate C: Structure Break + Retest (BOS Retest),2018-12,852,33.1,-15150.69,17206.86,-32357.55,0.8258,0.9131
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-01,711,35.86,-44174.33,14629.73,-58804.06,0.8667,0.8977
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-02,736,35.6,-41687.5,15074.25,-56761.75,0.8525,0.8889
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-03,729,35.39,-28240.22,14909.5,-43149.71,0.8778,0.9178
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-04,709,40.2,20852.14,14494.12,6358.02,1.0204,1.0687
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-05,793,38.71,4594.25,16191.23,-11596.99,0.9658,1.014
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-06,791,35.65,-24132.23,16133.14,-40265.37,0.88,0.9258
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-07,851,38.31,-11079.94,17312.28,-28392.22,0.908,0.9628
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-08,767,40.29,13490.04,15602.06,-2112.02,0.992,1.0528
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-09,752,35.9,-29260.7,15261.33,-44522.04,0.8188,0.876
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-10,933,36.55,-23870.77,18877.94,-42748.71,0.8232,0.8962
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-11,736,41.44,26773.85,14889.0,11884.85,1.0723,1.1721
+Candidate D: Liquidity Sweep + Structure Confirmation,2018-12,773,39.84,19375.58,15653.97,3721.6,1.0192,1.1051

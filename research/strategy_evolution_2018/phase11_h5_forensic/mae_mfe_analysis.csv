@@ -1,0 +1,8 @@
+excursion_metric,value
+mean_mfe_pts,3.92
+median_mfe_pts,2.81
+mean_mfe_pct,0.425
+mean_mae_pts,2.86
+median_mae_pts,1.67
+mean_mae_pct,0.297
+mfe_to_mae_ratio,1.37

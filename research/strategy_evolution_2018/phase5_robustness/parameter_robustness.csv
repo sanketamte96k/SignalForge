@@ -1,0 +1,14 @@
+perturbation_type,parameter_setting,trades,win_rate,net_pf,net_pnl,expectancy,max_drawdown
+ADX Filter Neighbor,ADX >= 20,898,32.41,0.9352,-26650.51,-29.68,46296.44
+ADX Filter Neighbor,ADX >= 22,729,32.24,0.9597,-13255.23,-18.18,35476.42
+ADX Filter Neighbor,ADX >= 25,531,32.77,0.941,-14681.74,-27.65,32611.98
+ADX Filter Neighbor,ADX >= 28,368,31.25,0.9221,-13235.02,-35.96,22930.23
+ADX Filter Neighbor,ADX >= 30,287,30.31,0.932,-8916.63,-31.07,16464.42
+EMA Slope Neighbor,|Slope| >= 0.01,1382,34.73,1.0417,24823.17,17.96,26177.62
+EMA Slope Neighbor,|Slope| >= 0.02,1316,34.95,1.0517,29356.14,22.31,26892.16
+EMA Slope Neighbor,|Slope| >= 0.03,1248,34.54,1.02,10989.58,8.81,29443.64
+Window Boundary Neighbor,09:15–09:45,983,35.1,1.0701,29812.12,30.33,25675.24
+Window Boundary Neighbor,09:15–10:00 (H3 Candidate),1416,34.39,1.0274,16735.92,11.82,26418.35
+Window Boundary Neighbor,09:15–10:15,1804,33.2,0.9772,-17937.68,-9.94,44735.83
+Window Boundary Neighbor,09:30–10:00,791,34.39,1.0252,8378.19,10.59,25991.24
+Window Boundary Neighbor,09:30–10:15,1179,32.57,0.9482,-26295.41,-22.3,43111.33

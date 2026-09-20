@@ -1,0 +1,9 @@
+dimension,value,threshold_limit,risk_flag
+symbol_infy_share_pct,97.14,50.0,True
+symbol_pnl_without_infy,575.29,0.0,False
+month_best_month_share_pct,33.42,50.0,False
+month_pnl_without_best_month,13398.74,0.0,False
+top_1pct_winner_share_pct,14.64,25.0,False
+top_5pct_winner_share_pct,57.75,50.0,True
+top_10pct_winner_share_pct,111.36,70.0,True
+sample_size_trades,80.0,200.0,True

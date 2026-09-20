@@ -1,0 +1,16 @@
+metric,value
+total_trades,80.0
+mean_net_expectancy,251.54
+median_net_pnl,-147.55
+std_dev_pnl,1417.07
+p25_pnl,-825.67
+p75_pnl,1382.91
+iqr_pnl,2208.58
+largest_winner,2945.72
+largest_loser,-1988.2
+top_1pct_winners_pnl,2945.72
+top_1pct_pnl_share_pct,14.64
+top_5pct_winners_pnl,11622.19
+top_5pct_pnl_share_pct,57.75
+top_10pct_winners_pnl,22409.91
+top_10pct_pnl_share_pct,111.36

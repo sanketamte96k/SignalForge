@@ -1,0 +1,31 @@
+{
+  "best_setup": "BREAKOUT_RETEST",
+  "best_quality_bucket": "80-89",
+  "best_context": "1M_PLUS_5M",
+  "total_structural_candidates": 50225,
+  "signal_candidates_count": 1515,
+  "validation_expectancy": -976.23,
+  "oos_expectancy": -854.22,
+  "oos_pf": 0.2736,
+  "median_symbol_expectancy": -890.28,
+  "worst_symbol": "TCS (Rs. -1106.70)",
+  "cost_survival": "Failed under 1.0x & 1.5x transaction friction",
+  "leakage_status": "CERTIFIED_ZERO_LEAKAGE",
+  "robustness_status": "FAILED",
+  "final_verdict": "NO ROBUST EDGE \u2014 INFORMATION ADVANTAGE NOT CONFIRMED",
+  "criteria_passed": "5/10",
+  "detailed_checks": {
+    "positive_validation_expectancy": false,
+    "positive_oos_expectancy": false,
+    "oos_pf_above_1": false,
+    "better_expectancy_at_higher_quality": true,
+    "no_single_symbol_dependency": false,
+    "survives_realistic_costs": false,
+    "no_look_ahead": true,
+    "stable_chronological_performance": true,
+    "reasonable_opportunities": true,
+    "explainable_market_mechanism": true
+  },
+  "quality_monotonic_improvement": false,
+  "scientific_reasoning": "Market structure, multi-timeframe alignment, and location scoring successfully isolate higher relative MFE and reduce adverse moves. However, in 1-minute intraday cash equities, gross returns remain below the bid-ask spread and statutory exchange costs (brokerage, STT, exchange fees). Selectivity alone cannot convert negative-sum 1-minute microstructure noise into positive net expectancy."
+}

@@ -24,6 +24,7 @@ from src.data.market_data import (
     MarketDataResult,
     validate_normalized_ohlcv,
 )
+from src.data.providers.groww_auth import GrowwAuthManager
 from src.data.providers.groww_config import GrowwConfig
 from src.data.providers.groww_errors import (
     GrowwAPIError,
@@ -71,12 +72,17 @@ class GrowwProvider(MarketDataProvider):
         config: GrowwConfig | None = None,
         http_client: httpx.Client | Any | None = None,
         symbol_map: dict[str, str] | None = None,
+        auth_manager: GrowwAuthManager | None = None,
     ) -> None:
         self.config = config if config is not None else GrowwConfig.from_env()
         self._http_client = http_client
         self._symbol_map = dict(DEFAULT_SYMBOL_MAP)
         if symbol_map:
             self._symbol_map.update(symbol_map)
+        self.auth_manager = auth_manager or GrowwAuthManager(
+            config=self.config,
+            http_client=self._http_client,
+        )
 
     @property
     def provider_name(self) -> str:
@@ -119,7 +125,7 @@ class GrowwProvider(MarketDataProvider):
         if not self.is_available():
             raise GrowwAuthenticationError(
                 "Groww credentials are not configured. "
-                "Set GROWW_API_KEY environment variable."
+                "Set GROWW_API_KEY and GROWW_API_SECRET environment variables."
             )
 
         interval_key = request.interval.lower()
@@ -254,8 +260,9 @@ class GrowwProvider(MarketDataProvider):
             "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
             "candle_interval": candle_interval,
         }
+        access_token = self.auth_manager.get_access_token()
         headers = {
-            "Authorization": f"Bearer {self.config.api_key}",
+            "Authorization": f"Bearer {access_token}",
             "X-API-VERSION": "1.0",
             "Accept": "application/json",
         }
@@ -279,7 +286,7 @@ class GrowwProvider(MarketDataProvider):
         if response.status_code in (401, 403):
             raise GrowwAuthenticationError(
                 "Authentication failed with Groww API (HTTP "
-                f"{response.status_code}). Check GROWW_API_KEY."
+                f"{response.status_code}). Check GROWW_API_KEY and GROWW_API_SECRET."
             )
         if response.status_code == 429:
             raise GrowwRateLimitError("Groww API rate limit exceeded (HTTP 429).")

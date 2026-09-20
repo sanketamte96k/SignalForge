@@ -1,0 +1,120 @@
+{
+  "best_setup": "PULLBACK",
+  "best_market_state": "HIGH_VOLATILITY",
+  "total_trades": 17189,
+  "validation_expectancy": -996.25,
+  "oos_expectancy": -767.7,
+  "oos_pf": 0.2813,
+  "net_pnl": -15013980.4,
+  "max_drawdown": 15012032.37,
+  "worst_symbol": "HDFCBANK (Rs. -1096.62)",
+  "median_symbol_expectancy": -855.69,
+  "cost_stress": "Failed at 1.5x friction",
+  "robustness_status": "FAILED",
+  "final_verdict": "NO ROBUST EDGE \u2014 CHANGE STRATEGY ARCHITECTURE",
+  "all_setups_evaluated": {
+    "BREAKOUT": {
+      "trades": 8064,
+      "net_pnl": -7152623.32,
+      "net_pf": 0.2256,
+      "net_expectancy": -886.98,
+      "validation_expectancy": -976.49,
+      "oos_expectancy": -754.11,
+      "oos_pf": 0.2864,
+      "max_drawdown": 7150874.25,
+      "profitable_symbols_count": 0,
+      "criteria_passed": "3/10",
+      "detailed_checks": {
+        "positive_validation_expectancy": false,
+        "positive_oos_expectancy": false,
+        "oos_pf_above_1": false,
+        "positive_across_multiple_symbols": false,
+        "no_dominant_symbol_dependency": false,
+        "survives_realistic_costs": false,
+        "reasonable_trade_count": true,
+        "no_look_ahead": true,
+        "walk_forward_stability": false,
+        "explainable_market_mechanism": true
+      }
+    },
+    "PULLBACK": {
+      "trades": 17189,
+      "net_pnl": -15013980.4,
+      "net_pf": 0.2314,
+      "net_expectancy": -873.46,
+      "validation_expectancy": -996.25,
+      "oos_expectancy": -767.7,
+      "oos_pf": 0.2813,
+      "max_drawdown": 15012032.37,
+      "profitable_symbols_count": 0,
+      "criteria_passed": "2/10",
+      "detailed_checks": {
+        "positive_validation_expectancy": false,
+        "positive_oos_expectancy": false,
+        "oos_pf_above_1": false,
+        "positive_across_multiple_symbols": false,
+        "no_dominant_symbol_dependency": false,
+        "survives_realistic_costs": false,
+        "reasonable_trade_count": false,
+        "no_look_ahead": true,
+        "walk_forward_stability": false,
+        "explainable_market_mechanism": true
+      }
+    },
+    "RANGE_REVERSAL": {
+      "trades": 3966,
+      "net_pnl": -3876916.8,
+      "net_pf": 0.1846,
+      "net_expectancy": -977.54,
+      "validation_expectancy": -1098.55,
+      "oos_expectancy": -818.39,
+      "oos_pf": 0.2443,
+      "max_drawdown": 3875229.67,
+      "profitable_symbols_count": 0,
+      "criteria_passed": "3/10",
+      "detailed_checks": {
+        "positive_validation_expectancy": false,
+        "positive_oos_expectancy": false,
+        "oos_pf_above_1": false,
+        "positive_across_multiple_symbols": false,
+        "no_dominant_symbol_dependency": false,
+        "survives_realistic_costs": false,
+        "reasonable_trade_count": true,
+        "no_look_ahead": true,
+        "walk_forward_stability": false,
+        "explainable_market_mechanism": true
+      }
+    },
+    "MOMENTUM_EXPANSION": {
+      "trades": 6387,
+      "net_pnl": -5806690.02,
+      "net_pf": 0.2188,
+      "net_expectancy": -909.14,
+      "validation_expectancy": -1013.36,
+      "oos_expectancy": -764.65,
+      "oos_pf": 0.2841,
+      "max_drawdown": 5805045.82,
+      "profitable_symbols_count": 0,
+      "criteria_passed": "3/10",
+      "detailed_checks": {
+        "positive_validation_expectancy": false,
+        "positive_oos_expectancy": false,
+        "oos_pf_above_1": false,
+        "positive_across_multiple_symbols": false,
+        "no_dominant_symbol_dependency": false,
+        "survives_realistic_costs": false,
+        "reasonable_trade_count": true,
+        "no_look_ahead": true,
+        "walk_forward_stability": false,
+        "explainable_market_mechanism": true
+      }
+    }
+  },
+  "scientific_reasoning": [
+    "Evaluated 4 distinct setup mechanisms (Breakout, Pullback, Range Reversal, Momentum Expansion) across 5 core liquid equities in 2018.",
+    "None of the four standalone or conditionally filtered setups achieved consistent positive out-of-sample expectancy across all test assets under realistic Zerodha frictions.",
+    "Best candidate by relative metric was PULLBACK, producing 17189 trades with net expectancy Rs. -873.46 and OOS PF 0.2813.",
+    "Frictional drag and intraday noise in 1-minute single-stock price action cause negative expectancy after accounting for flat brokerage and turnover taxes.",
+    "In accordance with PART 13 & 14 falsification principles, no parameters were overfit or cherry-picked; the conclusion is recorded honestly as NO ROBUST EDGE \u2014 CHANGE STRATEGY ARCHITECTURE."
+  ]
+}

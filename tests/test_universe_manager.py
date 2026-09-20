@@ -759,3 +759,96 @@ def test_manager_does_not_modify_sector_when_watchlist_changes():
 
     assert manager.sector_symbols("Technology") == ("TCS",)
     assert manager.watchlist_symbols("Momentum") == ()
+
+def test_manager_deletes_sector() -> None:
+    manager = UniverseManager()
+
+    manager.create_sector("Technology")
+    manager.add_stock_to_sector("Technology", "TCS")
+
+    manager.delete_sector("Technology")
+
+    assert manager.all_sectors() == ()
+    assert not manager.contains_sector("Technology")
+
+
+def test_manager_delete_sector_is_case_insensitive() -> None:
+    manager = UniverseManager()
+
+    manager.create_sector("Technology")
+
+    manager.delete_sector(" TECHNOLOGY ")
+
+    assert manager.all_sectors() == ()
+
+
+def test_manager_delete_unknown_sector_raises() -> None:
+    manager = UniverseManager()
+
+    with pytest.raises(
+        KeyError,
+        match="sector not found",
+    ):
+        manager.delete_sector("Technology")
+
+
+def test_manager_deleting_sector_does_not_affect_watchlist() -> None:
+    manager = UniverseManager()
+
+    manager.create_sector("Technology")
+    manager.create_watchlist("Momentum")
+
+    manager.add_stock_to_sector("Technology", "TCS")
+    manager.add_stock_to_watchlist("Momentum", "TCS")
+
+    manager.delete_sector("Technology")
+
+    assert manager.all_sectors() == ()
+    assert manager.watchlist_symbols("Momentum") == ("TCS",)
+
+
+def test_manager_deletes_watchlist() -> None:
+    manager = UniverseManager()
+
+    manager.create_watchlist("Momentum")
+    manager.add_stock_to_watchlist("Momentum", "TCS")
+
+    manager.delete_watchlist("Momentum")
+
+    assert manager.all_watchlists() == ()
+    assert not manager.contains_watchlist("Momentum")
+
+
+def test_manager_delete_watchlist_is_case_insensitive() -> None:
+    manager = UniverseManager()
+
+    manager.create_watchlist("Momentum")
+
+    manager.delete_watchlist(" MOMENTUM ")
+
+    assert manager.all_watchlists() == ()
+
+
+def test_manager_delete_unknown_watchlist_raises() -> None:
+    manager = UniverseManager()
+
+    with pytest.raises(
+        KeyError,
+        match="watchlist not found",
+    ):
+        manager.delete_watchlist("Momentum")
+
+
+def test_manager_deleting_watchlist_does_not_affect_sector() -> None:
+    manager = UniverseManager()
+
+    manager.create_sector("Technology")
+    manager.create_watchlist("Momentum")
+
+    manager.add_stock_to_sector("Technology", "TCS")
+    manager.add_stock_to_watchlist("Momentum", "TCS")
+
+    manager.delete_watchlist("Momentum")
+
+    assert manager.sector_symbols("Technology") == ("TCS",)
+    assert manager.all_watchlists() == ()

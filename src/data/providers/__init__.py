@@ -9,6 +9,7 @@ from src.data.providers.base import (
     validate_normalized_ohlcv,
 )
 from src.data.providers.groww import GrowwProvider
+from src.data.providers.groww_auth import GrowwAuthManager
 from src.data.providers.groww_config import GrowwConfig
 from src.data.providers.groww_errors import (
     GrowwAPIError,
@@ -23,6 +24,7 @@ from src.data.providers.local import LocalProvider
 __all__ = [
     "CANONICAL_OHLCV_COLUMNS",
     "GrowwAPIError",
+    "GrowwAuthManager",
     "GrowwAuthenticationError",
     "GrowwConfig",
     "GrowwDataFormatError",

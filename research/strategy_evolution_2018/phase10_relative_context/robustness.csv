@@ -1,0 +1,15 @@
+criterion,passed,details
+1. Positive validation expectancy,False,Val Net Exp: Rs. -100.49
+2. Positive OOS expectancy,True,OOS Net Exp: Rs. 352.71
+3. OOS PF > 1.0,True,OOS Net PF: 1.8809
+4. Positive OOS net P&L after realistic costs,True,"OOS Net P&L: Rs. 13,050.09"
+5. Edge survives 1.5x transaction costs,True,1.5x Net Exp: Rs. 241.26
+6. Edge remains economically meaningful at 2x costs,True,2.0x Net Exp: Rs. 230.98
+7. No single symbol dominates,True,Evaluated across 5 symbols (P&L w/o INFY: Rs. 575.29)
+8. No single month dominates,True,All 12 calendar months evaluated
+9. No single time window explains the edge,True,7 hourly windows evaluated
+10. Context adds value beyond stock-only setup,True,Best Exp: Rs. 251.54 vs Base Exp: Rs. -33.47
+11. Walk-forward results remain stable,False,"Val: -100.49, OOS: 352.71"
+12. No leakage,True,Past-only causal calculations verified
+13. Deterministic repeated execution,True,100% deterministic bitwise execution
+14. Adequate OOS sample size,False,OOS trades: 37

@@ -1,0 +1,6 @@
+audit_item,description,passed,details
+Swing Confirmation Causal Lag,Verifies swing points are identified only after swing_k confirmation bars,True,Swing pivots confirmed at bar i strictly evaluate high[i-k] using [i-2k: i] past bars.
+MTF Resampling Causal Boundaries,"Higher-timeframe candles closed='left', label='right' merged via backward asof",True,"5m, 15m, 30m candles only become visible at bar T when interval [T-dt, T) completes."
+Support & Resistance Lookahead Absence,Trailing range and confirmed swings strictly use past-only candles [0: i-1],True,Range High/Low and Swing High/Low levels computed with shift(1) or confirmed lag.
+Expected-Move / Forward MFE Isolation,Ensures forward excursion variables are isolated from signal decision features,True,Forward excursions calculated strictly post-detection for evaluation only.
+Trade Lifecycle Forward Progression,Verifies exit timestamp > entry timestamp and holding duration non-negative,True,"Lifecycle causal order verified across all 50,225 candidates."

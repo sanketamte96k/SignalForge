@@ -1,0 +1,5 @@
+vwap_relationship,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,expectancy
+LONG above VWAP,2643,30.12,-135837.88,53955.0,-189792.88,0.8419,0.8832,-71.81
+LONG below VWAP,2972,31.43,-46031.14,60715.22,-106746.36,0.9203,0.9645,-35.92
+SHORT below VWAP,3019,32.0,-32721.71,61699.4,-94421.12,0.9314,0.9755,-31.28
+SHORT above VWAP,2588,33.42,68244.15,52838.22,15405.94,1.0143,1.0654,5.95

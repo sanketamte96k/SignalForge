@@ -19,6 +19,7 @@ import SettingsView from './SettingsView'
 import { loadSettings, applySettingsToDOM } from './settingsUtils'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import SignalForgeLogo from './SignalForgeLogo'
+import MarketIntelligenceView from './MarketIntelligenceView'
 import {
   isEditableTarget,
   isModifierKey,
@@ -29,6 +30,7 @@ const navItems = [
   ['Dashboard', 'dashboard'],
   ['NIFTY Analysis', 'chart'],
   ['Stock Scanner', 'search'],
+  ['Market Intelligence', 'chart'],
   ['Stock Analysis', 'candles'],
   ['Sectors', 'bars'],
   ['Watchlists', 'bookmark'],
@@ -681,6 +683,8 @@ function App() {
               onSelectStock={handleSelectStock}
               focusTrigger={scannerFocusTrigger}
             />
+          ) : activeNav === 'Market Intelligence' || activeNav === 'Intelligence' ? (
+            <MarketIntelligenceView />
           ) : activeNav === 'Stock Analysis' ? (
             <StockAnalysisView
               symbol={selectedStockSymbol}

@@ -1,0 +1,4 @@
+volatility_regime,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,expectancy
+LOW VOLATILITY (ATR% < 0.068%),3737,31.71,7631.07,76308.68,-68677.61,0.9575,1.0049,-18.38
+NORMAL VOLATILITY (0.068% <= ATR% < 0.099%),3748,31.11,-158459.48,76558.58,-235018.06,0.8642,0.9056,-62.7
+HIGH VOLATILITY (ATR% >= 0.099%),3737,32.38,4481.82,76340.58,-71858.76,0.9564,1.0028,-19.23

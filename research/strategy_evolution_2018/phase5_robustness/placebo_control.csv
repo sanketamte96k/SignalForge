@@ -1,0 +1,6 @@
+configuration,nature,trades,win_rate,gross_pf,net_pf,net_pnl,expectancy,max_drawdown
+H3_OPENING_RUSH (09:15–10:00),Primary Hypothesis,1416,34.39,1.077,1.0274,16735.92,11.82,26418.35
+Placebo 1: Mid-Day (11:00–11:45),Time Placebo,1281,32.79,0.988,0.9421,-32712.07,-25.54,49948.48
+Placebo 2: Afternoon (13:00–13:45),Time Placebo,1369,31.63,0.9966,0.9505,-29969.43,-21.89,43537.98
+"Placebo 3: Random Sample Control (N=1,416)",Frequency Control,1416,33.62,1.0865,1.0357,21487.8,15.17,39518.76
+Baseline Full-Session Control,Unrestricted Baseline,11222,31.73,0.9698,0.9248,-375554.43,-33.47,374534.42

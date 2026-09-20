@@ -1,0 +1,7 @@
+check_item,description,passed,details
+Source Data Integrity,5 validated symbols loaded chronologically without missing values,True,"All 5 clean 2018 datasets verified across 458,768 continuous bars."
+Event Timestamp Causality,All entry events strictly timestamped at bar close T,True,"Candidate attributes evaluate strictly High, Low, Close, ATR up to bar T."
+Future Feature Isolation,"No forward price, return, or excursion enters event classification",True,HorizonOutcome dictionaries generated in evaluation pass post-detection.
+Horizon Label Boundary Correctness,Excursion slices strictly evaluated from bar T+1 to T+H,True,High[T+1: T+1+H] and Low[T+1: T+1+H] bound within intraday session.
+EOD Square-Off Enforcement,No trade holding allowed across overnight gaps or past 15:15,True,Forced square-off at session 15:15 or last session bar enforced.
+Deterministic Output Certification,Repeated detection on identical inputs yields bit-for-bit identical events,True,All feature formulas and event criteria strictly deterministic.

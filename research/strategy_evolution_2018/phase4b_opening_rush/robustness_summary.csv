@@ -1,0 +1,15 @@
+criterion,value,passed
+1. Positive net expectancy,+Rs. 11.82,True
+2. Net PF > 1.0,1.0274,True
+3. Positive after baseline transaction costs,"+Rs. 16,735.92",True
+4. Remains positive under increased costs (1.5x),Net PF = 1.0037,True
+5. Positive OOS expectancy,+Rs. 22.67,True
+6. OOS PF > 1.0,1.0707,True
+7. Does not depend primarily on INFY,"Without INFY: Rs. -19,624.34",False
+8. Evidence exists across multiple symbols (>=3),2/5 profitable,False
+9. Adequate trade count (>=500),"1,416 trades",True
+10. No single-month or single-period concentration,Best month: 135.1% of PnL,False
+11. LONG/SHORT behavior explainable,Both sides positive in opening rush,True
+12. Zero look-ahead bias,100% Causal,True
+13. Deterministic repeated results,Verified,True
+14. Survives predefined time-window comparison,Outperforms all other windows,True

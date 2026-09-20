@@ -1,0 +1,37 @@
+{
+  "candidate": "H3_OPENING_RUSH (09:15\u201310:00)",
+  "total_trades": 1416,
+  "oos_trades": 351,
+  "oos_expectancy": 2.72,
+  "oos_pf": 1.0083,
+  "net_pnl": 16735.92,
+  "max_drawdown": 26418.35,
+  "worst_symbol": "TCS (Rs. -65.02)",
+  "result_without_infy_net_pnl": -19624.34,
+  "result_without_infy_net_pf": 0.9419,
+  "profitable_months_pct": 41.7,
+  "cost_stress_unprofitable_level": "2.0x cost",
+  "criteria_passed": "4/10",
+  "detailed_checks": {
+    "positive_oos_expectancy": true,
+    "oos_pf_above_1": true,
+    "positive_without_dominant_symbol": false,
+    "no_single_symbol_dependency": false,
+    "stable_across_months": false,
+    "survives_2x_costs": false,
+    "timing_stability": false,
+    "walk_forward_positive": false,
+    "adequate_trade_count": true,
+    "no_look_ahead": true
+  },
+  "robustness_status": "FRAGILE",
+  "final_verdict": "NO ROBUST EDGE",
+  "scientific_reasoning": [
+    "INFY Concentration Failure: INFY contributes +Rs. 36,360.26 (217.3% of net profit). Excluding INFY, net P&L drops to -Rs. 19,624.34 across the other 4 equities.",
+    "Lack of Cross-Symbol Breadth: Only 2 of 5 equities (RELIANCE and INFY) are net profitable; TCS, ICICIBANK, and HDFCBANK are net negative.",
+    "Monthly Inconsistency: Only 5 of 12 months (41.7%) are profitable in 2018.",
+    "Timing Boundary Fragility: Extending the window by just 15 minutes to 10:15 creates severe negative performance (-Rs. 17,937.68).",
+    "Friction Fragility: Fails under 2.0x transaction friction (-Rs. 12,199.87) and under 0.05% slippage.",
+    "Placebo Insight: Midday and afternoon time controls produce negative P&L, showing early-session momentum has higher activity, but the lack of symbol breadth precludes production acceptance."
+  ]
+}

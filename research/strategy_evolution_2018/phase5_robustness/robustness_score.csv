@@ -1,0 +1,9 @@
+dimension,score_status,description
+Cross-Symbol Robustness,FRAGILE,"Only 2 of 5 symbols profitable. INFY represents 217.3% of PnL. Without INFY: -Rs. 19,624.34. Median exp: Rs. -0.09, Worst: Rs. -65.02."
+Temporal Robustness,PROMISING,"Train (+Rs. 10.42), Val (+Rs. 7.64), OOS (+Rs. 22.67) all positive in 2018."
+Regime Robustness,FRAGILE,"Works strongly in Sideways/Contracting early rush (+Rs. 103k), but loses in Trending high ADX (-Rs. 26k)."
+Cost Robustness,FRAGILE,"Positive at 1.0x (+Rs. 16.7k) and 1.25x (+Rs. 9.5k), but collapses to negative at 1.50x (-Rs. 5.6k) and 2.0x (-Rs. 27.9k)."
+Parameter Stability,PROMISING,Survives nearby window variations (09:15-09:45: +Rs. 29.8k; 09:30-10:00: +Rs. 8.4k).
+OOS Performance,FRAGILE,"OOS Net PF = 1.0707 (+Rs. 5,668), but without INFY OOS drops to -Rs. 1,028 (Net PF: 0.9419)."
+Trade Sample Size,ROBUST,"Adequate statistical sample size: 1,416 trades in 2018."
+Drawdown Quality,PROMISING,"Max DD = Rs. 26,418.35 vs baseline DD of Rs. 374,534.42."

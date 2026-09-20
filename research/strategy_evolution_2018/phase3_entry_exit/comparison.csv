@@ -1,0 +1,5 @@
+candidate_id,name,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,average_trade,max_drawdown
+baseline,Baseline Control,11222,31.73,-146346.59,229207.84,-375554.43,0.9248,0.9698,-33.47,380022.38
+candidate_1,Candidate 1: Chop-Filtered Trend Follower,5349,34.55,-252408.49,108866.55,-361275.05,0.8266,0.8746,-67.54,360857.13
+candidate_2,Candidate 2: Pullback Entry with Tighter Target,8578,44.86,-97597.57,174741.84,-272339.42,0.9181,0.9698,-31.75,278612.44
+candidate_3,Candidate 3: Time-Windowed Momentum Breakout,4579,39.59,-229216.3,93085.74,-322302.04,0.8078,0.8585,-70.39,326015.3

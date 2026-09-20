@@ -137,6 +137,8 @@ class CausalStrategyContext:
 
         self._processed_count = 0
 
+        self._last_signal_result: SignalResult | None = None
+
         self._use_rvol = strategy_config.use_rvol
 
         # Preserve the existing SignalForge behavior:
@@ -190,6 +192,22 @@ class CausalStrategyContext:
             return None
 
         return self._warmup_data.copy()
+
+    @property
+    def last_signal_result(
+        self,
+    ) -> SignalResult | None:
+        """Return the latest calculated SignalResult, if available."""
+
+        return self._last_signal_result
+
+    @property
+    def latest_timeframe_states(
+        self,
+    ) -> dict[str, TimeframeIndicatorState]:
+        """Return the latest available state for each timeframe."""
+
+        return self._coordinator.get_latest_states()
 
     def process_candle(
         self,
@@ -263,6 +281,8 @@ class CausalStrategyContext:
 
             self._processed_count += 1
 
+            self._last_signal_result = None
+
             return StrategyContextResult(
                 timestamp=timestamp,
                 position=None,
@@ -287,6 +307,7 @@ class CausalStrategyContext:
             timeframe not in latest_states
             for timeframe in required_timeframes
         ):
+            self._last_signal_result = None
             position = None
 
         else:
@@ -302,6 +323,7 @@ class CausalStrategyContext:
                 state is None
                 for state in timeframe_states.values()
             ):
+                self._last_signal_result = None
                 position = None
 
             else:
@@ -315,6 +337,8 @@ class CausalStrategyContext:
                         )
                     )
                 )
+
+                self._last_signal_result = signal_result
 
                 position = (
                     self._signal_result_to_position(
@@ -351,6 +375,8 @@ class CausalStrategyContext:
         self._last_timestamp = None
 
         self._processed_count = 0
+
+        self._last_signal_result = None
 
     def _generate_filtered_signal(
         self,

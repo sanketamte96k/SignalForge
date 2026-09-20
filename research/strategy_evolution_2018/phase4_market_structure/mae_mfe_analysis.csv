@@ -1,0 +1,6 @@
+candidate,trades,mean_mae_atr,median_mae_atr,mean_mfe_atr,median_mfe_atr,win_mean_mfe_atr,loss_mean_mfe_atr,mean_holding_bars,pct_mfe_ge_1_atr
+Baseline Control (1m EMA Crossover),11222,1.631,1.64,1.846,1.287,3.93,0.877,13.8,55.7
+Candidate A: Opening Range Breakout (15m OR),1060,1.349,1.552,1.543,1.591,2.672,0.671,8.7,60.7
+Candidate B: ORB + VWAP Alignment (30m OR),931,1.509,1.634,1.607,1.276,3.183,0.769,8.6,56.5
+Candidate C: Structure Break + Retest (BOS Retest),12061,1.497,1.613,1.689,1.354,3.314,0.772,11.5,56.8
+Candidate D: Liquidity Sweep + Structure Confirmation,9281,1.338,1.364,1.342,1.204,2.501,0.639,9.4,54.8

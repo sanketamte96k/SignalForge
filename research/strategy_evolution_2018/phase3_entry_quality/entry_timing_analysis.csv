@@ -1,0 +1,17 @@
+entry_type,variant,trades,win_rate,avg_winner,avg_loser,PF_before_cost,PF_after_cost,gross_expectancy,expectancy
+immediate_crossover,Baseline Control,11222,31.73,1297.62,652.18,0.9698,0.9248,-13.04,-33.47
+crossover_rsi_confirm,RSI Confirmation,8957,30.65,1111.38,561.89,0.9235,0.874,-28.73,-49.09
+pullback_retest,Pullback Entry,7199,32.82,1462.74,756.14,0.9852,0.9452,-7.33,-27.82
+pullback_rsi_confirm,Pullback + RSI,7176,32.73,1482.38,762.8,0.9853,0.9457,-7.36,-27.86
+pullback_candle_confirm,Pullback + Candle,4147,32.53,1665.31,859.54,0.9688,0.9341,-17.66,-38.22
+adx25_pullback,ADX25 + Pullback,1786,31.52,1793.2,923.16,0.9251,0.8942,-46.29,-66.88
+immediate_crossover__failed_crossover,Baseline Control (failed_crossover),1515,0.0,0.0,670.92,0.0,0.0,-650.59,-670.92
+immediate_crossover__late_entry,Baseline Control (late_entry),1,0.0,0.0,103.39,0.0,0.0,-83.35,-103.39
+immediate_crossover__pullback_continuation,Baseline Control (pullback_continuation),3287,0.0,0.0,640.31,0.0,0.0,-620.0,-640.31
+immediate_crossover__trend_continuation,Baseline Control (trend_continuation),3595,99.05,1297.62,11.32,0.0,12008.0063,1305.89,1285.24
+immediate_crossover__whipsaw,Baseline Control (whipsaw),2824,0.0,0.0,663.86,0.0,0.0,-643.54,-663.86
+pullback_retest__failed_crossover,Pullback Entry (failed_crossover),727,0.0,0.0,749.36,0.0,0.0,-729.0,-749.36
+pullback_retest__late_entry,Pullback Entry (late_entry),1144,0.0,0.0,745.81,0.0,0.0,-725.45,-745.81
+pullback_retest__pullback_continuation,Pullback Entry (pullback_continuation),944,0.0,0.0,753.09,0.0,0.0,-732.72,-753.09
+pullback_retest__trend_continuation,Pullback Entry (trend_continuation),2363,100.0,1462.74,0.0,0.0,0.0,1483.48,1462.74
+pullback_retest__whipsaw,Pullback Entry (whipsaw),2021,0.0,0.0,765.86,0.0,0.0,-745.49,-765.86

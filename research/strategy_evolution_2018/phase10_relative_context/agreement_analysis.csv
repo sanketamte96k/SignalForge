@@ -1,0 +1,5 @@
+configuration,trades,win_rate,gross_expectancy,net_expectancy,gross_pf,net_pf,net_pnl,pct_baseline,classification
+Stock-Only (Baseline),11222,31.73,-13.04,-33.47,0.9698,0.9248,-375554.43,100.0,NO PREDICTIVE VALUE
+Stock + Market Agreement,3463,31.82,-6.87,-27.3,0.9842,0.9393,-94545.05,30.86,MODEST IMPROVEMENT (Still Negative Net)
+Stock + Relative Strength,8445,31.27,-25.69,-46.11,0.9411,0.8975,-389410.66,75.25,COST-REDUCTION ONLY (Gross Edge Degraded)
+Stock + Market + RS (Dual),1811,30.43,-47.69,-68.11,0.8943,0.8537,-123355.74,16.14,COST-REDUCTION ONLY (Gross Edge Degraded)

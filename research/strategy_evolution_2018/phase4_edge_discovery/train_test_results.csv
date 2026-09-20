@@ -1,0 +1,37 @@
+feature,regime_bucket,train_trades,train_win_rate,train_gross_pf,train_net_pf,train_gross_exp,train_net_exp,train_net_pnl,test_trades,test_win_rate,test_gross_pf,test_net_pf,test_gross_exp,test_net_exp,test_net_pnl,top_symbol,pnl_without_top,multi_symbol_robust,is_candidate
+ATR Percentile (Volatility Rank),Low Vol (< 25th),1521,33.86,1.0096,0.9691,4.75,-15.75,-23948.34,1018,31.34,1.1438,1.0607,36.53,16.25,16546.72,INFY,-42871.25,False,False
+ATR Percentile (Volatility Rank),Mid-Low Vol (25-50th),1652,31.42,0.9327,0.8953,-34.23,-54.72,-90405.01,1141,30.15,0.905,0.8495,-31.12,-51.43,-58678.42,TCS,-123416.37,False,False
+ATR Percentile (Volatility Rank),Mid-High Vol (50-75th),1643,32.38,0.9749,0.9365,-12.81,-33.31,-54727.93,1304,29.83,0.8308,0.7847,-63.49,-83.83,-109318.99,ICICIBANK,-163065.26,False,False
+ATR Percentile (Volatility Rank),High Vol (>= 75th),1444,31.93,0.9551,0.9175,-23.18,-43.69,-63086.68,1499,32.15,1.0716,1.0144,25.75,5.38,8064.21,INFY,-129045.74,False,False
+Volatility State (Expansion/Contraction),Expanding (ATR14 > ATR50),3012,31.41,0.9377,0.9006,-32.15,-52.65,-158572.05,2288,29.9,0.9135,0.8615,-30.58,-50.92,-116506.1,RELIANCE,-257444.22,False,False
+Volatility State (Expansion/Contraction),Contracting (ATR14 <= ATR50),3248,33.28,0.9957,0.9559,-2.16,-22.66,-73595.9,2674,31.79,1.0322,0.9698,10.27,-10.05,-26880.37,INFY,-194626.45,False,False
+EMA Separation Normalized by ATR,Narrow (< 0.25 ATR),6022,32.48,0.9711,0.9324,-14.64,-35.14,-211634.37,4806,30.79,0.9649,0.9081,-11.76,-32.09,-154226.62,INFY,-363585.22,False,False
+EMA Separation Normalized by ATR,Moderate (0.25 - 0.50 ATR),214,29.44,0.8368,0.8046,-89.86,-110.36,-23617.92,131,34.35,1.3752,1.2942,112.47,92.11,12066.51,INFY,-20549.3,False,False
+EMA Separation Normalized by ATR,Wide (>= 0.50 ATR),24,33.33,1.2779,1.2335,149.13,128.51,3084.33,25,36.0,0.9275,0.8799,-28.67,-49.05,-1226.36,INFY,-2974.36,False,False
+RSI Momentum,Oversold / Weak (< 45),1990,31.76,0.9453,0.908,-28.16,-48.66,-96835.23,1599,30.14,0.9081,0.8544,-31.3,-51.62,-82545.41,RELIANCE,-187676.64,False,False
+RSI Momentum,Neutral (45 - 55),2262,34.35,1.0325,0.9911,15.98,-4.52,-10217.52,1765,33.54,1.154,1.0854,48.23,27.89,49224.15,INFY,-86598.02,False,False
+RSI Momentum,Strong / Overbought (> 55),2008,30.78,0.9195,0.8832,-41.81,-62.31,-125115.21,1598,28.79,0.8623,0.8124,-48.55,-68.88,-110065.21,ICICIBANK,-212917.32,False,False
+5-Minute Momentum Return,Negative (< -0.1%),1802,30.85,0.9029,0.8678,-51.55,-72.06,-129848.7,1588,31.11,0.9806,0.9247,-6.69,-27.03,-42920.47,RELIANCE,-159951.82,False,False
+5-Minute Momentum Return,Flat (-0.1% to +0.1%),2639,34.6,1.0533,1.0103,25.56,5.07,13376.24,1821,32.4,1.11,1.0406,33.05,12.74,23193.78,INFY,-54298.32,False,False
+5-Minute Momentum Return,Positive (> +0.1%),1819,30.68,0.9182,0.8824,-43.1,-63.6,-115695.49,1553,28.98,0.8373,0.7898,-59.29,-79.63,-123659.78,HDFCBANK,-206702.86,False,False
+Market Structure (Breakout vs Range),Breakout High,1094,30.62,0.9352,0.8979,-32.99,-53.49,-58515.17,831,28.76,0.8506,0.802,-53.76,-74.09,-61569.67,ICICIBANK,-119966.46,False,False
+Market Structure (Breakout vs Range),Breakout Low,993,31.32,0.935,0.8986,-34.02,-54.53,-54144.27,781,28.68,0.7597,0.7149,-86.97,-107.29,-83793.98,RELIANCE,-146098.94,False,False
+Market Structure (Breakout vs Range),In Range,4173,33.09,0.9838,0.9447,-8.14,-28.64,-119508.52,3350,31.97,1.065,1.0018,20.92,0.59,1977.18,INFY,-204793.6,False,False
+Candle Body Ratio,Doji / Indecision (< 0.40),2148,33.89,1.0266,0.9847,12.88,-7.61,-16346.49,1692,31.15,1.014,0.9539,4.59,-15.74,-26639.89,INFY,-83441.32,False,False
+Candle Body Ratio,Medium Body (0.40 - 0.70),1863,33.76,1.0134,0.9737,6.81,-13.7,-25522.55,1549,31.05,0.9884,0.9303,-3.88,-24.21,-37507.68,INFY,-70946.11,False,False
+Candle Body Ratio,Strong Marubozu (> 0.70),2249,29.79,0.8795,0.8451,-64.11,-84.61,-190298.92,1721,30.56,0.9248,0.8707,-25.71,-46.04,-79238.9,INFY,-232721.45,False,False
+Consecutive Candles in Trade Direction,0 Candles (Opposite candle),1592,34.8,1.0906,1.0464,43.27,22.77,36254.49,1164,33.42,1.0637,1.0013,20.79,0.46,530.3,INFY,-23831.67,False,False
+Consecutive Candles in Trade Direction,1 Candle,1537,31.49,0.9142,0.8777,-44.16,-64.65,-99372.79,1208,31.79,0.9737,0.9169,-8.88,-29.22,-35292.04,TCS,-124439.46,False,False
+Consecutive Candles in Trade Direction,2 Candles,1259,31.45,0.9462,0.9086,-27.55,-48.04,-60487.15,1001,31.27,0.8965,0.843,-35.11,-55.44,-55491.51,RELIANCE,-101408.49,False,False
+Consecutive Candles in Trade Direction,3+ Candles (Extended),1872,31.68,0.9287,0.8926,-37.49,-57.99,-108562.51,1589,28.19,0.9609,0.9044,-13.11,-33.44,-53133.22,INFY,-164708.01,False,False
+Previous Trade Result,After Winner,2024,33.05,1.0052,0.9663,2.67,-17.84,-36111.91,1536,32.62,1.0844,1.025,29.44,9.08,13941.32,INFY,-106424.13,False,False
+Previous Trade Result,After Loser,4231,32.07,0.9497,0.9115,-25.35,-45.84,-193954.6,3426,30.15,0.922,0.8659,-25.61,-45.92,-157327.79,RELIANCE,-299140.18,False,False
+Previous Trade Result,First Trade of Day/Symbol,5,20.0,0.5001,0.4849,-399.69,-420.29,-2101.45,0,0.0,0.0,0.0,0.0,0.0,0.0,ICICIBANK,-4079.99,False,False
+Consecutive Losses Prior to Entry,0 Losses (Following Win),2029,33.02,1.0033,0.9644,1.68,-18.83,-38213.36,1536,32.62,1.0844,1.025,29.44,9.08,13941.32,INFY,-107505.61,False,False
+Consecutive Losses Prior to Entry,1 Loss,1358,32.47,0.9596,0.9219,-20.84,-41.35,-56147.94,1036,29.63,0.9033,0.8515,-34.07,-54.41,-56364.55,ICICIBANK,-109093.91,False,False
+Consecutive Losses Prior to Entry,2 Losses,917,30.64,0.8641,0.8298,-71.67,-92.16,-84512.31,727,28.75,0.7427,0.6986,-93.17,-113.49,-82506.84,TCS,-160245.14,False,False
+Consecutive Losses Prior to Entry,3+ Consecutive Losses,1956,32.46,0.9861,0.9455,-6.76,-27.25,-53294.35,1663,31.09,1.0308,0.9645,9.2,-11.1,-18456.41,INFY,-121669.03,False,False
+Time Since Previous Trade,Rapid Entry (< 10 mins),2087,31.48,0.9217,0.8855,-40.85,-61.35,-128040.84,1655,31.18,0.9517,0.8946,-15.94,-36.26,-60006.92,RELIANCE,-198351.04,False,False
+Time Since Previous Trade,Medium Gap (10 - 30 mins),2286,32.55,0.9818,0.9424,-9.14,-29.63,-67741.26,1867,30.16,1.0436,0.9819,14.19,-6.15,-11473.69,INFY,-187867.82,False,False
+Time Since Previous Trade,Wide Gap (> 30 mins),1882,33.21,1.0046,0.9646,2.28,-18.22,-34284.41,1440,31.6,0.9159,0.8635,-29.6,-49.93,-71905.87,HDFCBANK,-100026.8,False,False
+Time Since Previous Trade,First Trade,5,20.0,0.5001,0.4849,-399.69,-420.29,-2101.45,0,0.0,0.0,0.0,0.0,0.0,0.0,ICICIBANK,-4079.99,False,False

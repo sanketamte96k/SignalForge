@@ -1,0 +1,16 @@
+candidate,partition,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,expectancy
+Baseline Control (1m EMA Crossover),TRAIN (Jan-Aug),8511,31.94,-81301.55,174136.0,-255437.56,0.9373,0.9795,-30.01
+Baseline Control (1m EMA Crossover),VALIDATION (Sep-Oct),1461,30.73,-45305.6,29711.32,-75016.92,0.8596,0.9119,-51.35
+Baseline Control (1m EMA Crossover),HOLDOUT (Nov-Dec),1250,31.52,-19739.43,25360.52,-45099.95,0.8837,0.9467,-36.08
+Candidate A: Opening Range Breakout (15m OR),TRAIN (Jan-Aug),728,43.96,14436.2,14963.49,-527.29,0.9987,1.0364,-0.72
+Candidate A: Opening Range Breakout (15m OR),VALIDATION (Sep-Oct),162,42.59,-2779.99,3330.29,-6110.28,0.9347,0.9697,-37.72
+Candidate A: Opening Range Breakout (15m OR),HOLDOUT (Nov-Dec),170,42.94,-87.37,3495.37,-3582.73,0.9632,0.9991,-21.07
+Candidate B: ORB + VWAP Alignment (30m OR),TRAIN (Jan-Aug),640,36.25,-22305.35,13179.07,-35484.43,0.911,0.9428,-55.44
+Candidate B: ORB + VWAP Alignment (30m OR),VALIDATION (Sep-Oct),140,29.29,-29977.63,2873.49,-32851.12,0.637,0.6612,-234.65
+Candidate B: ORB + VWAP Alignment (30m OR),HOLDOUT (Nov-Dec),151,33.11,-16437.81,3096.49,-19534.3,0.7749,0.806,-129.37
+Candidate C: Structure Break + Retest (BOS Retest),TRAIN (Jan-Aug),8648,36.26,-111432.16,177104.96,-288537.11,0.9331,0.9735,-33.36
+Candidate C: Structure Break + Retest (BOS Retest),VALIDATION (Sep-Oct),1699,35.49,-40697.83,34435.29,-75133.12,0.8491,0.9144,-44.22
+Candidate C: Structure Break + Retest (BOS Retest),HOLDOUT (Nov-Dec),1714,35.71,-1818.71,34647.46,-36466.17,0.9066,0.9951,-21.28
+Candidate D: Liquidity Sweep + Structure Confirmation,TRAIN (Jan-Aug),6087,37.52,-110377.78,124346.32,-234724.1,0.9143,0.9585,-38.56
+Candidate D: Liquidity Sweep + Structure Confirmation,VALIDATION (Sep-Oct),1685,36.26,-53131.48,34139.27,-87270.75,0.821,0.8859,-51.79
+Candidate D: Liquidity Sweep + Structure Confirmation,HOLDOUT (Nov-Dec),1509,40.62,46149.43,30542.97,15606.45,1.0436,1.1358,10.34

@@ -1,0 +1,6 @@
+window,total_trades,total_net_pnl,infy_trades,infy_trade_share_pct,infy_wins,infy_win_share_pct,infy_gross_profit,infy_profit_contrib_pct,infy_net_pnl,infy_pnl_contrib_pct,without_infy_trades,without_infy_net_pnl,without_infy_net_pf,without_infy_expectancy,classification
+09:15–09:30,625,8357.73,149,23.8,54,25.1,144585.95,49.5,12185.67,145.8,476,-3827.95,0.9741,-8.04,INFY DEPENDENT
+09:15–09:45,983,29812.12,226,23.0,87,25.2,233379.88,50.5,39463.46,132.4,757,-9651.34,0.9587,-12.75,INFY DEPENDENT
+09:15–10:00,1416,16735.92,314,22.2,117,24.0,312595.29,48.9,36360.26,217.3,1102,-19624.34,0.9419,-17.81,INFY DEPENDENT
+09:30–10:00,791,8378.19,165,20.9,63,23.2,168009.34,48.5,24174.58,288.5,626,-15796.39,0.9169,-25.23,INFY DEPENDENT
+09:45–10:15,821,-47749.8,172,21.0,56,22.0,150703.7,47.2,-7280.05,15.2,649,-40469.75,0.8024,-62.36,INSUFFICIENT EDGE

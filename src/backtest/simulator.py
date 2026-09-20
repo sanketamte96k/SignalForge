@@ -25,6 +25,19 @@ class Trade:
     transaction_cost: float
     net_pnl: float
     return_pct: float
+    exit_reason: str = "SIGNAL"
+    slippage: float = 0.0
+    brokerage: float = 0.0
+    statutory_fees: float = 0.0
+    capital_before: float = 0.0
+    capital_after: float = 0.0
+    risk_amount: float = 0.0
+    atr: float = 0.0
+    stop_distance: float = 0.0
+    risk_based_quantity: int = 0
+    max_allowed_quantity: int = 0
+    notional_value: float = 0.0
+    effective_leverage: float = 0.0
 
 
 def _validate_price(
@@ -87,6 +100,17 @@ def simulate_trade(
     exit_price: float,
     quantity: float = 1.0,
     transaction_cost_rate: float = 0.0,
+    brokerage: float = 0.0,
+    slippage_rate: float = 0.0,
+    statutory_fee_rate: float = 0.0,
+    exit_reason: str = "SIGNAL",
+    capital_before: float = 0.0,
+    capital_after: float = 0.0,
+    risk_amount: float = 0.0,
+    atr: float = 0.0,
+    stop_distance: float = 0.0,
+    risk_based_quantity: int = 0,
+    max_allowed_quantity: int = 0,
 ) -> Trade:
     """
     Simulate one completed trade.
@@ -112,8 +136,16 @@ def simulate_trade(
         Number of units traded.
 
     transaction_cost_rate:
-        Total transaction-cost rate applied to
-        entry value + exit value.
+        Generic cost rate applied to turnover.
+
+    brokerage:
+        Flat brokerage fee per trade.
+
+    slippage_rate:
+        Rate applied to turnover for slippage.
+
+    statutory_fee_rate:
+        Rate applied to turnover for statutory taxes/exchange fees.
 
     Returns
     -------
@@ -141,6 +173,12 @@ def simulate_trade(
     _validate_cost_rate(
         transaction_cost_rate
     )
+    _validate_cost_rate(
+        slippage_rate
+    )
+    _validate_cost_rate(
+        statutory_fee_rate
+    )
 
     if entry_time is None:
         raise ValueError(
@@ -167,10 +205,7 @@ def simulate_trade(
         ) * quantity
 
     # --------------------------------------------------------
-    # Transaction costs
-    #
-    # Cost is applied to both entry and exit
-    # notional values.
+    # Transaction costs (Turnover-based)
     # --------------------------------------------------------
 
     entry_value = (
@@ -181,9 +216,19 @@ def simulate_trade(
         exit_price * quantity
     )
 
+    total_turnover = entry_value + exit_value
+
+    slippage_cost = total_turnover * slippage_rate
+    statutory_fee_cost = total_turnover * statutory_fee_rate
+    brokerage_cost = float(brokerage)
+    generic_cost = total_turnover * transaction_cost_rate
+
     transaction_cost = (
-        entry_value + exit_value
-    ) * transaction_cost_rate
+        brokerage_cost
+        + slippage_cost
+        + statutory_fee_cost
+        + generic_cost
+    )
 
     net_pnl = (
         gross_pnl - transaction_cost
@@ -199,6 +244,19 @@ def simulate_trade(
         net_pnl / entry_value
     ) * 100
 
+    notional_value = entry_value
+    effective_leverage = (
+        notional_value / capital_before
+        if capital_before > 0
+        else 0.0
+    )
+
+    computed_capital_after = (
+        capital_after
+        if (capital_after != 0.0 and capital_after != capital_before)
+        else (capital_before + net_pnl)
+    )
+
     return Trade(
         entry_time=entry_time,
         exit_time=exit_time,
@@ -210,4 +268,17 @@ def simulate_trade(
         transaction_cost=transaction_cost,
         net_pnl=net_pnl,
         return_pct=return_pct,
+        exit_reason=exit_reason,
+        slippage=slippage_cost,
+        brokerage=brokerage_cost,
+        statutory_fees=statutory_fee_cost,
+        capital_before=capital_before,
+        capital_after=computed_capital_after,
+        risk_amount=risk_amount,
+        atr=atr,
+        stop_distance=stop_distance,
+        risk_based_quantity=risk_based_quantity,
+        max_allowed_quantity=max_allowed_quantity,
+        notional_value=notional_value,
+        effective_leverage=effective_leverage,
     )

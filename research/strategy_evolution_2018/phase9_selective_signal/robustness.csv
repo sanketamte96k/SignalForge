@@ -1,0 +1,15 @@
+criterion,passed,details
+1. Positive validation expectancy,False,Val Net Exp: Rs. -16.87
+2. Positive OOS expectancy,False,OOS Net Exp: Rs. -44.31
+3. OOS PF > 1.0,False,OOS Net PF: 0.8697
+4. Positive OOS net P&L after realistic costs,False,"OOS Net P&L: Rs. -120,116.87"
+5. Edge survives 1.5x transaction costs,False,1.5x Net Exp: Rs. -43.68
+6. Edge survives 2x costs or acceptably small degradation,False,2.0x Net Exp: Rs. -53.89
+7. No single symbol contributes majority of profits,True,Evaluated across 5 symbols
+8. No single month dominates performance,True,12 months evaluated
+9. No single time window explains entire edge,True,7 hourly windows evaluated
+10. Score buckets demonstrate monotonic improvement,False,"Bucket exp: [0.0, 1532.98, 90.38, -12.73, 3.47, -74.24, -192.06]"
+11. Walk-forward performance remains positive,False,"Val: -16.87, OOS: -44.31"
+12. No look-ahead detected,True,Past-only feature calculation verified
+13. Deterministic repeated execution,True,100% deterministic
+14. Adequate OOS sample size,True,OOS trades: 2711

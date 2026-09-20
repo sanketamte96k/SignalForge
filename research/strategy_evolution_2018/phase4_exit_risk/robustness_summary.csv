@@ -1,0 +1,10 @@
+variant,profitable_symbols,profitable_months,worst_drawdown,gross_expectancy_positive,gross_pf_improvement,verdict
+Baseline Control,1/5,2/12,239474.34,False,0.0,REJECT
+Pullback Current,1/5,5/12,145506.57,False,0.0154,REJECT
+Pullback 1:1.5 RR,0/5,3/12,111877.71,False,-0.0075,REJECT
+Pullback 1:2 RR,1/5,5/12,145506.57,False,0.0154,REJECT
+Pullback 1:2.5 RR,1/5,5/12,184252.74,False,0.0262,REJECT
+Trailing Stop,0/5,0/12,102125.19,False,-0.2808,REJECT
+Partial Exit,0/5,0/12,101915.23,False,-0.1678,REJECT
+Time Exit (20m),0/5,2/12,128258.02,False,-0.0054,REJECT
+Adaptive ATR (1.0/2.0),0/5,1/12,115230.16,False,-0.0519,REJECT

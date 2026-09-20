@@ -262,3 +262,21 @@ def test_premarket_only_rows_are_not_counted_as_sessions():
     assert result.complete_session_count == 0
     assert result.incomplete_session_count == 0
     assert result.missing_candle_count == 0
+
+
+def test_standard_375_bar_session_passes():
+    data = make_session_data(
+        periods=375,
+    )
+
+    result = DataQualityChecker().check(data)
+
+    assert result.passed is True
+    assert result.total_rows == 375
+    assert result.session_count == 1
+    assert result.complete_session_count == 1
+    assert result.incomplete_session_count == 0
+    assert result.missing_candle_count == 0
+    assert result.issues == ()
+    assert result.quality_score == 100.0
+

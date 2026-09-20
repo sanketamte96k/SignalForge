@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import time
 
 import pandas as pd
 
@@ -9,6 +10,7 @@ from src.data.session import MARKET_CLOSE, MARKET_OPEN
 
 
 EXPECTED_SESSION_CANDLES = 376
+STANDARD_SESSION_CANDLES = 375
 
 
 @dataclass(frozen=True)
@@ -82,6 +84,14 @@ class DataQualityChecker:
     DataFrame. It does not approve or reject an instrument for
     signal generation.
     """
+
+    def __init__(
+        self,
+        expected_session_candles: int | None = None,
+        session_close: time | None = None,
+    ) -> None:
+        self.expected_session_candles = expected_session_candles
+        self.session_close = session_close
 
     def check(
         self,
@@ -226,6 +236,26 @@ class DataQualityChecker:
             session_data
         )
 
+        has_1530 = (
+            (session_data.index.time == MARKET_CLOSE).any()
+            if not session_data.empty
+            else False
+        )
+
+        if self.session_close is not None:
+            effective_close = self.session_close
+        elif has_1530:
+            effective_close = MARKET_CLOSE
+        else:
+            effective_close = time(15, 29)
+
+        if self.expected_session_candles is not None:
+            expected_candles = self.expected_session_candles
+        elif effective_close == MARKET_CLOSE:
+            expected_candles = EXPECTED_SESSION_CANDLES
+        else:
+            expected_candles = STANDARD_SESSION_CANDLES
+
         complete_session_count = 0
         incomplete_session_count = 0
         missing_candle_count = 0
@@ -242,7 +272,7 @@ class DataQualityChecker:
                 ),
                 end=pd.Timestamp.combine(
                     session_date,
-                    MARKET_CLOSE,
+                    effective_close,
                 ),
                 freq="min",
             )
@@ -264,7 +294,7 @@ class DataQualityChecker:
             missing_candle_count += session_missing_count
 
             if (
-                len(actual_index) == EXPECTED_SESSION_CANDLES
+                len(actual_index) == expected_candles
                 and session_missing_count == 0
                 and len(extra) == 0
             ):

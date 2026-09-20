@@ -1,0 +1,9 @@
+feature,description,correlation_with_pnl,q1_mean_pnl,q5_mean_pnl,q1_win_rate,q5_win_rate,q1_gross_pf,q5_gross_pf,predictive_utility
+adx,ADX(14) Trend Strength,-0.0208,-3.75,-56.23,33.93,30.19,1.0409,0.9225,WEAK
+rsi,RSI(14) Momentum,-0.0121,-67.15,-99.88,30.04,28.1,0.8974,0.8249,WEAK
+ema_sep_pct,EMA Separation %,-0.0008,4.65,-75.46,34.61,30.13,1.0609,0.8792,WEAK
+ema_slope,EMA Slope,-0.0047,-63.94,-69.98,30.73,29.6,0.9036,0.8906,WEAK
+atr_pct,ATR % of Price,0.0006,4.22,2.26,32.55,33.33,1.06,1.0542,WEAK
+vol_ratio,Relative Volume Ratio,-0.0068,-19.57,-78.71,32.15,29.31,1.002,0.8669,WEAK
+candle_body_ratio,Candle Body/Range Ratio,-0.0207,-3.01,-70.02,33.17,30.47,1.0424,0.8923,WEAK
+realized_vol,Realized Volatility,0.0038,-16.16,-21.9,31.86,32.12,1.0103,0.9966,WEAK

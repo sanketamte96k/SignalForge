@@ -1,0 +1,134 @@
+{
+  "investigation_phase": "PHASE_8_HORIZON_EDGE",
+  "dataset_year": 2018,
+  "symbols_evaluated": [
+    "RELIANCE",
+    "TCS",
+    "INFY",
+    "HDFCBANK",
+    "ICICIBANK"
+  ],
+  "horizons_evaluated": [
+    "5m",
+    "15m",
+    "30m",
+    "60m",
+    "120m"
+  ],
+  "total_candidate_events": 118187,
+  "robust_edge_found": false,
+  "best_research_candidate": "HYPOTHESIS_E_OPENING_SESSION_MOMENTUM",
+  "best_candidate_expectancy": -319.76,
+  "hypotheses_evaluated": {
+    "HYPOTHESIS_A_TREND_CONTINUATION": {
+      "classification": "COST-DESTROYED EDGE",
+      "best_horizon": "120m",
+      "trade_count": 41374,
+      "train_expectancy": -729.63,
+      "validation_expectancy": -927.82,
+      "oos_expectancy": -659.27,
+      "oos_pf": 0.7086,
+      "realistic_cost_expectancy": -759.3,
+      "cost_1_5x_expectancy": -1216.0,
+      "symbol_expectancies": {
+        "RELIANCE": -717.68,
+        "TCS": -712.61,
+        "INFY": -816.9,
+        "HDFCBANK": -1088.59,
+        "ICICIBANK": -465.9
+      }
+    },
+    "HYPOTHESIS_B_PULLBACK_CONTINUATION": {
+      "classification": "COST-DESTROYED EDGE",
+      "best_horizon": "120m",
+      "trade_count": 34139,
+      "train_expectancy": -785.8,
+      "validation_expectancy": -959.76,
+      "oos_expectancy": -706.17,
+      "oos_pf": 0.6986,
+      "realistic_cost_expectancy": -804.6,
+      "cost_1_5x_expectancy": -1268.78,
+      "symbol_expectancies": {
+        "RELIANCE": -776.51,
+        "TCS": -782.08,
+        "INFY": -874.59,
+        "HDFCBANK": -1129.58,
+        "ICICIBANK": -443.39
+      }
+    },
+    "HYPOTHESIS_C_RANGE_MEAN_REVERSION": {
+      "classification": "COST-DESTROYED EDGE",
+      "best_horizon": "5m",
+      "trade_count": 3308,
+      "train_expectancy": -958.75,
+      "validation_expectancy": -933.29,
+      "oos_expectancy": -779.94,
+      "oos_pf": 0.13,
+      "realistic_cost_expectancy": -890.7,
+      "cost_1_5x_expectancy": -1341.37,
+      "symbol_expectancies": {
+        "RELIANCE": -890.37,
+        "TCS": -1015.79,
+        "INFY": -887.88,
+        "HDFCBANK": -1074.96,
+        "ICICIBANK": -520.23
+      }
+    },
+    "HYPOTHESIS_D_BREAKOUT_FOLLOW_THROUGH": {
+      "classification": "COST-DESTROYED EDGE",
+      "best_horizon": "120m",
+      "trade_count": 17354,
+      "train_expectancy": -810.46,
+      "validation_expectancy": -1010.72,
+      "oos_expectancy": -726.89,
+      "oos_pf": 0.6786,
+      "realistic_cost_expectancy": -833.89,
+      "cost_1_5x_expectancy": -1280.15,
+      "symbol_expectancies": {
+        "RELIANCE": -768.01,
+        "TCS": -734.15,
+        "INFY": -981.34,
+        "HDFCBANK": -1157.15,
+        "ICICIBANK": -525.49
+      }
+    },
+    "HYPOTHESIS_E_OPENING_SESSION_MOMENTUM": {
+      "classification": "COST-DESTROYED EDGE",
+      "best_horizon": "30m",
+      "trade_count": 2350,
+      "train_expectancy": -307.73,
+      "validation_expectancy": -318.46,
+      "oos_expectancy": -330.99,
+      "oos_pf": 0.6532,
+      "realistic_cost_expectancy": -319.76,
+      "cost_1_5x_expectancy": -542.54,
+      "symbol_expectancies": {
+        "RELIANCE": -464.5,
+        "TCS": -293.69,
+        "INFY": -167.84,
+        "HDFCBANK": -673.23,
+        "ICICIBANK": -273.71
+      }
+    },
+    "HYPOTHESIS_F_VOLATILITY_EXPANSION": {
+      "classification": "COST-DESTROYED EDGE",
+      "best_horizon": "120m",
+      "trade_count": 19662,
+      "train_expectancy": -890.09,
+      "validation_expectancy": -1042.68,
+      "oos_expectancy": -814.81,
+      "oos_pf": 0.6567,
+      "realistic_cost_expectancy": -904.59,
+      "cost_1_5x_expectancy": -1357.93,
+      "symbol_expectancies": {
+        "RELIANCE": -831.2,
+        "TCS": -995.46,
+        "INFY": -886.53,
+        "HDFCBANK": -1180.67,
+        "ICICIBANK": -633.45
+      }
+    }
+  },
+  "final_verdict": "ROBUST EDGE FOUND: NO",
+  "falsification_conclusion": "Across all 5 horizons (5m, 15m, 30m, 60m, 120m) and 10 market regimes, single-stock 1-minute cash equity price-action anomalies do not generate sufficient gross directional movement to overcome statutory turnover costs and flat brokerage. While longer horizons (60m-120m) yield larger gross moves and improved excursion ratios, transaction friction strictly erodes net expectancy."
+}

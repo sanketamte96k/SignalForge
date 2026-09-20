@@ -1,0 +1,6 @@
+regime_bucket,bar_count,pct_of_trading_time
+Chop / Sideways (< 15),69269,15.1
+Transition (15 - 20),101122,22.04
+Trending (20 - 25),90060,19.63
+Strong Trend (25 - 30),67314,14.67
+Very Strong Trend (>= 30),131003,28.56

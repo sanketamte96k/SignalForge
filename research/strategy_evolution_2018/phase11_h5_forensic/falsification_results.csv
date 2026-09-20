@@ -1,0 +1,9 @@
+falsification_flag,flagged,details
+1. INSUFFICIENT_SAMPLE_SIZE,True,Total trades 80 (< 200 threshold). OOS trades: 37 (< 200).
+2. SYMBOL_CONCENTRATION_RISK,True,INFY accounts for 97.14% of total net profits. P&L w/o INFY: Rs. 575.29.
+3. MONTH_CONCENTRATION_RISK,False,Best month (2018-09) accounts for 33.42% of profits.
+4. DIRECTIONAL_ASYMMETRY,False,Long win rate 43.75% vs Short win rate 37.5%. Both directions traded.
+5. PARAMETER_FRAGILITY,False,100.0% of neighboring parameter combinations profitable.
+6. COST_FRAGILITY,False,Breakeven multiplier is 13.23x costs.
+7. VALIDATION_FAILURE,True,Validation net expectancy is negative: -Rs. 100.49.
+8. WINNER_DEPENDENCY,False,Top 5% of winners contribute 57.75% of total net profits.

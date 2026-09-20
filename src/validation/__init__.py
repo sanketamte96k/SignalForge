@@ -1,4 +1,4 @@
-"""SignalForge validation components."""
+﻿"""SignalForge validation components."""
 
 from src.validation.approval import (
     ApprovalResult,
@@ -37,6 +37,13 @@ from src.validation.regime_oos import (
     RegimeOOSResult,
     RegimeOOSValidator,
 )
+from src.validation.stock_service import (
+    StockValidationService,
+)
+from src.validation.stock_validator import (
+    StockValidationResult,
+    StockValidationRunner,
+)
 
 __all__ = [
     "ApprovalResult",
@@ -60,4 +67,7 @@ __all__ = [
     "RegimeMetrics",
     "RegimeOOSResult",
     "RegimeOOSValidator",
+    "StockValidationService",
+    "StockValidationResult",
+    "StockValidationRunner",
 ]

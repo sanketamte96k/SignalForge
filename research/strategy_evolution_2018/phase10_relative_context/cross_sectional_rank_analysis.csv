@@ -1,0 +1,6 @@
+cs_rank,description,trades,pct_total,win_rate,gross_expectancy,net_expectancy,net_pf,net_pnl
+1,Rank 1 (Leader/Top),1917,17.08,30.99,-18.35,-38.78,0.9137,-74342.33
+2,Rank 2 (Middle),2367,21.09,32.28,5.55,-14.87,0.966,-35208.16
+3,Rank 3 (Middle),2437,21.72,32.99,31.67,11.24,1.0263,27384.34
+4,Rank 4 (Middle),2425,21.61,31.71,-26.0,-46.43,0.8977,-112582.94
+5,Rank 5 (Laggard/Bottom),2076,18.5,30.35,-66.68,-87.09,0.8113,-180805.35

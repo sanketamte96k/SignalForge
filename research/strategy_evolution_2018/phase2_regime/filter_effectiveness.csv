@@ -1,0 +1,6 @@
+variant,executed_trades,filtered_signals,total_evaluated_crossovers,filter_rate_pct,win_rate,profit_factor,net_pnl,average_trade,transaction_costs
+Baseline Control,11222,0,11222,0.0,31.73,0.9248,-375554.43,-33.47,229207.84
+ADX >= 20,7014,9840,16854,58.38,31.17,0.8653,-377920.77,-53.88,142870.74
+ADX >= 25,3866,15400,19266,79.93,31.09,0.8738,-248742.92,-64.34,79151.42
+EMA Distance,6883,11324,18207,62.2,30.26,0.8497,-416225.41,-60.47,140194.46
+ADX20 + EMA Dist,3931,15991,19922,80.27,29.38,0.7969,-342127.29,-87.03,80117.49

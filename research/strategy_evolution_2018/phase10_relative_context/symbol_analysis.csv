@@ -1,0 +1,6 @@
+symbol,baseline_trades,filtered_trades,win_rate,gross_expectancy,net_expectancy,net_pf,net_pnl,pnl_contribution_pct
+RELIANCE,2571,9,33.33,-208.55,-228.76,0.2955,-2058.82,-10.23
+TCS,1799,19,42.11,313.67,293.24,2.026,5571.49,27.69
+INFY,2460,32,50.0,631.87,610.88,1.8904,19548.18,97.14
+HDFCBANK,1825,9,44.44,106.03,85.89,1.8536,772.98,3.84
+ICICIBANK,2567,11,18.18,-317.1,-337.31,0.1216,-3710.36,-18.44

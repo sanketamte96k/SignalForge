@@ -1,0 +1,9 @@
+candidate_id,name,val_trades,val_win_rate,val_gross_pf,val_net_pf,val_net_pnl,val_net_exp,val_max_dd
+H1_TREND_ADX_HIGH,Strong Trend Continuation (ADX >= 25),813,29.64,0.847,0.8015,-64485.03,-79.32,94820.76
+H2_LOW_VOL_BREAKOUT,Low Volatility Breakout (ATR Rank <= 40),427,31.38,1.0102,0.9372,-7497.35,-17.56,29859.54
+H3_OPENING_RUSH,Opening Session Momentum (09:15-10:00),389,32.9,1.0819,1.0215,2971.14,7.64,23215.49
+H4_FLAT_MOM_NON_OVEREXTENDED,Non-Overextended Fresh Momentum (Ret_5 within +-0.1%),1250,31.68,1.1223,1.0511,19738.57,15.79,44946.26
+H5_EXPANDING_VOL_STRONG_BODY,Expanding Volatility + Strong Marubozu (Body >= 0.60),655,29.47,0.8455,0.7994,-51715.58,-78.96,56511.27
+H6_FRESH_CROSSOVER_ONLY,Fresh Crossover (< 2 bars since cross),3024,30.62,0.9926,0.9352,-69107.94,-22.85,128182.86
+H7_EXCLUDE_MIDDAY_CHOP,Midday Chop Filter (Exclude 11:00-13:00),2083,31.11,1.0864,1.0229,16196.03,7.78,50073.62
+H8_GAP_CONTINUATION,Morning Gap Direction Alignment,1214,32.04,1.0306,0.9737,-11654.0,-9.6,54196.54

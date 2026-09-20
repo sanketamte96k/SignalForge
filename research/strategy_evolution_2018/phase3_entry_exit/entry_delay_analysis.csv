@@ -1,0 +1,8 @@
+experiment_type,entry_mechanism,trades,win_rate,gross_pnl,costs,net_pnl,profit_factor,gross_profit_factor,average_trade,mean_mae_atr,mean_mfe_atr
+Fixed Bar Delay,Delay 0 bars,11222,31.73,-146367.25,229207.85,-375575.1,0.9248,0.9698,-33.47,1.631,1.846
+Fixed Bar Delay,Delay 1 bars,11604,32.82,76620.77,238188.3,-161567.53,0.9741,1.0126,-13.92,1.632,1.903
+Fixed Bar Delay,Delay 2 bars,11020,33.15,80080.4,227699.44,-147619.05,0.9801,1.011,-13.4,1.63,1.9
+Fixed Bar Delay,Delay 3 bars,10762,34.15,423242.91,225315.32,197927.58,1.0198,1.0429,18.39,1.627,1.932
+Fixed Bar Delay,Delay 5 bars,10003,34.69,1173343.04,213925.02,959418.02,1.0715,1.0884,95.91,1.64,1.96
+Entry Mechanism,Wait for Pullback toward EMA21,6933,35.25,594447.47,145352.95,449094.52,1.0692,1.0929,64.78,1.643,2.0
+Entry Mechanism,Wait for Momentum Confirmation,8152,31.31,-236157.0,165909.01,-402066.01,0.8703,0.9209,-49.32,1.649,1.849

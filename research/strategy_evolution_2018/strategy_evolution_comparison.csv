@@ -1,0 +1,15 @@
+Metric,BASELINE,EXPERIMENT
+Total trades,"11,222","8,137"
+Winning trades,"3,561","2,527"
+Losing trades,"7,661","5,610"
+Win rate,31.73%,31.06%
+Gross profit,"₹4,620,807.20","₹2,888,473.78"
+Gross loss,"₹4,996,361.63","₹3,276,257.12"
+Transaction costs,"₹229,207.84","₹165,791.81"
+Net P&L,"₹-375,554.43","₹-387,783.34"
+Profit factor,0.9248,0.8816
+Average trade,₹-33.47,₹-47.66
+Max drawdown,"₹134,630.25","₹101,466.47"
+Average holding time,66.9 min,60.6 min
+Maximum loss streak,53,52
+Trades per day,45.8,33.2

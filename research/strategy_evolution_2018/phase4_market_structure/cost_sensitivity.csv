@@ -1,0 +1,21 @@
+strategy,cost_scenario,brokerage,slippage_bps,trades,gross_pnl,costs,net_pnl,profit_factor,expectancy
+Baseline Control (1m EMA Crossover),0.0x (Gross),0.0,0.0,11222,-146346.59,0.0,-146346.59,0.9698,-13.04
+Baseline Control (1m EMA Crossover),1.0x (Baseline),20.0,5.0,11222,-146346.59,229207.84,-375554.43,0.9248,-33.47
+Baseline Control (1m EMA Crossover),1.5x (Stress),30.0,7.5,11222,-146346.59,343811.76,-490158.35,0.9034,-43.68
+Baseline Control (1m EMA Crossover),2.0x (High Stress),40.0,10.0,11222,-146346.59,458415.69,-604762.27,0.8826,-53.89
+Candidate A: Opening Range Breakout (15m OR),0.0x (Gross),0.0,0.0,1060,11568.85,0.0,11568.85,1.0198,10.91
+Candidate A: Opening Range Breakout (15m OR),1.0x (Baseline),20.0,5.0,1060,11568.85,21789.15,-10220.3,0.9828,-9.64
+Candidate A: Opening Range Breakout (15m OR),1.5x (Stress),30.0,7.5,1060,11568.85,32683.73,-21114.88,0.9649,-19.92
+Candidate A: Opening Range Breakout (15m OR),2.0x (High Stress),40.0,10.0,1060,11568.85,43578.31,-32009.46,0.9473,-30.2
+Candidate B: ORB + VWAP Alignment (30m OR),0.0x (Gross),0.0,0.0,931,-68720.79,0.0,-68720.79,0.878,-73.81
+Candidate B: ORB + VWAP Alignment (30m OR),1.0x (Baseline),20.0,5.0,931,-68720.79,19149.06,-87869.84,0.8474,-94.38
+Candidate B: ORB + VWAP Alignment (30m OR),1.5x (Stress),30.0,7.5,931,-68720.79,28723.58,-97444.37,0.8326,-104.67
+Candidate B: ORB + VWAP Alignment (30m OR),2.0x (High Stress),40.0,10.0,931,-68720.79,38298.11,-107018.9,0.8181,-114.95
+Candidate C: Structure Break + Retest (BOS Retest),0.0x (Gross),0.0,0.0,12061,-153948.7,0.0,-153948.7,0.9695,-12.76
+Candidate C: Structure Break + Retest (BOS Retest),1.0x (Baseline),20.0,5.0,12061,-153948.7,246187.7,-400136.41,0.9231,-33.18
+Candidate C: Structure Break + Retest (BOS Retest),1.5x (Stress),30.0,7.5,12061,-153948.7,369281.56,-523230.26,0.9009,-43.38
+Candidate C: Structure Break + Retest (BOS Retest),2.0x (High Stress),40.0,10.0,12061,-153948.7,492375.41,-646324.11,0.8794,-53.59
+Candidate D: Liquidity Sweep + Structure Confirmation,0.0x (Gross),0.0,0.0,9281,-117359.83,0.0,-117359.83,0.9662,-12.65
+Candidate D: Liquidity Sweep + Structure Confirmation,1.0x (Baseline),20.0,5.0,9281,-117359.83,189028.56,-306388.39,0.9145,-33.01
+Candidate D: Liquidity Sweep + Structure Confirmation,1.5x (Stress),30.0,7.5,9281,-117359.83,283542.84,-400902.67,0.89,-43.2
+Candidate D: Liquidity Sweep + Structure Confirmation,2.0x (High Stress),40.0,10.0,9281,-117359.83,378057.12,-495416.95,0.8662,-53.38

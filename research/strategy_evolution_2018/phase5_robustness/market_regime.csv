@@ -1,0 +1,8 @@
+regime,trades,trade_share_pct,win_rate,net_pf,net_pnl,expectancy,max_drawdown,no_infy_net_pf,no_infy_net_pnl,no_infy_expectancy
+Strong Trend (ADX >= 25),531,37.5,32.77,0.941,-14681.74,-27.65,32611.98,0.9369,-7996.35,-19.99
+Weak Trend (ADX < 25),885,62.5,35.37,1.0865,31417.65,35.5,27382.25,0.945,-11627.99,-16.56
+High Volatility (Expanding ATR),757,53.5,34.87,1.0695,22808.57,30.13,22997.64,0.9613,-6714.38,-11.64
+Low Volatility (Contracting ATR),659,46.5,33.84,0.9786,-6072.65,-9.21,32525.19,0.9215,-12909.96,-24.59
+Bullish Environment (EMA Slope > 0),706,49.9,34.56,1.0829,24485.39,34.68,25536.18,1.0248,4066.22,7.37
+Bearish Environment (EMA Slope < 0),709,50.1,34.27,0.9773,-7161.61,-10.1,26766.22,0.8667,-23102.7,-42.08
+Sideways Environment (ADX < 20),518,36.6,37.84,1.2165,43386.42,83.76,13993.2,0.9348,-8163.09,-19.62

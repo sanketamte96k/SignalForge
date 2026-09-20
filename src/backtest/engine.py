@@ -1,8 +1,8 @@
-"""Orchestration engine for SignalForge backtesting."""
-
 from dataclasses import dataclass
+from datetime import time
 from typing import Callable
 
+import numpy as np
 import pandas as pd
 
 from src.backtest.metrics import (
@@ -24,6 +24,7 @@ class BacktestResult:
     trades: list[Trade]
     portfolio: Portfolio
     metrics: PerformanceMetrics
+    bankruptcy_reason: str | None = None
 
 
 SignalFunction = Callable[
@@ -375,4 +376,381 @@ def run_backtest(
         trades=trades,
         portfolio=portfolio,
         metrics=metrics,
+    )
+
+
+# ============================================================
+# PRODUCTION INTRADAY EXECUTION ENGINE
+# ============================================================
+
+@dataclass(frozen=True)
+class IntradayEngineConfig:
+    """Configuration for production intraday backtesting."""
+
+    initial_capital: float = 100000.0
+    risk_per_trade: float = 0.01
+    max_leverage: float = 5.0
+    stop_atr_multiplier: float = 1.5
+    target_atr_multiplier: float = 3.0
+    brokerage_per_trade: float = 20.0
+    slippage_rate: float = 0.0005
+    statutory_fee_rate: float = 0.0
+    session_end_time: str = "15:29"
+    enforce_eod_square_off: bool = True
+    gap_execution: bool = True
+    conservative_same_candle: bool = True
+
+
+def run_intraday_backtest(
+    data: pd.DataFrame,
+    signal_generator: Callable,
+    config: IntradayEngineConfig | None = None,
+) -> BacktestResult:
+    """
+    Run a risk-bounded, session-aware production intraday backtest.
+
+    Key guarantees:
+    - Zero overnight positions: enforced EOD square-off at session_end_time.
+    - Risk-bounded position sizing: quantity = min(risk_quantity, leverage_quantity).
+    - Maximum leverage cap: notional exposure capped at capital * max_leverage.
+    - Realistic gap execution: fills at open if market gaps through stop/target.
+    - Deterministic same-candle resolution: STOP is evaluated before TARGET.
+    - Transparent turnover-based transaction costs: slippage + brokerage + statutory fees.
+    - Bankruptcy protection: stops trading if capital <= 0 with explicit reason.
+    """
+
+    if config is None:
+        config = IntradayEngineConfig()
+
+    _validate_capital(config.initial_capital)
+
+    if not isinstance(data, pd.DataFrame):
+        raise TypeError("data must be a pandas DataFrame.")
+
+    if data.empty:
+        raise ValueError("data cannot be empty.")
+
+    df = data.copy()
+
+    # Normalize datetime index
+    if not isinstance(df.index, pd.DatetimeIndex):
+        if "Date" in df.columns:
+            df["Date"] = pd.to_datetime(df["Date"])
+            df = df.set_index("Date", drop=False)
+        else:
+            raise TypeError("data must have DatetimeIndex or Date column.")
+    else:
+        df["Date"] = df.index
+
+    # Case-insensitive column resolution
+    col_map = {str(c).lower(): c for c in df.columns}
+    for standard in ("open", "high", "low", "close", "volume"):
+        if standard not in col_map:
+            raise ValueError(f"Missing required column: {standard}")
+
+    df["Open"] = df[col_map["open"]].astype(float)
+    df["High"] = df[col_map["high"]].astype(float)
+    df["Low"] = df[col_map["low"]].astype(float)
+    df["Close"] = df[col_map["close"]].astype(float)
+    df["Volume"] = df[col_map["volume"]].astype(float)
+
+    # Ensure ATR column exists
+    if "atr" in col_map:
+        df["ATR"] = df[col_map["atr"]].astype(float)
+    elif "ATR" not in df.columns:
+        prev_close = df["Close"].shift(1)
+        tr1 = df["High"] - df["Low"]
+        tr2 = (df["High"] - prev_close).abs()
+        tr3 = (df["Low"] - prev_close).abs()
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        df["ATR"] = tr.rolling(14).mean()
+
+    capital = float(config.initial_capital)
+    portfolio = Portfolio(initial_capital=config.initial_capital)
+    trades: list[Trade] = []
+    position: dict | None = None
+    bankruptcy_reason: str | None = None
+
+    session_end_t = pd.Timestamp(config.session_end_time).time()
+
+    # Pre-extract arrays for blazing-fast execution
+    dates_raw = pd.to_datetime(df["Date"]).dt.to_pydatetime()
+    opens = df["Open"].to_numpy(dtype=float)
+    highs = df["High"].to_numpy(dtype=float)
+    lows = df["Low"].to_numpy(dtype=float)
+    closes = df["Close"].to_numpy(dtype=float)
+    atrs = df["ATR"].to_numpy(dtype=float)
+
+    # If signals are precomputed (array/Series/list), index directly
+    precomputed_signals = None
+    if isinstance(signal_generator, (pd.Series, np.ndarray, list)):
+        precomputed_signals = signal_generator
+
+    n_bars = len(df)
+
+    for i in range(1, n_bars):
+        current_time = dates_raw[i]
+        prev_time = dates_raw[i - 1]
+
+        current_date = current_time.date()
+        prev_date = prev_time.date()
+
+        bar_open = opens[i]
+        bar_high = highs[i]
+        bar_low = lows[i]
+        bar_close = closes[i]
+
+        prev_bar_close = closes[i - 1]
+
+        # ----------------------------------------------------
+        # 1. SESSION BOUNDARY ENFORCEMENT
+        # ----------------------------------------------------
+        # If date rolled over, force close open position at prev Close
+        if current_date != prev_date and position is not None:
+            exit_price = prev_bar_close
+            trade = simulate_trade(
+                position=Position(position["side"]),
+                entry_time=position["entry_time"],
+                exit_time=prev_time,
+                entry_price=position["entry_price"],
+                exit_price=exit_price,
+                quantity=position["quantity"],
+                brokerage=config.brokerage_per_trade,
+                slippage_rate=config.slippage_rate,
+                statutory_fee_rate=config.statutory_fee_rate,
+                exit_reason="EOD",
+                capital_before=position["capital_before"],
+                capital_after=capital,
+                risk_amount=position["risk_amount"],
+                atr=position["atr"],
+                stop_distance=position["stop_distance"],
+                risk_based_quantity=position["risk_based_quantity"],
+                max_allowed_quantity=position["max_allowed_quantity"],
+            )
+            capital += trade.net_pnl
+            portfolio.apply_trade(trade)
+            trades.append(trade)
+            position = None
+
+        # ----------------------------------------------------
+        # 2. MANAGE EXISTING POSITION
+        # ----------------------------------------------------
+        if position is not None:
+            side = position["side"]
+            entry_p = position["entry_price"]
+            stop_p = position["stop_price"]
+            target_p = position["target_price"]
+
+            exit_price = None
+            exit_reason = None
+
+            if side == "LONG":
+                # A. Gap down through stop at Open
+                if config.gap_execution and bar_open <= stop_p:
+                    exit_price = bar_open
+                    exit_reason = "STOP"
+                # B. Same-candle hit: both stop and target touched
+                elif bar_low <= stop_p and bar_high >= target_p:
+                    if config.conservative_same_candle:
+                        exit_price = stop_p
+                        exit_reason = "STOP"
+                    else:
+                        exit_price = target_p
+                        exit_reason = "TARGET"
+                # C. Intrabar stop hit
+                elif bar_low <= stop_p:
+                    exit_price = stop_p
+                    exit_reason = "STOP"
+                # D. Gap up through target at Open
+                elif config.gap_execution and bar_open >= target_p:
+                    exit_price = bar_open
+                    exit_reason = "TARGET"
+                # E. Intrabar target hit
+                elif bar_high >= target_p:
+                    exit_price = target_p
+                    exit_reason = "TARGET"
+
+            elif side == "SHORT":
+                # A. Gap up through stop at Open
+                if config.gap_execution and bar_open >= stop_p:
+                    exit_price = bar_open
+                    exit_reason = "STOP"
+                # B. Same-candle hit
+                elif bar_high >= stop_p and bar_low <= target_p:
+                    if config.conservative_same_candle:
+                        exit_price = stop_p
+                        exit_reason = "STOP"
+                    else:
+                        exit_price = target_p
+                        exit_reason = "TARGET"
+                # C. Intrabar stop hit
+                elif bar_high >= stop_p:
+                    exit_price = stop_p
+                    exit_reason = "STOP"
+                # D. Gap down through target at Open
+                elif config.gap_execution and bar_open <= target_p:
+                    exit_price = bar_open
+                    exit_reason = "TARGET"
+                # E. Intrabar target hit
+                elif bar_low <= target_p:
+                    exit_price = target_p
+                    exit_reason = "TARGET"
+
+            # F. End of Day Square-Off if neither stop nor target hit
+            if (
+                exit_price is None
+                and config.enforce_eod_square_off
+                and current_time.time() >= session_end_t
+            ):
+                exit_price = bar_close
+                exit_reason = "EOD"
+
+            # Execute exit
+            if exit_price is not None:
+                trade = simulate_trade(
+                    position=Position(side),
+                    entry_time=position["entry_time"],
+                    exit_time=current_time,
+                    entry_price=entry_p,
+                    exit_price=exit_price,
+                    quantity=position["quantity"],
+                    brokerage=config.brokerage_per_trade,
+                    slippage_rate=config.slippage_rate,
+                    statutory_fee_rate=config.statutory_fee_rate,
+                    exit_reason=exit_reason,
+                    capital_before=position["capital_before"],
+                    capital_after=capital,
+                    risk_amount=position["risk_amount"],
+                    atr=position["atr"],
+                    stop_distance=position["stop_distance"],
+                    risk_based_quantity=position["risk_based_quantity"],
+                    max_allowed_quantity=position["max_allowed_quantity"],
+                )
+                capital += trade.net_pnl
+                portfolio.apply_trade(trade)
+                trades.append(trade)
+                position = None
+
+                # Check bankruptcy
+                if capital <= 0:
+                    bankruptcy_reason = (
+                        f"BANKRUPTCY: Capital dropped to {capital:.2f} at {current_time}"
+                    )
+                    break
+                continue
+
+        # ----------------------------------------------------
+        # 3. OPEN NEW POSITION
+        # ----------------------------------------------------
+        if position is None and capital > 0:
+            # Do not enter at or after session end time
+            if config.enforce_eod_square_off and current_time.time() >= session_end_t:
+                continue
+
+            if precomputed_signals is not None:
+                sig = precomputed_signals[i]
+            else:
+                try:
+                    sig = signal_generator(df, i)
+                except TypeError:
+                    sig = signal_generator(df.iloc[i], df.iloc[i - 1])
+
+            if sig is None:
+                continue
+
+            if isinstance(sig, Position):
+                side = sig.value
+            elif isinstance(sig, str):
+                side = sig.upper()
+            else:
+                continue
+
+            if side not in ("LONG", "SHORT"):
+                continue
+
+            atr = atrs[i]
+            if pd.isna(atr) or atr <= 0:
+                continue
+
+            entry_p = bar_close
+            if entry_p <= 0:
+                continue
+
+            # Position Sizing
+            risk_amount = capital * config.risk_per_trade
+            stop_dist = atr * config.stop_atr_multiplier
+            if stop_dist <= 0:
+                continue
+
+            risk_qty = int(risk_amount / stop_dist)
+            max_notional = capital * config.max_leverage
+            max_allowed_qty = int(max_notional / entry_p)
+
+            final_qty = min(risk_qty, max_allowed_qty)
+            if final_qty <= 0:
+                continue
+
+            if side == "LONG":
+                stop_p = entry_p - stop_dist
+                target_p = entry_p + (atr * config.target_atr_multiplier)
+            else:
+                stop_p = entry_p + stop_dist
+                target_p = entry_p - (atr * config.target_atr_multiplier)
+
+            position = {
+                "side": side,
+                "entry_time": current_time,
+                "entry_price": entry_p,
+                "stop_price": stop_p,
+                "target_price": target_p,
+                "quantity": final_qty,
+                "capital_before": capital,
+                "risk_amount": risk_amount,
+                "atr": atr,
+                "stop_distance": stop_dist,
+                "risk_based_quantity": risk_qty,
+                "max_allowed_quantity": max_allowed_qty,
+            }
+
+    # --------------------------------------------------------
+    # 4. FINAL DATASET CLOSE
+    # --------------------------------------------------------
+    if position is not None:
+        last_row = df.iloc[-1]
+        exit_price = float(last_row["Close"])
+        exit_time = last_row["Date"]
+        trade = simulate_trade(
+            position=Position(position["side"]),
+            entry_time=position["entry_time"],
+            exit_time=exit_time,
+            entry_price=position["entry_price"],
+            exit_price=exit_price,
+            quantity=position["quantity"],
+            brokerage=config.brokerage_per_trade,
+            slippage_rate=config.slippage_rate,
+            statutory_fee_rate=config.statutory_fee_rate,
+            exit_reason="EOD",
+            capital_before=position["capital_before"],
+            capital_after=capital,
+            risk_amount=position["risk_amount"],
+            atr=position["atr"],
+            stop_distance=position["stop_distance"],
+            risk_based_quantity=position["risk_based_quantity"],
+            max_allowed_quantity=position["max_allowed_quantity"],
+        )
+        capital += trade.net_pnl
+        portfolio.apply_trade(trade)
+        trades.append(trade)
+
+    metrics = calculate_metrics(
+        trades=trades,
+        initial_capital=config.initial_capital,
+        max_drawdown_pct=portfolio.max_drawdown,
+    )
+
+    return BacktestResult(
+        trades=trades,
+        portfolio=portfolio,
+        metrics=metrics,
+        bankruptcy_reason=bankruptcy_reason,
     )

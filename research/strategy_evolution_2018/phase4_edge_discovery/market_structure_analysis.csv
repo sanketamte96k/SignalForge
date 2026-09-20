@@ -1,0 +1,4 @@
+dimension,regime_bucket,trades,win_rate,gross_profit,gross_loss,gross_pf,net_pf,transaction_costs,net_pnl,gross_expectancy,net_expectancy,average_winner,average_loser,payoff_ratio,breakeven_win_rate,max_drawdown,max_loss_streak
+Breakout Condition,BREAKOUT_HIGH,1925,29.82,775660.97,856429.77,0.9057,0.8641,39316.05,-120084.84,-41.96,-62.38,1330.6,654.22,2.03,32.96,145357.3,20
+Breakout Condition,BREAKOUT_LOW,1774,30.16,700862.51,802569.04,0.8733,0.8334,36231.72,-137938.25,-57.33,-77.76,1289.31,668.05,1.93,34.13,138446.73,12
+Breakout Condition,IN_RANGE,7523,32.59,3218146.24,3182017.5,1.0114,0.9642,153660.08,-117531.34,4.8,-15.62,1291.71,647.76,1.99,33.4,134093.31,37

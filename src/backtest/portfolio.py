@@ -38,6 +38,11 @@ class Portfolio:
 
     max_drawdown: float = field(init=False)
 
+    is_bankrupt: bool = field(
+        default=False,
+        init=False,
+    )
+
     trades: list[Trade] = field(
         default_factory=list,
         init=False,
@@ -120,13 +125,9 @@ class Portfolio:
             self.cash + trade.net_pnl
         )
 
-        if new_equity < 0:
-            raise ValueError(
-                "Trade would reduce portfolio "
-                "equity below zero."
-            )
-
         self.cash = new_equity
+        if self.cash <= 0:
+            self.is_bankrupt = True
 
         self.trades.append(trade)
 

@@ -1,0 +1,17 @@
+strategy,cost_scenario,brokerage,slippage_bps,trades,gross_pnl,costs,net_pnl,profit_factor,expectancy
+Baseline Control,0.0x (Gross),0.0,0.0,11222,-146346.59,0.0,-146346.59,0.9698,-13.04
+Baseline Control,1.0x (Baseline),20.0,5.0,11222,-146346.59,229207.84,-375554.43,0.9248,-33.47
+Baseline Control,1.5x (Stress),30.0,7.5,11222,-146346.59,343811.76,-490158.35,0.9034,-43.68
+Baseline Control,2.0x (High Stress),40.0,10.0,11222,-146346.59,458415.69,-604762.27,0.8826,-53.89
+Candidate 1: Chop-Filtered Trend Follower,0.0x (Gross),0.0,0.0,5349,-252408.49,0.0,-252408.49,0.8746,-47.19
+Candidate 1: Chop-Filtered Trend Follower,1.0x (Baseline),20.0,5.0,5349,-252408.49,108866.55,-361275.05,0.8266,-67.54
+Candidate 1: Chop-Filtered Trend Follower,1.5x (Stress),30.0,7.5,5349,-252408.49,163299.83,-415708.32,0.8038,-77.72
+Candidate 1: Chop-Filtered Trend Follower,2.0x (High Stress),40.0,10.0,5349,-252408.49,217733.11,-470141.6,0.7818,-87.89
+Candidate 2: Pullback Entry with Tighter Target,0.0x (Gross),0.0,0.0,8578,-97597.57,0.0,-97597.57,0.9698,-11.38
+Candidate 2: Pullback Entry with Tighter Target,1.0x (Baseline),20.0,5.0,8578,-97597.57,174741.84,-272339.42,0.9181,-31.75
+Candidate 2: Pullback Entry with Tighter Target,1.5x (Stress),30.0,7.5,8578,-97597.57,262112.77,-359710.34,0.8934,-41.93
+Candidate 2: Pullback Entry with Tighter Target,2.0x (High Stress),40.0,10.0,8578,-97597.57,349483.69,-447081.26,0.8694,-52.12
+Candidate 3: Time-Windowed Momentum Breakout,0.0x (Gross),0.0,0.0,4579,-229216.3,0.0,-229216.3,0.8585,-50.06
+Candidate 3: Time-Windowed Momentum Breakout,1.0x (Baseline),20.0,5.0,4579,-229216.3,93085.74,-322302.04,0.8078,-70.39
+Candidate 3: Time-Windowed Momentum Breakout,1.5x (Stress),30.0,7.5,4579,-229216.3,139628.62,-368844.91,0.7836,-80.55
+Candidate 3: Time-Windowed Momentum Breakout,2.0x (High Stress),40.0,10.0,4579,-229216.3,186171.49,-415387.79,0.7603,-90.72

@@ -1,0 +1,3 @@
+direction,trades,pct_total_trades,win_rate,gross_expectancy,net_expectancy,gross_pf,net_pf,net_pnl,avg_winner,avg_loser,max_drawdown,max_loss_streak
+LONG,48,60.0,43.75,330.46,309.91,1.8644,1.7871,14875.63,1608.37,-700.0,3558.11,6
+SHORT,32,40.0,37.5,184.59,163.99,1.3661,1.3174,5247.84,1815.28,-826.78,5376.4,6

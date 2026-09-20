@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 
+from dotenv import load_dotenv
+
 
 DEFAULT_GROWW_BASE_URL = "https://api.groww.in/v1"
 DEFAULT_GROWW_TIMEOUT = 30.0
@@ -26,23 +28,24 @@ class GrowwConfig:
     @classmethod
     def from_env(cls) -> GrowwConfig:
         """Instantiate configuration from system environment variables."""
-        api_key = os.environ.get("GROWW_API_KEY")
+        load_dotenv()
+        api_key = os.getenv("GROWW_API_KEY")
         if api_key is not None:
             api_key = api_key.strip()
             if not api_key:
                 api_key = None
 
-        api_secret = os.environ.get("GROWW_API_SECRET")
+        api_secret = os.getenv("GROWW_API_SECRET")
         if api_secret is not None:
             api_secret = api_secret.strip()
             if not api_secret:
                 api_secret = None
 
-        base_url = os.environ.get("GROWW_API_BASE_URL", DEFAULT_GROWW_BASE_URL).strip()
+        base_url = os.getenv("GROWW_API_BASE_URL", DEFAULT_GROWW_BASE_URL).strip()
         if not base_url:
             base_url = DEFAULT_GROWW_BASE_URL
 
-        timeout_str = os.environ.get("GROWW_REQUEST_TIMEOUT", str(DEFAULT_GROWW_TIMEOUT))
+        timeout_str = os.getenv("GROWW_REQUEST_TIMEOUT", str(DEFAULT_GROWW_TIMEOUT))
         try:
             timeout = float(timeout_str)
         except ValueError:
@@ -57,8 +60,8 @@ class GrowwConfig:
 
     @property
     def is_configured(self) -> bool:
-        """Return True if required credentials are present."""
-        return bool(self.api_key)
+        """Return True if both required credentials are present."""
+        return bool(self.api_key and self.api_secret)
 
     def __repr__(self) -> str:
         """Safe representation masking sensitive credentials."""

@@ -1,0 +1,10 @@
+hypothesis,description,total_signals,long_signals,short_signals,pct_retained,trades_per_day,win_rate,gross_expectancy,net_expectancy,gross_pf,net_pf,gross_pnl,transaction_costs,net_pnl,avg_winner,avg_loser,max_drawdown,max_loss_streak
+BASELINE (No Context),Unfiltered baseline trades,11222,5615,5607,100.0,45.62,31.73,-13.04,-33.47,0.9698,0.9248,-146346.59,229207.84,-375554.43,1297.62,-652.18,374534.64,55
+H1_RS_CONFIRMATION,Stock setup + Relative Strength Confirmation,8445,4171,4274,75.25,34.33,31.27,-25.69,-46.11,0.9411,0.8975,-216936.1,172474.56,-389410.66,1291.71,-654.86,388398.93,37
+H2_MARKET_AGREEMENT,Stock setup + Market Trend Agreement,3463,1845,1618,30.86,14.08,31.82,-6.87,-27.3,0.9842,0.9393,-23787.54,70757.51,-94545.05,1327.31,-659.57,101345.25,21
+H3_DUAL_ALIGNMENT,Stock setup + Dual Alignment (Market + RS),1811,1000,811,16.14,7.36,30.43,-47.69,-68.11,0.8943,0.8537,-86361.6,36994.13,-123355.74,1305.86,-668.96,131931.51,21
+H4_CS_LEADERS,"Cross-Sectional Leaders (Rank 1-2 for Long, 4-5 for Short)",6840,3367,3473,60.95,27.8,31.04,-31.59,-52.01,0.9278,0.8848,-216060.6,139683.56,-355744.16,1286.64,-654.5,354724.37,36
+H5_RS_DIVERGENCE,Extreme RS Divergence / Mean-Reversion,80,48,32,0.71,0.33,41.25,272.11,251.54,1.6313,1.5679,21768.83,1645.37,20123.46,1683.61,-753.95,6406.4,6
+H6_MARKET_PULLBACK,Market Agreement + Pullback Confirmation,3182,1682,1500,28.36,12.93,31.68,-7.39,-27.83,0.983,0.9379,-23530.52,65008.85,-88539.38,1325.51,-655.31,99230.96,23
+H7_REGIME_RS,Strong RS + Favorable Market Regime (Trend),4062,2032,2030,36.2,16.51,31.41,-31.99,-52.43,0.9291,0.8872,-129948.71,83007.12,-212955.83,1313.26,-677.91,221882.2,27
+H8_FULL_CONSENSUS,Full Consensus Signal (Market + Top CS Rank + RS),1272,704,568,11.33,5.17,31.13,-34.64,-55.07,0.9225,0.8806,-44056.38,25986.62,-70043.0,1303.98,-669.43,77175.59,17

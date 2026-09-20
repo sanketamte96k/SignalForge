@@ -1,0 +1,14 @@
+metric,value
+final_classification,SYMBOL-CONCENTRATED / INSUFFICIENT SAMPLE
+robust_edge_found,NO
+total_trades,80
+net_expectancy,251.54
+net_pf,1.5679
+net_pnl,20123.46
+val_expectancy,-100.49
+oos_expectancy,352.71
+infy_pnl_share_pct,97.14
+pnl_without_infy,575.29
+breakeven_cost_mult,13.23x
+active_flags_count,3
+recommendation,DO NOT promote to production. Insufficient statistical sample and severe single-stock reliance.

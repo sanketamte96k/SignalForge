@@ -1,0 +1,4 @@
+split,date_range,trades,win_rate,gross_expectancy,net_expectancy,net_pf,net_pnl,max_drawdown
+TRAIN,Jan - May 2018,33,42.42,265.4,244.8,1.5065,8078.3,3766.54
+VALIDATION,Jun - Aug 2018,10,30.0,-80.08,-100.49,0.7849,-1004.92,3558.11
+OOS,Sep - Dec 2018,37,43.24,373.28,352.71,1.8809,13050.09,4472.08
