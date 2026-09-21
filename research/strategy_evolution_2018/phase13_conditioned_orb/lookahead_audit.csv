@@ -1,0 +1,7 @@
+check_name,description,violations,status,details
+opening_range_window_causality,Verify or15_high is strictly NaN for all bars prior to 09:30:00 IST,0,PASS,0 values prior to 09:30 window close
+intraday_benchmark_causality,Verify VWAP/TWAP proxy resets causally at 09:15 each day with zero future data,0,PASS,Daily expanding cumulative price average with strict day-boundary grouping
+ema_indicator_causality,Verify EMA20 and EMA50 use strictly causal exponential smoothing,0,PASS,Calculated causally on 1-minute close prices
+daily_atr_regime_causality,Verify daily ATR and rolling volatility terciles use only prior days (shifted by 1),0,PASS,Shift(1) applied before computing rolling 50-day 33rd/67th percentiles
+opening_momentum_causality,Verify opening momentum is calculated strictly using candles inside 09:15-09:29,0,PASS,Known and frozen at 09:30 before any trade entry
+zero_oos_threshold_leakage,Verify filter definitions and regime cutoffs were established prior to OOS inspection,0,PASS,Terciles and width boundaries calibrated on TRAIN partition (2015-2019)

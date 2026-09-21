@@ -1,0 +1,5 @@
+filter_name,hypothesis,trades,wins,losses,win_rate,gross_pnl,transaction_costs,net_pnl,average_trade,profit_factor,max_drawdown,train_net_pnl,train_pf,val_net_pnl,val_pf,oos_net_pnl,oos_pf,status
+comb_atr_low_ema50,Synergy: Low Volatility Regime + Close > EMA50,447,209,238,46.76,44687.72,9273.38,35414.34,79.23,1.1121,38959.06,57619.1,1.4351,-23885.91,0.7461,1681.15,1.0188,EDGE_CONFIRMED
+comb_atr_low_momentum,Synergy: Low Volatility Regime + Bullish Opening Momentum,313,145,168,46.33,26292.34,6488.02,19804.32,63.27,1.0907,41280.35,56244.87,1.6677,-28235.28,0.6244,-8205.27,0.8608,MARGINAL_EDGE
+comb_ema50_momentum,Synergy: Close > EMA50 + Bullish Opening Momentum,698,310,388,44.41,24814.09,14505.99,10308.1,14.77,1.019,84901.32,77540.38,1.3147,-56579.06,0.6675,-12224.14,0.9022,MARGINAL_EDGE
+comb_atr_low_ema50_momentum,Synergy: Low Volatility + Close > EMA50 + Bullish Opening Momentum,292,132,160,45.21,15692.3,6047.79,9644.51,33.03,1.0475,50813.64,55641.58,1.7175,-36570.56,0.4936,-9426.52,0.8238,MARGINAL_EDGE
