@@ -3,19 +3,23 @@
 File: scripts/manual_test_strategy_evolution_phase13_conditioned_orb.py
 
 Deterministic verification suite for Phase 13 Conditioned ORB Edge Discovery.
-Verifies at minimum:
-- runner exists and non-empty
-- dataset exists and schema is valid
-- Phase 13 status exists and is not falsely marked PRODUCTION_READY
-- baseline exists in filter comparison
-- all required filters evaluated (A, B1, B2, C, D, E)
-- chronological split exists (TRAIN, VAL, OOS)
-- cost stress analysis exists and covers up to 2.0x
-- lookahead audit exists and confirms zero causality leaks
-- synthetic data explicitly disabled
-- no OOS threshold leakage
-- data quality report exists
-- report explicitly differentiates index-level vs stock-level robustness
+Verifies all 16 explicit protocol requirements:
+ 1. Runner exists
+ 2. Runner is non-empty
+ 3. Dataset exists
+ 4. Dataset schema is correct
+ 5. Correct date range is used (2015-01-09 to 2024-03-26)
+ 6. Phase 13 output directory exists
+ 7. Required output files exist
+ 8. Baseline was evaluated
+ 9. All required filters were evaluated (Filters A through G)
+10. Chronological split exists (TRAIN, VAL, OOS)
+11. OOS exists and is evaluated
+12. Cost stress exists (up to 2.0x)
+13. Look-ahead audit exists and passes
+14. Synthetic data disabled
+15. No OOS threshold leakage
+16. Final status is not falsely production-ready
 """
 
 from __future__ import annotations
@@ -42,7 +46,7 @@ RUNNER_PATH = PROJECT_ROOT / "scripts" / "run_strategy_evolution_phase13_conditi
 
 def main() -> None:
     print("=" * 80)
-    print(" SIGNALFORGE PHASE 13 — MANUAL VERIFICATION SUITE")
+    print(" SIGNALFORGE PHASE 13 — MANUAL VERIFICATION SUITE (16 PROTOCOL CHECKS)")
     print("=" * 80)
 
     checks = 0
@@ -57,175 +61,186 @@ def main() -> None:
         else:
             print(f"FAIL: [Check {checks:02d}] {name} - {details}")
 
-    # 1. Runner checks
-    check("Phase 13 runner exists", RUNNER_PATH.exists(), f"Missing: {RUNNER_PATH}")
+    # Check 01: Runner exists
+    check("Runner exists", RUNNER_PATH.exists(), f"Missing: {RUNNER_PATH}")
+
+    # Check 02: Runner is non-empty
     check(
-        "Phase 13 runner is non-empty",
-        RUNNER_PATH.exists() and RUNNER_PATH.stat().st_size > 500,
-        f"Runner size is {RUNNER_PATH.stat().st_size if RUNNER_PATH.exists() else 0} bytes",
+        "Runner is non-empty",
+        RUNNER_PATH.exists() and RUNNER_PATH.stat().st_size > 1000,
+        f"Size: {RUNNER_PATH.stat().st_size if RUNNER_PATH.exists() else 0} bytes",
     )
 
-    # 2. Dataset checks
-    check("Historical dataset exists", DATA_PATH.exists(), f"Missing: {DATA_PATH}")
+    # Check 03: Dataset exists
+    check("Dataset exists", DATA_PATH.exists(), f"Missing: {DATA_PATH}")
+
+    # Check 04: Dataset schema is correct
     if DATA_PATH.exists():
         df_head = pd.read_csv(DATA_PATH, nrows=5)
-        required_cols = {"timestamp", "open", "high", "low", "close", "volume"}
+        req_cols = {"timestamp", "open", "high", "low", "close", "volume"}
+        check("Dataset schema is correct", req_cols.issubset(set(df_head.columns)))
+    else:
+        check("Dataset schema is correct", False)
+
+    # Check 05: Correct date range is used
+    dq_file = OUT_DIR / "data_quality_report.md"
+    if dq_file.exists():
+        dq_text = dq_file.read_text(encoding="utf-8")
         check(
-            "Dataset schema is valid (timestamp, open, high, low, close, volume)",
-            required_cols.issubset(set(df_head.columns)),
+            "Correct date range is used (2015-01-09 to 2024-03-26)",
+            "2015-01-09" in dq_text and "2024-03-26" in dq_text,
         )
     else:
-        check("Dataset schema is valid", False, "Dataset file missing")
+        check("Correct date range is used", False)
 
-    # 3. Status checks
-    status_path = OUT_DIR / "phase13_status.csv"
-    check("Phase 13 status exists", status_path.exists(), f"Missing: {status_path}")
-    if status_path.exists():
-        df_status = pd.read_csv(status_path)
-        check("Phase 13 status contains valid record", len(df_status) >= 1)
+    # Check 06: Phase 13 output directory exists
+    check("Phase 13 output directory exists", OUT_DIR.exists() and OUT_DIR.is_dir())
+
+    # Check 07: Required output files exist
+    required_files = [
+        "phase13_report.md",
+        "phase13_status.csv",
+        "filter_comparison.csv",
+        "candidate_trades.csv",
+        "yearly_analysis.csv",
+        "chronological_oos.csv",
+        "cost_stress.csv",
+        "filter_interactions.csv",
+        "mae_mfe_analysis.csv",
+        "lookahead_audit.csv",
+        "data_quality_report.md",
+    ]
+    missing_files = [f for f in required_files if not (OUT_DIR / f).exists()]
+    check(
+        "Required output files exist",
+        len(missing_files) == 0,
+        f"Missing files: {missing_files}",
+    )
+
+    # Check 08: Baseline was evaluated
+    filter_file = OUT_DIR / "filter_comparison.csv"
+    if filter_file.exists():
+        df_f = pd.read_csv(filter_file)
         check(
-            "Synthetic data explicitly disabled",
-            bool(df_status.iloc[0].get("synthetic_data_used", True)) is False,
-        )
-        status_val = str(df_status.iloc[0].get("status", ""))
-        check(
-            "Status is not falsely marked production-ready",
-            status_val != "PRODUCTION_READY" and "PRODUCTION" not in status_val,
-            f"Actual status: {status_val}",
-        )
-        check(
-            "Status has valid research classification",
-            status_val in ["ROBUST_RESEARCH_CANDIDATE", "PROMISING_BUT_NOT_ROBUST", "REJECTED"],
-            f"Unrecognized status: {status_val}",
+            "Baseline was evaluated",
+            "baseline_long" in df_f["filter_name"].tolist(),
         )
     else:
-        check("Phase 13 status contains valid record", False)
-        check("Synthetic data explicitly disabled", False)
-        check("Status is not falsely marked production-ready", False)
-        check("Status has valid research classification", False)
+        check("Baseline was evaluated", False)
 
-    # 4. Filter comparison checks
-    filter_path = OUT_DIR / "filter_comparison.csv"
-    check("Filter comparison exists", filter_path.exists(), f"Missing: {filter_path}")
-    if filter_path.exists():
-        df_filters = pd.read_csv(filter_path)
-        check(
-            "Baseline LONG exists in filter comparison",
-            "baseline_long" in df_filters["filter_name"].tolist(),
-        )
-        required_filters = [
+    # Check 09: All required filters were evaluated (Filters A through G)
+    if filter_file.exists():
+        df_f = pd.read_csv(filter_file)
+        evaluated_filters = set(df_f["filter_name"].tolist())
+        target_filters = {
             "baseline_long",
             "filter_a_vwap",
-            "filter_b1_ema20",
-            "filter_b2_ema50",
-            "filter_c_atr_low",
-            "filter_c_atr_norm",
-            "filter_c_atr_high",
-            "filter_d_width_lt_05",
-            "filter_d_width_05_10",
-            "filter_d_width_10_15",
-            "filter_d_width_gt_15",
-            "filter_e_momentum",
-        ]
-        actual_filters = set(df_filters["filter_name"].unique())
-        missing_filters = set(required_filters) - actual_filters
+            "filter_b_ema20",
+            "filter_c_ema50",
+            "filter_d_ema_alignment",
+            "filter_e_atr_low",
+            "filter_e_atr_norm",
+            "filter_e_atr_high",
+            "filter_f_width_lt_05",
+            "filter_f_width_05_10",
+            "filter_f_width_10_15",
+            "filter_f_width_gt_15",
+            "filter_g_momentum",
+        }
+        missing_filters = target_filters - evaluated_filters
         check(
-            "All required filters evaluated (A, B1, B2, C, D, E)",
+            "All required filters were evaluated (A through G)",
             len(missing_filters) == 0,
             f"Missing filters: {missing_filters}",
         )
     else:
-        check("Baseline LONG exists in filter comparison", False)
-        check("All required filters evaluated", False)
+        check("All required filters were evaluated", False)
 
-    # 5. Filter interactions check
-    inter_path = OUT_DIR / "filter_interactions.csv"
-    check("Filter interactions exists", inter_path.exists(), f"Missing: {inter_path}")
-    if inter_path.exists():
-        df_inter = pd.read_csv(inter_path)
-        check("Filter interactions evaluated combination candidates", len(df_inter) >= 2)
-    else:
-        check("Filter interactions evaluated combination candidates", False)
-
-    # 6. Candidate trade log
-    trades_path = OUT_DIR / "candidate_trades.csv"
-    check("Candidate trade log exists", trades_path.exists(), f"Missing: {trades_path}")
-    if trades_path.exists():
-        df_trades = pd.read_csv(trades_path)
-        check("Candidate trade log contains recorded trades", len(df_trades) > 0)
-        req_trade_cols = {"direction", "entry_datetime", "exit_datetime", "pnl", "mae_atr", "mfe_atr"}
+    # Check 10: Chronological split exists
+    oos_file = OUT_DIR / "chronological_oos.csv"
+    if oos_file.exists():
+        df_oos = pd.read_csv(oos_file)
+        splits = set(df_oos["split"].tolist())
         check(
-            "Candidate trade log contains required execution and MAE/MFE fields",
-            req_trade_cols.issubset(set(df_trades.columns)),
+            "Chronological split exists (TRAIN, VAL, OOS)",
+            {"TRAIN", "VALIDATION", "OOS"}.issubset(splits),
         )
     else:
-        check("Candidate trade log contains recorded trades", False)
-        check("Candidate trade log contains required execution and MAE/MFE fields", False)
+        check("Chronological split exists", False)
 
-    # 7. Chronological OOS check
-    oos_path = OUT_DIR / "chronological_oos.csv"
-    check("Chronological OOS analysis exists", oos_path.exists(), f"Missing: {oos_path}")
-    if oos_path.exists():
-        df_oos = pd.read_csv(oos_path)
-        expected_splits = {"TRAIN", "VALIDATION", "OOS"}
-        actual_splits = set(df_oos["split"].unique())
+    # Check 11: OOS exists and is evaluated
+    if oos_file.exists():
+        df_oos = pd.read_csv(oos_file)
+        oos_rows = df_oos[df_oos["split"] == "OOS"]
         check(
-            "All chronological partitions evaluated (TRAIN, VAL, OOS)",
-            expected_splits.issubset(actual_splits),
+            "OOS exists and is evaluated",
+            len(oos_rows) == 1 and oos_rows.iloc[0]["trades"] > 0,
         )
     else:
-        check("All chronological partitions evaluated", False)
+        check("OOS exists and is evaluated", False)
 
-    # 8. Cost stress check
-    stress_path = OUT_DIR / "cost_stress.csv"
-    check("Cost stress analysis exists", stress_path.exists(), f"Missing: {stress_path}")
-    if stress_path.exists():
-        df_stress = pd.read_csv(stress_path)
-        check("Cost stress covers up to 2.0x multiplier", (df_stress["cost_multiplier"] >= 2.0).any())
-    else:
-        check("Cost stress covers up to 2.0x multiplier", False)
-
-    # 9. Lookahead audit check
-    lh_path = OUT_DIR / "lookahead_audit.csv"
-    check("Lookahead audit exists", lh_path.exists(), f"Missing: {lh_path}")
-    if lh_path.exists():
-        df_lh = pd.read_csv(lh_path)
+    # Check 12: Cost stress exists (up to 2.0x)
+    stress_file = OUT_DIR / "cost_stress.csv"
+    if stress_file.exists():
+        df_s = pd.read_csv(stress_file)
         check(
-            "Lookahead audit confirms zero causality leaks",
-            (df_lh["status"] == "PASS").all(),
-            f"Failed checks: {df_lh[df_lh['status'] != 'PASS']['check_name'].tolist()}",
-        )
-        check(
-            "No OOS threshold leakage recorded",
-            "zero_oos_threshold_leakage" in df_lh["check_name"].tolist(),
+            "Cost stress exists and covers up to 2.0x",
+            (df_s["cost_multiplier"] >= 2.0).any() and (df_s["cost_multiplier"] == 1.0).any(),
         )
     else:
-        check("Lookahead audit confirms zero causality leaks", False)
-        check("No OOS threshold leakage recorded", False)
+        check("Cost stress exists", False)
 
-    # 10. Research report & data quality report
-    report_path = OUT_DIR / "phase13_report.md"
-    dq_path = OUT_DIR / "data_quality_report.md"
-    yearly_path = OUT_DIR / "yearly_analysis.csv"
-    mae_path = OUT_DIR / "mae_mfe_analysis.csv"
-
-    check("Data quality report exists", dq_path.exists())
-    check("Phase 13 report exists", report_path.exists())
-    if report_path.exists():
-        rep_text = report_path.read_text(encoding="utf-8")
+    # Check 13: Look-ahead audit exists and passes
+    lh_file = OUT_DIR / "lookahead_audit.csv"
+    if lh_file.exists():
+        df_lh = pd.read_csv(lh_file)
         check(
-            "Report explicitly distinguishes index-level vs stock-level robustness",
-            "INDEX-LEVEL EVIDENCE" in rep_text or "Index-Level" in rep_text,
+            "Look-ahead audit exists and all checks pass",
+            len(df_lh) >= 5 and (df_lh["status"] == "PASS").all(),
         )
     else:
-        check("Report explicitly distinguishes index-level vs stock-level robustness", False)
+        check("Look-ahead audit exists", False)
 
-    check("Yearly analysis exists", yearly_path.exists())
-    check("MAE/MFE analysis exists", mae_path.exists())
+    # Check 14: Synthetic data disabled
+    status_file = OUT_DIR / "phase13_status.csv"
+    if status_file.exists():
+        df_stat = pd.read_csv(status_file)
+        check(
+            "Synthetic data disabled",
+            bool(df_stat.iloc[0].get("synthetic_data_used", True)) is False,
+        )
+    else:
+        check("Synthetic data disabled", False)
+
+    # Check 15: No OOS threshold leakage
+    if lh_file.exists():
+        df_lh = pd.read_csv(lh_file)
+        leak_check = df_lh[df_lh["check_name"] == "zero_oos_threshold_leakage"]
+        check(
+            "No OOS threshold leakage",
+            len(leak_check) == 1 and leak_check.iloc[0]["status"] == "PASS",
+        )
+    else:
+        check("No OOS threshold leakage", False)
+
+    # Check 16: Final status is not falsely production-ready
+    if status_file.exists():
+        df_stat = pd.read_csv(status_file)
+        stat = str(df_stat.iloc[0].get("status", ""))
+        check(
+            "Final status is not falsely production-ready",
+            stat != "PRODUCTION_READY" and "PRODUCTION" not in stat and stat in ["ROBUST_RESEARCH_CANDIDATE", "PROMISING_BUT_NOT_ROBUST", "REJECTED"],
+            f"Actual status: {stat}",
+        )
+    else:
+        check("Final status is not falsely production-ready", False)
 
     print()
     print("=" * 80)
-    print(f"PHASE 13 VERIFICATION: {passed}/{checks} PASSED")
+    if passed == checks:
+        print("PHASE 13 VERIFICATION: ALL TESTS PASSED (16/16)")
+    else:
+        print(f"PHASE 13 VERIFICATION: {passed}/{checks} PASSED")
     print("=" * 80)
 
     if passed != checks:

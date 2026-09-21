@@ -1,2 +1,2 @@
-phase,candidate,best_filter,total_trades,win_rate,gross_pnl,transaction_costs,net_pnl,profit_factor,train_net_pnl,val_net_pnl,oos_net_pnl,survives_15x_cost,synthetic_data_used,lookahead_bias_detected,status
-13,CONDITIONED_LONG_ORB,filter_c_atr_low,470,47.23,54377.55,9751.52,44626.03,1.1355,54798.16,-14218.19,4046.06,True,False,False,ROBUST_RESEARCH_CANDIDATE
+phase,candidate,best_filter,total_trades,win_rate,gross_pnl,transaction_costs,net_pnl,profit_factor,payoff_ratio,train_net_pnl,val_net_pnl,oos_net_pnl,survives_15x_cost,synthetic_data_used,lookahead_bias_detected,status
+13,CONDITIONED_LONG_ORB,filter_e_atr_low,470,47.23,54377.55,9751.52,44626.03,1.1355,1.27,54798.16,-14218.19,4046.06,True,False,False,ROBUST_RESEARCH_CANDIDATE
