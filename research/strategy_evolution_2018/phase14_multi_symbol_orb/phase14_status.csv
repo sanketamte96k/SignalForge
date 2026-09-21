@@ -1,0 +1,15 @@
+metric,value
+phase,PHASE_14_MULTI_SYMBOL_GENERALIZATION
+final_verdict,REJECTED
+symbols_tested,10
+profitable_symbols,2/10
+pct_profitable,20.0%
+median_expectancy,-46.88
+median_profit_factor,1.25
+portfolio_net_pnl,-107122.18
+portfolio_profit_factor,1.10
+loso_ex_best_pnl,-115402.88
+cost_1_5x_survives,False
+synthetic_data_used,FALSE
+per_symbol_optimization,FALSE
+production_ready,FALSE

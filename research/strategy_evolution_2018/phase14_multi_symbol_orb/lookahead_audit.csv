@@ -1,0 +1,10 @@
+check_id,description,status,evidence
+CHK_01,OR window restricted exclusively to 09:15-09:30 candles,PASS,Bars strictly filtered with time >= 09:15 and time < 09:30
+CHK_02,Entry occurs strictly after the 09:15-09:30 OR has closed,PASS,Entry bars evaluated strictly with time >= 09:30
+CHK_03,Daily ATR calculated causally using prior completed daily bars,PASS,Daily ATR shifted by 1 day (causal_daily_atr = daily_atr.shift(1))
+CHK_04,Conditioning threshold calibrated exclusively on TRAIN (<= 2019),PASS,33rd percentile computed on train_daily (year <= 2019) only
+CHK_05,Validation (2020-2021) cannot modify or re-calibrate threshold,PASS,Threshold frozen before testing validation data
+CHK_06,OOS data (>= 2022) cannot modify or leak into threshold,PASS,Threshold frozen before testing OOS data
+CHK_07,No future candle affects intraday entry or exit logic,PASS,Bars iterated strictly chronologically in trade execution
+CHK_08,Symbol universe established prior to backtest (no ex-post cherry-picking),PASS,Universe based on liquid NIFTY constituents in repository
+CHK_09,Identical frozen strategy applied to every symbol without per-symbol tuning,PASS,"Same 1.5 stop, 2.0 target, 15m ORB, 33rd percentile across all symbols"
