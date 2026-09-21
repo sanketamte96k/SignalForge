@@ -1,0 +1,2 @@
+phase,candidate,best_window,best_mode,total_trades,win_rate,gross_pnl,transaction_costs,net_pnl,profit_factor,oos_net_pnl,volume_usable,synthetic_data_used,lookahead_bias_detected,status
+12,STRUCTURAL_ORB,15m,close_confirm,2144,43.75,28690.65,44024.22,-15333.58,0.9867,-805.41,False,False,False,REJECTED

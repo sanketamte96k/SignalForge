@@ -1,0 +1,11 @@
+metric,value
+total_trades,2144.0
+total_net_pnl,-15333.58
+max_single_win,1540.52
+max_single_loss,-1202.29
+top_1pct_trade_count,22.0
+top_1pct_pnl_share_pct,2.92
+top_5pct_trade_count,108.0
+top_5pct_pnl_share_pct,13.87
+top_10pct_trade_count,215.0
+top_10pct_pnl_share_pct,26.37

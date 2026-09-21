@@ -1,0 +1,5 @@
+check_name,description,violations,status,details
+15m_opening_range_pre_window_isolation,Verify or15_high/low is NaN for all candles prior to 09:30:00 IST,0,PASS,0 premature values detected before 09:30 window close
+30m_opening_range_pre_window_isolation,Verify or30_high/low is NaN for all candles prior to 09:45:00 IST,0,PASS,0 premature values detected before 09:45 window close
+45m_opening_range_pre_window_isolation,Verify or45_high/low is NaN for all candles prior to 10:00:00 IST,0,PASS,0 premature values detected before 10:00 window close
+indicator_causality_ema_atr_rsi,Verify indicators use strictly backward-looking expanding/rolling windows,0,PASS,"ATR, EMA, and RSI use standard causal ewm/rolling shift constructs"

@@ -1,0 +1,10 @@
+metric,value
+avg_mae_atr_all,1.2778
+avg_mfe_atr_all,1.4865
+avg_mae_atr_wins,0.5312
+avg_mfe_atr_wins,2.474
+avg_mae_atr_losses,1.8585
+avg_mfe_atr_losses,0.7184
+max_mae_atr,5.3242
+max_mfe_atr,8.0938
+avg_holding_bars,9.29
