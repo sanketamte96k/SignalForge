@@ -1,11 +1,11 @@
-item,check,status,evidence
-1,Opening range strictly restricted to 09:15-09:30,PASS,Code explicitly slices time >= 09:15 and time < 09:30.
-2,Intraday signals strictly evaluate bar closes at or after 09:30,PASS,Signals evaluated strictly on completed candles >= 09:30.
-3,Daily ATR uses strictly prior completed sessions (shift=1),PASS,Causal daily ATR defined as daily_atr.shift(1).
-4,Opening gap uses strictly 09:15 open vs causal prev close,PASS,Gap = open - causal_prev_close.
-5,VWAP computed causally via expanding intraday cumulative sums,PASS,Intraday expanding cum_pv / cum_vol reset every morning at 09:15.
-6,Regime quantiles calibrated strictly on TRAIN (<=2018),PASS,ATR thresholds calibrated on train_daily (year <= 2018) only.
-7,No lookahead in execution (SL/TP evaluated sequentially),PASS,"Chronological loop over post-entry candles until SL, TP, or 15:15."
-8,Zero parameter optimization on validation or OOS datasets,PASS,Strategy logic frozen prior to execution.
-9,Bootstrap analysis utilizes fixed deterministic seed,PASS,"Fixed random seed 42 used across all 10,000 resamples."
-10,Complete inventory of instruments evaluated without omission,PASS,All 10 liquid equities and NIFTY benchmark evaluated.
+check_name,description,status,notes
+Daily ATR Shift,causal_daily_atr is derived from daily_atr.shift(1),PASS,Verified strictly prior completed sessions
+Daily Range Shift,causal_daily_range is derived from daily_range.shift(1),PASS,Verified strictly prior completed sessions
+Daily NR7 Indicator,causal_is_nr7 uses shift(1) prior 7 sessions,PASS,Verified no current day range included
+Opening Gap Baseline,Gap computed against causal_prev_close (yesterday close),PASS,Verified yesterday close known at 09:15
+Expanding Intraday VWAP,VWAP calculated on cumulative expanding window bar-by-bar,PASS,Verified no future volume or price incorporated
+Chronological Bar Iteration,Intraday signals evaluate at current bar close,PASS,Verified no bar lookahead
+Execution on Remaining Bars,Remaining bars strictly index > signal bar timestamp,PASS,Verified trade execution operates strictly in future
+Zero Next-Day Rollover,All intraday positions squared off at or before 15:15,PASS,Verified zero overnight leakage
+Isolated OOS Partition,Validation (2019) and OOS (2020+) never used for parameter selection,PASS,Verified strict chronological barrier
+No Lookahead Target Leakage,Stop loss / take profit calculated from signal bar close/ATR,PASS,Verified dynamic references strictly causal

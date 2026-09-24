@@ -1,9 +1,14 @@
 metric,value
-final_verdict,WEAK_EDGE
-candidates_tested,10
-total_candidate_trades,27754
-best_candidate,Volatility Expansion (NR7)
-promising_count,0
-rejected_count,10
+final_verdict,PROMISING_BUT_NOT_ROBUST
+hypotheses_tested,8
+total_candidate_trades,26871
+best_candidate,VOLATILITY_CONTRACTION_REVERSION
+best_candidate_net_pnl,1128.26
+best_candidate_net_pf,1.13
+best_candidate_expectancy,66.37
+robust_count,0
+promising_count,3
+rejected_count,5
 lookahead_audit_status,ALL_10_PASS
 random_seed,42
+production_ready,BLOCKED
