@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_mae,avg_mfe
+H3_VWAP_REVERSION,LONG,323,44.89,-123.51,112.7,-236.21,-39892.78,-76295.19,0.8,0.64,1.042,0.915
+H3_VWAP_REVERSION,SHORT,284,46.13,-61.02,120.75,-181.76,-17328.61,-51620.7,0.91,0.76,1.232,1.094
+H3_VWAP_REVERSION,ALL,607,45.47,-94.27,116.47,-210.73,-57221.39,-127915.89,0.85,0.7,1.131,0.999

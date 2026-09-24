@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_mae,avg_mfe
+H6_FAILED_BREAKOUT,LONG,2364,42.01,-20.22,114.16,-134.38,-47800.35,-317684.05,0.95,0.72,0.696,0.728
+H6_FAILED_BREAKOUT,SHORT,2138,47.9,76.96,114.32,-37.36,164532.9,-79876.58,1.22,0.91,0.629,0.767
+H6_FAILED_BREAKOUT,ALL,4502,44.8,25.93,114.24,-88.31,116732.55,-397560.63,1.07,0.8,0.664,0.747

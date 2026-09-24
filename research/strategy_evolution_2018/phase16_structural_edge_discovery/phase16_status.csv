@@ -1,0 +1,10 @@
+metric,value
+final_verdict,WEAK_EDGE
+total_candidate_trades,18831
+hypotheses_tested,7
+hypotheses_promising_net,0
+hypotheses_weak_gross_only,3
+strongest_hypothesis,Volatility Compression -> Expansion
+weakest_hypothesis,VWAP Reversion / Continuation
+lookahead_audit_status,ALL_10_PASS
+random_seed,42

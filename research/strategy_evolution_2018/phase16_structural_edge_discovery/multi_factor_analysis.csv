@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_mae,avg_mfe
+H7_MULTI_FACTOR,LONG,1387,42.32,-48.83,114.02,-162.85,-67724.08,-225866.93,0.89,0.68,0.837,0.78
+H7_MULTI_FACTOR,SHORT,1056,49.72,26.4,116.22,-89.82,27876.56,-94852.97,1.07,0.8,0.814,0.804
+H7_MULTI_FACTOR,ALL,2443,45.52,-16.31,114.97,-131.28,-39847.52,-320719.9,0.96,0.73,0.827,0.791

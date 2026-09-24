@@ -1,0 +1,8 @@
+hypothesis,strategy,trades,mean_net_exp,net_ci_95_lower,net_ci_95_upper,net_ci_spans_zero,mean_gross_exp,gross_ci_95_lower,gross_ci_95_upper,gross_ci_spans_zero,net_statistically_significant
+H1,H1_GAP_ACCEPTANCE,2480,-121.53,-188.56,-54.05,False,-5.7,-72.82,61.81,True,False
+H2,H2_GAP_FADE,3135,-198.63,-241.28,-157.12,False,-80.78,-123.14,-39.23,False,False
+H3,H3_VWAP_REVERSION,607,-210.73,-341.04,-79.53,False,-94.27,-224.47,37.13,True,False
+H4,H4_VOLATILITY_EXPANSION,3396,-1.67,-40.98,39.08,True,111.51,72.05,152.27,False,False
+H5,H5_TREND_DAY,2268,-39.03,-79.6,3.12,True,76.11,35.44,118.29,False,False
+H6,H6_FAILED_BREAKOUT,4502,-88.31,-119.62,-57.85,False,25.93,-5.36,56.31,True,False
+H7,H7_MULTI_FACTOR,2443,-131.28,-181.53,-82.8,False,-16.31,-66.5,32.09,True,False

@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_mae,avg_mfe
+H5_TREND_DAY,LONG,1075,28.19,48.64,113.39,-64.75,52282.8,-69608.54,1.17,0.82,0.406,0.735
+H5_TREND_DAY,SHORT,1193,33.11,100.88,116.72,-15.84,120345.5,-18900.17,1.36,0.96,0.428,0.778
+H5_TREND_DAY,ALL,2268,30.78,76.11,115.14,-39.03,172628.3,-88508.71,1.27,0.89,0.418,0.758
