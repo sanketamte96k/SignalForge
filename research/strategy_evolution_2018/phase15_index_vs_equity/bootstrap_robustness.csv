@@ -1,0 +1,15 @@
+sample_group,trades,win_rate,mean_net_expectancy,std_dev_net_trade,se_net_expectancy,ci_95_lower_net,ci_95_upper_net,ci_spans_zero_net,statistically_significant_net,mean_gross_expectancy,ci_95_lower_gross,ci_95_upper_gross,ci_spans_zero_gross,statistically_significant_gross
+NIFTY50_ALL_YEARS,187,44.39,-73.28,498.03,36.01,-145.44,-4.43,False,False,11.16,-61.16,79.98,True,False
+NIFTY50_COMMON_2017_2020,134,43.28,-83.43,381.36,32.81,-146.4,-18.35,False,False,0.93,-62.07,66.0,True,False
+EQUITY_PORTFOLIO_ALL,1279,42.53,-83.75,1200.35,33.81,-150.13,-17.31,False,False,39.62,-26.79,106.1,True,False
+EQUITY_PORTFOLIO_COMMON,1279,42.53,-83.75,1200.35,33.81,-150.13,-17.31,False,False,39.62,-26.79,106.1,True,False
+RELIANCE,122,44.26,-23.66,1123.86,101.73,-222.38,176.84,True,False,99.67,-99.14,300.27,True,False
+INFY,107,51.4,77.39,883.96,85.03,-86.3,246.98,True,False,200.86,37.1,370.53,False,True
+HDFCBANK,122,44.26,-70.1,672.24,61.49,-188.92,50.64,True,False,53.2,-65.68,173.98,True,False
+ICICIBANK,98,39.8,-19.09,1218.03,123.49,-255.78,228.63,True,False,104.42,-132.39,352.26,True,False
+SBIN,169,40.83,-200.74,1409.37,107.75,-411.18,8.74,True,False,-77.3,-287.85,132.29,True,False
+ITC,156,41.67,-111.33,1083.32,87.98,-285.6,59.79,True,False,12.17,-162.19,183.36,True,False
+LT,165,32.73,-210.81,1168.41,90.59,-382.49,-26.62,False,False,-87.7,-259.46,96.57,True,False
+AXISBANK,121,39.67,-171.42,1310.22,119.75,-401.15,66.9,True,False,-48.08,-277.93,190.37,True,False
+BHARTIARTL,104,47.12,63.63,1762.56,172.0,-264.66,413.47,True,False,187.16,-141.29,537.17,True,False
+KOTAKBANK,115,49.57,-16.46,1064.63,99.13,-213.68,174.61,True,False,106.8,-90.5,297.98,True,False

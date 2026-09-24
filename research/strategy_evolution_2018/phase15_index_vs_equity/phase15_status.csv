@@ -1,0 +1,16 @@
+metric,value
+final_verdict,INDEX_EDGE_NOT_SUPPORTED
+h1_diversification_false_breakouts,REJECTED
+h2_volatility_structure_difference,SUPPORTED
+h3_gap_mean_reversion_destruction,SUPPORTED
+h4_transaction_costs_primary_cause,SUPPORTED
+h5_breakout_quality_difference,SUPPORTED
+h6_regime_filter_divergence,SUPPORTED
+h7_sample_sensitivity_weakness,SUPPORTED
+nifty_total_signals,187
+equity_total_signals,1279
+nifty_net_expectancy,-73.28
+median_equity_net_expectancy,-46.88
+mean_equity_gross_expectancy,55.12
+mean_equity_cost_per_trade,123.38
+lookahead_audit_status,ALL_10_PASS

@@ -1,0 +1,12 @@
+symbol,trades,status,avg_breakout_volume,avg_relative_volume,volume_reliable,notes
+NIFTY50,187,VOLUME_DATA_LIMITATION,0.0,0.0,False,Spot NIFTY index has no traded volume in the dataset (volume is 0.0). No volume confirmation possible.
+RELIANCE,122,VOLUME_AVAILABLE,130431.98,2.27,True,Exchange traded equity volume available.
+INFY,107,VOLUME_AVAILABLE,55691.83,1.51,True,Exchange traded equity volume available.
+HDFCBANK,122,VOLUME_AVAILABLE,8329.97,2.06,True,Exchange traded equity volume available.
+ICICIBANK,98,VOLUME_AVAILABLE,165650.26,1.68,True,Exchange traded equity volume available.
+SBIN,169,VOLUME_AVAILABLE,237268.43,2.03,True,Exchange traded equity volume available.
+ITC,156,VOLUME_AVAILABLE,125490.55,1.63,True,Exchange traded equity volume available.
+LT,165,VOLUME_AVAILABLE,25989.72,1.8,True,Exchange traded equity volume available.
+AXISBANK,121,VOLUME_AVAILABLE,65015.89,1.95,True,Exchange traded equity volume available.
+BHARTIARTL,104,VOLUME_AVAILABLE,37972.16,2.44,True,Exchange traded equity volume available.
+KOTAKBANK,115,VOLUME_AVAILABLE,11479.97,2.47,True,Exchange traded equity volume available.

@@ -1,0 +1,7 @@
+universe,or_width_bucket,train_p33_threshold,train_p66_threshold,trades,trade_share_pct,avg_or_width_atr,win_rate,gross_expectancy,net_expectancy,gross_pf,net_pf,avg_mae_pct,avg_mfe_pct
+NIFTY50,LOW (<= 33rd pctile),0.265,0.349,62,33.16,0.214,38.71,-24.62,-109.16,0.87,0.54,0.351,0.313
+NIFTY50,MEDIUM (33rd-66th pctile),0.265,0.349,64,34.22,0.304,51.56,49.54,-34.78,1.37,0.8,0.301,0.298
+NIFTY50,HIGH (> 66th pctile),0.265,0.349,61,32.62,0.51,42.62,7.27,-77.2,1.03,0.71,0.46,0.373
+10_EQUITIES,LOW (<= 33rd pctile),0.303,0.431,426,33.31,0.244,38.97,-14.09,-137.44,0.96,0.7,0.749,0.723
+10_EQUITIES,MEDIUM (33rd-66th pctile),0.303,0.431,418,32.68,0.36,41.15,-8.48,-131.83,0.98,0.73,0.788,0.828
+10_EQUITIES,HIGH (> 66th pctile),0.303,0.431,435,34.01,0.642,47.36,138.43,15.01,1.33,1.03,0.842,1.016

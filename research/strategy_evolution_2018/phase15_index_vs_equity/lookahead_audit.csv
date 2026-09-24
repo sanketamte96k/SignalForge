@@ -1,0 +1,11 @@
+item,check,status,evidence
+1,OR uses only 09:15-09:30 candles,PASS,Bars filtered strictly with time >= 09:15 and time < 09:30.
+2,Entry occurs after OR closes,PASS,Entry bars evaluated strictly with time >= 09:30.
+3,ATR uses prior completed daily information,PASS,Daily ATR causally shifted: causal_daily_atr = daily_atr.shift(1).
+4,ATR threshold is TRAIN-only,PASS,33rd percentile computed on train_daily (year <= 2019) only.
+5,Gap uses previous trading day only,PASS,Gap uses 09:15 open vs causal_prev_close (prior day close).
+6,No future price determines signal,PASS,Intraday signals evaluate chronologically on bar closes.
+7,OOS data does not influence parameters,PASS,OOS data (2020-2024) frozen; zero hyperparameter tuning.
+8,Analysis buckets are fixed before evaluation,PASS,Gap and OR width buckets use predefined fixed cutoffs.
+9,Bootstrap uses fixed seed,PASS,"Fixed seed=42 used across all 10,000 bootstrap resamples."
+10,No cherry-picking,PASS,All 10 liquid equities and NIFTY evaluated without exception.
