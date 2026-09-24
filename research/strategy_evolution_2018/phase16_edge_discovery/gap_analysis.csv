@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_winner,avg_loser,payoff_ratio,max_drawdown_rs,avg_holding_mins,avg_mae,avg_mfe
+C2_GAP_FADE,LONG,1018,49.9,-88.91,117.94,-206.85,-90506.26,-210571.0,0.82,0.63,702.68,1112.81,0.63,223757.11,178.5,0.816,0.672
+C2_GAP_FADE,SHORT,2117,52.57,-76.87,117.81,-194.68,-162731.38,-412127.76,0.81,0.58,501.74,966.7,0.52,414941.1,155.3,0.666,0.519
+C2_GAP_FADE,ALL,3135,51.71,-80.78,117.85,-198.63,-253237.64,-622698.76,0.82,0.6,564.71,1015.92,0.56,627772.11,162.9,0.715,0.569

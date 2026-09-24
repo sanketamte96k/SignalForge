@@ -1,0 +1,11 @@
+item,check,status,evidence
+1,Opening range strictly restricted to 09:15-09:30,PASS,Code explicitly slices time >= 09:15 and time < 09:30.
+2,Intraday signals strictly evaluate bar closes at or after 09:30,PASS,Signals evaluated strictly on completed candles >= 09:30.
+3,Daily ATR uses strictly prior completed sessions (shift=1),PASS,Causal daily ATR defined as daily_atr.shift(1).
+4,Opening gap uses strictly 09:15 open vs causal prev close,PASS,Gap = open - causal_prev_close.
+5,VWAP computed causally via expanding intraday cumulative sums,PASS,Intraday expanding cum_pv / cum_vol reset every morning at 09:15.
+6,Regime quantiles calibrated strictly on TRAIN (<=2018),PASS,ATR thresholds calibrated on train_daily (year <= 2018) only.
+7,No lookahead in execution (SL/TP evaluated sequentially),PASS,"Chronological loop over post-entry candles until SL, TP, or 15:15."
+8,Zero parameter optimization on validation or OOS datasets,PASS,Strategy logic frozen prior to execution.
+9,Bootstrap analysis utilizes fixed deterministic seed,PASS,"Fixed random seed 42 used across all 10,000 resamples."
+10,Complete inventory of instruments evaluated without omission,PASS,All 10 liquid equities and NIFTY benchmark evaluated.

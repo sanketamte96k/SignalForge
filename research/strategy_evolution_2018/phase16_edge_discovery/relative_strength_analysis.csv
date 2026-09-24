@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_winner,avg_loser,payoff_ratio,max_drawdown_rs,avg_holding_mins,avg_mae,avg_mfe
+C6_RELATIVE_STRENGTH,LONG,453,48.57,83.94,123.37,-39.42,38026.93,-17858.61,1.11,0.95,1554.07,1544.01,1.01,51905.84,329.8,1.345,1.5
+C6_RELATIVE_STRENGTH,SHORT,534,51.5,141.62,123.24,18.38,75623.6,9814.71,1.25,1.03,1228.17,1266.14,0.97,33636.7,330.4,1.209,1.308
+C6_RELATIVE_STRENGTH,ALL,987,50.15,115.15,123.3,-8.15,113650.53,-8043.9,1.18,0.99,1373.01,1397.73,0.98,69311.15,330.1,1.272,1.396

@@ -1,0 +1,11 @@
+candidate_id,strategy,trades,mean_net_exp,net_ci_95_lower,net_ci_95_upper,net_ci_spans_zero,mean_gross_exp,gross_ci_95_lower,gross_ci_95_upper,gross_ci_spans_zero,net_statistically_significant
+C1,C1_VWAP_MEAN_REVERSION,470,-226.93,-384.12,-70.89,False,-110.52,-267.49,45.49,True,False
+C2,C2_GAP_FADE,3135,-198.63,-241.28,-157.12,False,-80.78,-123.14,-39.23,False,False
+C3,C3_VOLUME_MOMENTUM,686,-121.08,-245.23,5.39,True,2.24,-121.97,128.69,True,False
+C4,C4_TREND_PERSISTENCE,3890,-69.44,-96.81,-41.7,False,47.85,20.45,75.51,False,False
+C5,C5_VWAP_RECLAIM,9665,-100.74,-125.26,-76.29,False,14.68,-9.84,39.13,True,False
+C6,C6_RELATIVE_STRENGTH,987,-8.15,-138.55,118.99,True,115.15,-15.27,242.26,True,False
+C7,C7_VOLATILITY_EXPANSION,3396,-1.67,-40.98,39.08,True,111.51,72.05,152.27,False,False
+C8,C8_FAILED_BREAKOUT,4502,-88.31,-119.62,-57.85,False,25.93,-5.36,56.31,True,False
+C9,C9_FIRST_HOUR_REJECTION,208,-278.12,-470.02,-76.86,False,-158.91,-350.57,41.99,True,False
+C10,C10_REGIME_MOMENTUM,815,-33.99,-105.14,39.69,True,84.18,12.76,157.59,False,False

@@ -1,0 +1,9 @@
+metric,value
+final_verdict,WEAK_EDGE
+candidates_tested,10
+total_candidate_trades,27754
+best_candidate,Volatility Expansion (NR7)
+promising_count,0
+rejected_count,10
+lookahead_audit_status,ALL_10_PASS
+random_seed,42

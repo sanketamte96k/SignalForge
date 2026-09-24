@@ -1,0 +1,4 @@
+strategy,direction,trades,win_rate,gross_expectancy,cost_per_trade,net_expectancy,gross_pnl,net_pnl,gross_pf,net_pf,avg_winner,avg_loser,payoff_ratio,max_drawdown_rs,avg_holding_mins,avg_mae,avg_mfe
+C7_VOLATILITY_EXPANSION,LONG,1556,37.6,79.18,113.36,-34.18,123206.25,-53178.06,1.22,0.92,1041.78,682.41,1.53,119787.67,232.7,0.562,0.85
+C7_VOLATILITY_EXPANSION,SHORT,1840,41.96,138.85,113.03,25.82,255481.98,47512.18,1.45,1.07,942.12,636.52,1.48,45656.12,237.7,0.505,0.832
+C7_VOLATILITY_EXPANSION,ALL,3396,39.96,111.51,113.18,-1.67,378688.23,-5665.88,1.34,1.0,985.08,658.37,1.5,103184.48,235.4,0.531,0.84
