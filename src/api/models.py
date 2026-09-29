@@ -1,4 +1,4 @@
-﻿"""Pydantic response models for the SignalForge API."""
+"""Pydantic response models for the SignalForge API."""
 
 from __future__ import annotations
 
@@ -30,17 +30,57 @@ class NiftyLatestResponse(BaseModel):
     volume: float
 
 
-class NiftySignalResponse(BaseModel):
-    """Latest NIFTY 50 SignalForge strategy state."""
+class StrategyIndicators(BaseModel):
+    """Indicators for the strategy response."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ema_fast: float | None = None
+    ema_slow: float | None = None
+    rsi: float | None = None
+    atr: float | None = None
+    volume: float | None = None
+    vwap: float | None = None
+
+
+class StrategyConfirmation(BaseModel):
+    """Confirmation factors for the strategy response."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ema: bool | None = None
+    rsi_momentum: bool | None = None
+    volume: bool | None = None
+    multi_timeframe: bool | None = None
+
+
+class StrategySignalResponse(BaseModel):
+    """Strategy signal response exposing genuine engine state."""
 
     model_config = ConfigDict(extra="forbid")
 
     symbol: str
-    signal: str
-    position: str | None
+    timeframe: str
     timestamp: datetime
-    price: float
-    strategy: str
+    signal: str
+    signal_reason: str
+    entry_price: float | None = None
+    stop_loss: float | None = None
+    target_1: float | None = None
+    target_2: float | None = None
+    confidence: float | None = None
+    indicators: StrategyIndicators
+    confirmation: StrategyConfirmation
+    status: str
+    position: str | None = None
+    price: float | None = None
+    strategy: str = "SignalForge"
+
+
+class NiftySignalResponse(StrategySignalResponse):
+    """Latest NIFTY 50 SignalForge strategy state."""
+
+    pass
 
 
 class SignalAnalysisDetail(BaseModel):

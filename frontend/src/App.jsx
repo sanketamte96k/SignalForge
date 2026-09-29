@@ -20,6 +20,7 @@ import { loadSettings, applySettingsToDOM } from './settingsUtils'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import SignalForgeLogo from './SignalForgeLogo'
 import MarketIntelligenceView from './MarketIntelligenceView'
+import { StrategySignalPanel } from './StrategySignalPanel'
 import {
   isEditableTarget,
   isModifierKey,
@@ -97,6 +98,7 @@ const activity = [
 ]
 
 const TIMEFRAMES = ['5m', '10m', '15m', '30m', '1H', '4H', '1D']
+const SUPPORTED_TIMEFRAMES = new Set(['5m', '10m', '15m', '30m'])
 
 function formatPrice(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -208,19 +210,25 @@ function App() {
     }
   }, [])
 
-  const initializeDashboardData = useCallback(async () => {
+  const initializeDashboardData = useCallback(async (targetTimeframe = activeTimeframe) => {
     setNiftyLoading(true)
     setAnalysisLoading(true)
     setNiftyError(null)
     setAnalysisError(null)
 
+    const isSupported = SUPPORTED_TIMEFRAMES.has(targetTimeframe)
+
     try {
+      const fetchPromises = [
+        fetchNiftyLatest(),
+        isSupported
+          ? fetchNiftySignal(targetTimeframe)
+          : Promise.reject(new Error(`Unsupported timeframe: ${targetTimeframe}`)),
+        fetchNiftyAnalysis(),
+      ]
+
       const [latestResult, signalResult, analysisResult] =
-        await Promise.allSettled([
-          fetchNiftyLatest(),
-          fetchNiftySignal(),
-          fetchNiftyAnalysis(),
-        ])
+        await Promise.allSettled(fetchPromises)
 
       let dashboardErr = null
 
@@ -238,18 +246,21 @@ function App() {
         setNiftySignal(signalResult.value)
       } else {
         setNiftySignal(null)
-        dashboardErr =
-          signalResult.reason instanceof Error
-            ? signalResult.reason.message
-            : 'Failed to fetch NIFTY signal'
+        if (isSupported) {
+          dashboardErr =
+            signalResult.reason instanceof Error
+              ? signalResult.reason.message
+              : 'Failed to fetch NIFTY signal'
+        }
       }
 
       if (
         latestResult.status === 'rejected' &&
-        signalResult.status === 'rejected'
+        signalResult.status === 'rejected' &&
+        isSupported
       ) {
         setNiftyError(dashboardErr || 'SignalForge API unavailable')
-      } else if (signalResult.status === 'rejected') {
+      } else if (signalResult.status === 'rejected' && isSupported) {
         setNiftyError(dashboardErr || 'Signal API unavailable')
       } else {
         setNiftyError(null)
@@ -277,13 +288,13 @@ function App() {
       setNiftyLoading(false)
       setAnalysisLoading(false)
     }
-  }, [])
+  }, [activeTimeframe])
 
   useEffect(() => {
     Promise.resolve().then(() => {
-      initializeDashboardData()
+      initializeDashboardData(activeTimeframe)
     })
-  }, [initializeDashboardData])
+  }, [initializeDashboardData, activeTimeframe])
 
   const filteredSignals = useMemo(() => {
     let list = signals
@@ -491,11 +502,7 @@ function App() {
     }
   }, [niftyLoading, niftySignal, niftyLatest, niftyError])
 
-  const {
-    displaySignal, signalSubtitle, signalClass,
-    displayPrice, displayTimestamp, displayReason,
-    candleClass, candleText, badgeType, badgeText,
-  } = dashboardDisplay
+  const { candleClass, candleText } = dashboardDisplay
 
   return (
     <div className="terminal">
@@ -739,7 +746,9 @@ function App() {
                           ))}
                         </div>
                         <span className="timeframe-hint">
-                          (UI Selection • API timeframe not available)
+                          {SUPPORTED_TIMEFRAMES.has(activeTimeframe)
+                            ? `(Timeframe: ${activeTimeframe})`
+                            : `(Unsupported timeframe: ${activeTimeframe})`}
                         </span>
                       </div>
                     </div>
@@ -835,181 +844,23 @@ function App() {
                 </div>
 
                 {/* NIFTY 50 Strategy Signal Panel */}
-                <div className="signal-panel panel">
-                  <div className="panel-header signal-panel-header">
-                    <div className="signal-header-left">
-                      <h2>NIFTY 50 � Strategy Signal</h2>
-                    </div>
-                    <div className="signal-header-right">
-                      <span className={`signal-live-badge ${badgeType}`}>
-                        <span className={`signal-badge-dot ${badgeType}`} />
-                        {badgeText}
-                      </span>
-                      <span className="signal-tf-tag neutral">API Timeframe: �</span>
-                    </div>
-                  </div>
-
-                  <div className="signal-content">
-                    {niftyLoading && !niftySignal && !niftyLatest ? (
-                      <LoadingState
-                        title="Connecting to Strategy Engine..."
-                        description="Fetching real-time algorithmic signal and price updates..."
-                        compact
-                      />
-                    ) : niftyError && !niftySignal && !niftyLatest ? (
-                      <ErrorState
-                        title="Signal Engine Offline"
-                        message={niftyError}
-                        onRetry={initializeDashboardData}
-                        retryLabel="Retry Connection"
-                        compact
-                      />
-                    ) : (
-                      <>
-                        {/* 1. Visually Dominant BUY / SELL / NO TRADE status */}
-                        <div className="signal-badge-section">
-                          <div className="signal-tag-label">ALGORITHMIC SIGNAL</div>
-                          <div className={`signal-dominant-box ${signalClass}`}>
-                            <div className="signal-dominant-text">
-                              {displaySignal}
-                            </div>
-                            <div className="signal-dominant-sub">
-                              {signalSubtitle}
-                            </div>
-                          </div>
-                        </div>
-
-                    {/* 2. Key Instrument & Price Metrics */}
-                    <div className="signal-metrics-list">
-                      <div className="signal-metric-row">
-                        <span className="detail-muted">Instrument</span>
-                        <strong className="instrument-title">NIFTY 50 Index</strong>
-                      </div>
-                      <div className="signal-metric-row">
-                        <span className="detail-muted">Current Price</span>
-                        <strong className="numeric-val tabular-num">
-                          {displayPrice}
-                        </strong>
-                      </div>
-                      <div className="signal-metric-row">
-                        <span className="detail-muted">Signal Timestamp</span>
-                        <strong className="numeric-val tabular-num">
-                          {displayTimestamp}
-                        </strong>
-                      </div>
-                      <div className="signal-metric-row">
-                        <span className="detail-muted">Signal Timeframe</span>
-                        <strong className="timeframe-tag neutral">
-                          API timeframe not available
-                        </strong>
-                      </div>
-                      <div className="signal-metric-row">
-                        <span className="detail-muted">Signal Reason</span>
-                        <strong className="reason-val">
-                          {displayReason}
-                        </strong>
-                      </div>
-                    </div>
-
-                    {/* 3. Confirmation Factors */}
-                    <div className="confirmation-section">
-                      <div className="confirmation-header">
-                        <span className="detail-muted-title">CONFIRMATION FACTORS</span>
-                        <span className="confirmation-status-pill neutral">
-                          Not Available
-                        </span>
-                      </div>
-
-                      <div className="factor-list">
-                        <div className="factor-item factor-neutral">
-                          <span className="factor-icon-wrap">
-                            <Icon type="alert-circle" />
-                          </span>
-                          <div className="factor-text">
-                            <strong>EMA Confirmation</strong>
-                            <span>Indicator details not exposed by the current API.</span>
-                          </div>
-                        </div>
-
-                        <div className="factor-item factor-neutral">
-                          <span className="factor-icon-wrap">
-                            <Icon type="alert-circle" />
-                          </span>
-                          <div className="factor-text">
-                            <strong>RSI + Momentum</strong>
-                            <span>Indicator details not exposed by the current API.</span>
-                          </div>
-                        </div>
-
-                        <div className="factor-item factor-neutral">
-                          <span className="factor-icon-wrap">
-                            <Icon type="alert-circle" />
-                          </span>
-                          <div className="factor-text">
-                            <strong>Volume Confirmation</strong>
-                            <span>Volume details not exposed by the current API.</span>
-                          </div>
-                        </div>
-
-                        <div className="factor-item factor-neutral">
-                          <span className="factor-icon-wrap">
-                            <Icon type="alert-circle" />
-                          </span>
-                          <div className="factor-text">
-                            <strong>Multi-Timeframe Alignment</strong>
-                            <span>MTF details not exposed by the current API.</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 4. Stop Loss, Target 1, Target 2 with Percentage Distances */}
-                    <div className="trade-levels-section">
-                      <span className="detail-muted-title">EXECUTION TARGETS & STOP LOSS</span>
-                      <div className="trade-levels-grid">
-                        <div className="trade-level-card sl">
-                          <div className="level-badge sl-badge">SL</div>
-                          <div className="level-info">
-                            <span className="level-title">Stop Loss</span>
-                            <strong className="negative tabular-num">�</strong>
-                            <span className="level-pct negative tabular-num">Not available</span>
-                          </div>
-                        </div>
-
-                        <div className="trade-level-card t1">
-                          <div className="level-badge t1-badge">T1</div>
-                          <div className="level-info">
-                            <span className="level-title">Target 1</span>
-                            <strong className="positive tabular-num">�</strong>
-                            <span className="level-pct positive tabular-num">Not available</span>
-                          </div>
-                        </div>
-
-                        <div className="trade-level-card t2">
-                          <div className="level-badge t2-badge">T2</div>
-                          <div className="level-info">
-                            <span className="level-title">Target 2</span>
-                            <strong className="positive tabular-num">�</strong>
-                            <span className="level-pct positive tabular-num">Not available</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 5. View Full Analysis Action */}
-                    <button
-                      type="button"
-                      className="full-analysis-btn"
-                      onClick={() => handleNavigation('NIFTY Analysis')}
-                    >
-                      <span>View Full Analysis</span>
-                      <Icon type="arrow-right" />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </section>
+                <StrategySignalPanel
+                  signalData={niftySignal}
+                  latestData={niftyLatest}
+                  loading={niftyLoading && !niftySignal}
+                  error={niftyError}
+                  activeTimeframe={activeTimeframe}
+                  isUnsupported={!SUPPORTED_TIMEFRAMES.has(activeTimeframe)}
+                  onSelectTimeframe={(tf) => {
+                    setActiveTimeframe(tf)
+                    setChartViewRange(null)
+                    setHoveredIndex(null)
+                    setHoveredCandle(null)
+                  }}
+                  onRetry={() => initializeDashboardData(activeTimeframe)}
+                  onNavigateFullAnalysis={() => handleNavigation('NIFTY Analysis')}
+                />
+              </section>
 
           {/* Lower Section: Top Signals Today, Sector Performance, Watchlists */}
           <section className="lower-grid">

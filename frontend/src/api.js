@@ -35,8 +35,14 @@ export function fetchNiftyLatest() {
   return fetchJson('/api/nifty/latest')
 }
 
-export function fetchNiftySignal() {
-  return fetchJson('/api/nifty/signal')
+export function fetchNiftySignal(timeframe = '15m') {
+  return fetchJson(`/api/nifty/signal?timeframe=${encodeURIComponent(timeframe)}`)
+}
+
+export function fetchStrategySignal(symbol = 'NIFTY 50', timeframe = '15m') {
+  return fetchJson(
+    `/api/strategy/signal?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}`,
+  )
 }
 
 export function fetchNiftyAnalysis() {

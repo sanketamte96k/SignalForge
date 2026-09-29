@@ -10,6 +10,7 @@ from src.api.routes.paper_trading import (
 )
 from src.api.routes.sectors import router as sectors_router
 from src.api.routes.stocks import router as stocks_router
+from src.api.routes.strategy import router as strategy_router
 from src.api.routes.watchlists import router as watchlists_router
 from src.api.intelligence.routes import router as intelligence_router
 
@@ -46,6 +47,7 @@ app.include_router(stocks_router)
 app.include_router(sectors_router)
 app.include_router(watchlists_router)
 app.include_router(paper_trading_router)
+app.include_router(strategy_router)
 app.include_router(intelligence_router)
 
 

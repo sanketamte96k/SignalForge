@@ -1206,6 +1206,43 @@ button {
   border: 1px solid rgba(0, 217, 163, 0.3);
 }
 
+.confirmation-status-pill.confirmed {
+  background: rgba(0, 217, 163, 0.15);
+  color: #00eaaf;
+  border: 1px solid rgba(0, 217, 163, 0.4);
+}
+
+.confirmation-status-pill.partial {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.confirmation-status-pill.neutral {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.signal-tf-tag.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.timeframe-tag.positive {
+  color: var(--sf-cyan);
+  background: rgba(0, 217, 163, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 217, 163, 0.25);
+}
+
+.confidence-val {
+  color: #00eaaf;
+  font-weight: 700;
+}
+
 .factor-list {
   display: flex;
   flex-direction: column;

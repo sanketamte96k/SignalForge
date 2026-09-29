@@ -1,4 +1,4 @@
-﻿"""NIFTY 50 API routes."""
+"""NIFTY 50 API routes."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
+import math
 from fastapi import APIRouter, HTTPException, Query
 
 from src.api.models import (
@@ -17,6 +18,9 @@ from src.api.models import (
     NiftyLatestResponse,
     NiftySignalResponse,
     SignalAnalysisDetail,
+    StrategyConfirmation,
+    StrategyIndicators,
+    StrategySignalResponse,
     TimeframeDetail,
 )
 from src.data.downloader import load_market_data
@@ -25,7 +29,12 @@ from src.indicators.indicators import calculate_rsi
 from src.signals.signal_engine import SignalResult
 from src.strategy.causal_timeframe_indicators import TimeframeIndicatorState
 from src.strategy.context import CausalStrategyContext
-from src.strategy.signal_rules import trend_direction
+from src.strategy.signal_rules import (
+    Direction,
+    momentum_support,
+    trend_direction,
+    volume_support,
+)
 
 
 router = APIRouter(
@@ -43,6 +52,7 @@ DATA_PATH = (
 
 STRATEGY_WARMUP_CANDLES = 2000
 SUPPORTED_CHART_TIMEFRAMES = {"1m", "5m", "10m", "15m", "30m"}
+SUPPORTED_STRATEGY_TIMEFRAMES = ("5m", "10m", "15m", "30m")
 MAX_CHART_CANDLES = 500
 
 
@@ -224,26 +234,165 @@ def get_latest_nifty() -> NiftyLatestResponse:
     )
 
 
+def _sanitize_float(val: float | int | None) -> float | None:
+    """Sanitize float values, guarding against NaN and Infinity."""
+    if val is None:
+        return None
+    try:
+        f = float(val)
+        if math.isnan(f) or math.isinf(f):
+            return None
+        return round(f, 2)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_strategy_signal(
+    data: pd.DataFrame,
+    symbol: str,
+    timeframe: str,
+) -> NiftySignalResponse:
+    """Build authoritative strategy signal response without lookahead."""
+    if timeframe not in SUPPORTED_STRATEGY_TIMEFRAMES:
+        supported = ", ".join(SUPPORTED_STRATEGY_TIMEFRAMES)
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Unsupported strategy timeframe: '{timeframe}'. "
+                f"Supported: {supported}."
+            ),
+        )
+
+    state = _process_recent_history(data)
+    timestamp = pd.Timestamp(state.candle.name)
+    current_price = _sanitize_float(state.candle["close"])
+    if current_price is None:
+        current_price = 0.0
+
+    tf_state = state.timeframe_states.get(timeframe)
+    if tf_state is not None:
+        ind = tf_state.indicators
+        ema_fast = _sanitize_float(ind.ema_fast)
+        ema_slow = _sanitize_float(ind.ema_slow)
+        rsi_val = _sanitize_float(ind.rsi)
+        atr_val = _sanitize_float(ind.atr)
+        volume_val = (
+            _sanitize_float(ind.rvol)
+            if (ind.rvol is not None and ind.rvol > 0)
+            else (_sanitize_float(state.candle["volume"]) if state.candle["volume"] > 0 else None)
+        )
+    else:
+        ind = None
+        ema_fast = ema_slow = rsi_val = atr_val = volume_val = None
+
+    indicators = StrategyIndicators(
+        ema_fast=ema_fast,
+        ema_slow=ema_slow,
+        rsi=rsi_val,
+        atr=atr_val,
+        volume=volume_val,
+        vwap=None,
+    )
+
+    sig_res = state.signal_result
+    signal = state.signal
+
+    # EMA confirmation
+    if tf_state is not None and ind is not None and ind.ema_fast is not None and ind.ema_slow is not None:
+        if signal == "BUY":
+            ema_confirmed = tf_state.close > ind.ema_fast > ind.ema_slow
+        elif signal == "SELL":
+            ema_confirmed = tf_state.close < ind.ema_fast < ind.ema_slow
+        else:
+            ema_confirmed = False
+    else:
+        ema_confirmed = None
+
+    # RSI confirmation
+    if rsi_val is not None:
+        if signal == "BUY":
+            rsi_confirmed = momentum_support(Direction.LONG, rsi_val)
+        elif signal == "SELL":
+            rsi_confirmed = momentum_support(Direction.SHORT, rsi_val)
+        else:
+            rsi_confirmed = False
+    else:
+        rsi_confirmed = None
+
+    # Volume confirmation: only if RVOL is usable and available
+    if tf_state is not None and ind is not None and ind.rvol is not None and ind.rvol > 0:
+        volume_confirmed = volume_support(ind.rvol, minimum_rvol=1.5)
+    else:
+        volume_confirmed = None
+
+    # Multi-timeframe confirmation
+    if sig_res is not None:
+        mtf_confirmed = (sig_res.timeframe_alignment == 4 and signal != "NO_TRADE")
+    else:
+        mtf_confirmed = False
+
+    confirmation = StrategyConfirmation(
+        ema=ema_confirmed,
+        rsi_momentum=rsi_confirmed,
+        volume=volume_confirmed,
+        multi_timeframe=mtf_confirmed,
+    )
+
+    if sig_res is not None:
+        signal_reason = sig_res.reason
+        confidence = _sanitize_float(sig_res.confidence)
+    else:
+        signal_reason = "Warm-up incomplete or indicators unavailable."
+        confidence = 0.0
+
+    # Risk geometry & execution brackets
+    if signal in ("BUY", "SELL") and atr_val is not None and atr_val > 0:
+        risk_distance = max(round(atr_val * 1.5, 2), 0.5)
+        entry_price = current_price
+        if signal == "BUY":
+            stop_loss = round(entry_price - risk_distance, 2)
+            target_1 = round(entry_price + (risk_distance * 1.5), 2)
+            target_2 = round(entry_price + (risk_distance * 2.0), 2)
+        else:
+            stop_loss = round(entry_price + risk_distance, 2)
+            target_1 = round(entry_price - (risk_distance * 1.5), 2)
+            target_2 = round(entry_price - (risk_distance * 2.0), 2)
+    else:
+        entry_price = None
+        stop_loss = None
+        target_1 = None
+        target_2 = None
+
+    return NiftySignalResponse(
+        symbol=symbol,
+        timeframe=timeframe,
+        timestamp=timestamp.to_pydatetime(),
+        signal=signal,
+        signal_reason=signal_reason,
+        entry_price=entry_price,
+        stop_loss=stop_loss,
+        target_1=target_1,
+        target_2=target_2,
+        confidence=confidence,
+        indicators=indicators,
+        confirmation=confirmation,
+        status="HISTORICAL",
+        position=state.position,
+        price=current_price,
+        strategy="SignalForge",
+    )
+
+
 @router.get(
     "/signal",
     response_model=NiftySignalResponse,
 )
-def get_nifty_signal() -> NiftySignalResponse:
+def get_nifty_signal(
+    timeframe: str = Query("15m"),
+) -> NiftySignalResponse:
     """Return the latest SignalForge NIFTY 50 strategy signal."""
     data = _load_nifty_data()
-
-    state = _process_recent_history(data)
-
-    timestamp = pd.Timestamp(state.candle.name)
-
-    return NiftySignalResponse(
-        symbol="NIFTY 50",
-        signal=state.signal,
-        position=state.position,
-        timestamp=timestamp.to_pydatetime(),
-        price=float(state.candle["close"]),
-        strategy="SignalForge",
-    )
+    return _build_strategy_signal(data, "NIFTY 50", timeframe)
 
 
 @router.get(

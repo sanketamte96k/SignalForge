@@ -1,0 +1,2 @@
+phase,status,backend_tests,frontend_tests,supported_timeframes,signal_endpoint,lookahead_check,production_ready
+Phase 16 - Signal Engine Frontend Integration,COMPLETE,26/26 PASS,153/153 PASS,5m;10m;15m;30m,/api/nifty/signal;/api/strategy/signal,PASS,FALSE
