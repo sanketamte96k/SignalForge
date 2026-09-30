@@ -233,7 +233,7 @@ export function fetchWatchlistStocks(watchlistName, search = '') {
 }
 
 // ---------------------------------------------------------------------------
-// Paper Trading API
+// Paper Trading API (Phase 17 Interactive + Legacy Replay)
 // ---------------------------------------------------------------------------
 
 export function fetchPaperTradingStatus() {
@@ -244,8 +244,56 @@ export function fetchPaperTradingReport() {
   return fetchJson('/api/paper-trading/report')
 }
 
-export function fetchPaperTradingTrades() {
-  return fetchJson('/api/paper-trading/trades')
+export function fetchPaperTradingTrades(params = {}) {
+  const query = new URLSearchParams()
+  if (params.symbol) query.append('symbol', params.symbol)
+  if (params.side) query.append('side', params.side)
+  if (params.timeframe) query.append('timeframe', params.timeframe)
+  if (params.status) query.append('status', params.status)
+  const qs = query.toString()
+  return fetchJson(`/api/paper-trading/trades${qs ? `?${qs}` : ''}`)
+}
+
+export function fetchOpenPaperTrades() {
+  return fetchJson('/api/paper-trading/open')
+}
+
+export function fetchPaperTrade(tradeId) {
+  return fetchJson(`/api/paper-trading/trades/${encodeURIComponent(tradeId)}`)
+}
+
+export function createPaperTrade(tradeData) {
+  return fetchJson('/api/paper-trading/trades', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(tradeData),
+  })
+}
+
+export function updatePaperTrade(tradeId, updateData) {
+  return fetchJson(`/api/paper-trading/trades/${encodeURIComponent(tradeId)}/update`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updateData),
+  })
+}
+
+export function closePaperTrade(tradeId, closeData = {}) {
+  return fetchJson(`/api/paper-trading/trades/${encodeURIComponent(tradeId)}/close`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(closeData),
+  })
+}
+
+export function fetchPaperTradingSummary() {
+  return fetchJson('/api/paper-trading/summary')
 }
 
 export function startPaperTrading() {

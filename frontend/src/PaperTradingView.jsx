@@ -3,6 +3,9 @@ import {
   fetchPaperTradingReport,
   fetchPaperTradingStatus,
   fetchPaperTradingTrades,
+  fetchOpenPaperTrades,
+  fetchPaperTradingSummary,
+  closePaperTrade,
   resetPaperTrading,
   startPaperTrading,
 } from './api'
@@ -76,11 +79,11 @@ function getPnlClass(value) {
 }
 
 function getPositionLabel(position) {
-  if (position === 'LONG') {
+  if (position === 'LONG' || position === 'BUY') {
     return 'LONG'
   }
 
-  if (position === 'SHORT') {
+  if (position === 'SHORT' || position === 'SELL') {
     return 'SHORT'
   }
 
@@ -140,16 +143,34 @@ function SectionHeader({
   )
 }
 
-
 function PaperTradingView() {
-  const toast = useToast()
+  let toast
+  try {
+    toast = useToast()
+  } catch {
+    toast = {
+      success: () => {},
+      error: () => {},
+      warning: () => {},
+      info: () => {},
+    }
+  }
   const [status, setStatus] = useState(null)
   const [report, setReport] = useState(null)
   const [trades, setTrades] = useState([])
+  const [openTrades, setOpenTrades] = useState([])
+  const [summary, setSummary] = useState(null)
+
+  // Filters for Trade History
+  const [filterSymbol, setFilterSymbol] = useState('')
+  const [filterSide, setFilterSide] = useState('')
+  const [filterTimeframe, setFilterTimeframe] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
 
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const [closingTradeId, setClosingTradeId] = useState(null)
   const [error, setError] = useState(null)
 
   const loadPaperTradingData = useCallback(async () => {
@@ -161,20 +182,26 @@ function PaperTradingView() {
         statusResult,
         reportResult,
         tradesResult,
+        openTradesResult,
+        summaryResult,
       ] = await Promise.all([
         fetchPaperTradingStatus(),
         fetchPaperTradingReport(),
-        fetchPaperTradingTrades(),
+        fetchPaperTradingTrades({
+          symbol: filterSymbol || undefined,
+          side: filterSide || undefined,
+          timeframe: filterTimeframe || undefined,
+          status: filterStatus || undefined,
+        }),
+        fetchOpenPaperTrades(),
+        fetchPaperTradingSummary(),
       ])
 
       setStatus(statusResult)
       setReport(reportResult)
-
-      setTrades(
-        Array.isArray(tradesResult)
-          ? tradesResult
-          : [],
-      )
+      setTrades(Array.isArray(tradesResult) ? tradesResult : [])
+      setOpenTrades(Array.isArray(openTradesResult) ? openTradesResult : [])
+      setSummary(summaryResult)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -184,13 +211,27 @@ function PaperTradingView() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [filterSymbol, filterSide, filterTimeframe, filterStatus])
 
   useEffect(() => {
-    Promise.resolve().then(() => {
-      loadPaperTradingData()
-    })
+    loadPaperTradingData()
   }, [loadPaperTradingData])
+
+  async function handleClosePosition(tradeId, currentPrice) {
+    setClosingTradeId(tradeId)
+    try {
+      await closePaperTrade(tradeId, {
+        exit_price: currentPrice,
+        reason: 'MANUAL_CLOSE',
+      })
+      toast.success(`Position ${tradeId} closed successfully.`, { title: 'Position Closed' })
+      await loadPaperTradingData()
+    } catch (err) {
+      toast.error(err.message || 'Failed to close position.', { title: 'Close Failed' })
+    } finally {
+      setClosingTradeId(null)
+    }
+  }
 
   async function handleStartReplay() {
     if (starting || resetting) {
@@ -203,7 +244,7 @@ function PaperTradingView() {
     try {
       await startPaperTrading()
       await loadPaperTradingData()
-      toast.success('Paper Trading session started.', { title: 'Session Active' })
+      toast.success('Paper Trading replay completed.', { title: 'Replay Active' })
     } catch (requestError) {
       const msg = sanitizeErrorMessage(requestError, 'Paper Trading replay failed.')
       setError(msg)
@@ -224,7 +265,7 @@ function PaperTradingView() {
     try {
       await resetPaperTrading()
       await loadPaperTradingData()
-      toast.success('Paper Trading session reset.', { title: 'Session Reset' })
+      toast.success('Paper Trading session and positions reset.', { title: 'Session Reset' })
     } catch (requestError) {
       const msg = sanitizeErrorMessage(requestError, 'Unable to reset Paper Trading.')
       setError(msg)
@@ -234,502 +275,385 @@ function PaperTradingView() {
     }
   }
 
-  const displayReport = report || {
-    starting_capital: 100000,
-    ending_equity: 100000,
-    realized_pnl: 0,
-    total_transaction_cost: 0,
-    trade_count: 0,
+  const displaySummary = summary || {
+    total_trades: 0,
+    open_trades: 0,
     winning_trades: 0,
     losing_trades: 0,
-    gross_profit: 0,
-    gross_loss: 0,
-    long_trades: 0,
-    short_trades: 0,
-    net_return_pct: 0,
-    win_rate_pct: 0,
-    profit_factor: 0,
+    win_rate: 0,
+    gross_pnl: 0,
+    average_trade: 0,
+    largest_win: 0,
+    largest_loss: 0,
   }
 
-  const displayStatus = status || {
-    active: false,
-    has_position: false,
-    trade_count: 0,
-    starting_capital: 100000,
-    realized_pnl: 0,
-    current_equity: 100000,
-    total_transaction_cost: 0,
-  }
-
-  const isBusy = loading || starting || resetting
-
-  const sessionLabel = starting
-    ? 'REPLAYING'
-    : resetting
-      ? 'RESETTING'
-      : displayStatus.active
-        ? 'ACTIVE'
-        : 'READY'
-
-  const sessionClass = starting
-    ? 'replaying'
-    : resetting
-      ? 'resetting'
-      : displayStatus.active
-        ? 'active'
-        : 'ready'
-
-  const returnClass = getPnlClass(
-    displayReport.net_return_pct,
-  )
-
-  const pnlClass = getPnlClass(
-    displayReport.realized_pnl,
-  )
-
-  const equityChange =
-    typeof displayReport.ending_equity === 'number' &&
-    typeof displayReport.starting_capital === 'number'
-      ? displayReport.ending_equity -
-        displayReport.starting_capital
-      : null
-
-  const equityChangeClass =
-    equityChange !== null
-      ? getPnlClass(equityChange)
-      : ''
-
-  const recentTrades = useMemo(
-    () => [...trades].reverse(),
-    [trades],
-  )
+  const isBusy = starting || resetting
 
   return (
     <div className="paper-trading-view">
-      <div className="paper-page-header">
+      <header className="paper-page-header">
         <div>
-          <span className="paper-page-kicker">
-            PAPER TRADING
-          </span>
-
-          <h1>Paper Trading</h1>
-
+          <span className="paper-page-kicker">SIMULATED EXECUTION</span>
+          <h1>Paper Trading Engine</h1>
           <p>
-            Test the frozen SignalForge strategy against
-            real historical NIFTY 1-minute data.
+            Real-time simulated paper trading powered by SignalForge strategy signals with zero look-ahead bias and deterministic execution.
           </p>
         </div>
 
         <div className="paper-page-actions">
-          <span className="paper-mode-badge-large">
+          <div className="paper-mode-badge-large">
             <span className="paper-mode-dot" />
-            PAPER MODE
-          </span>
-
-          <span className={`paper-session-badge ${sessionClass}`}>
-            <span />
-            {sessionLabel}
-          </span>
+            <span>SIMULATION ONLY • NO REAL MONEY</span>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {loading && !status && !report ? (
+      {loading && !status && !summary ? (
         <LoadingState
-          title="Loading Paper Trading Session..."
-          description="Connecting to simulation engine and retrieving trade telemetry..."
+          title="Loading Paper Trading State..."
+          description="Connecting to deterministic execution engine..."
         />
-      ) : error && !status && !report ? (
+      ) : error && !status && !summary ? (
         <ErrorState
-          title="Paper Trading System Offline"
+          title="Paper Trading Offline"
           message={error}
           onRetry={loadPaperTradingData}
           retryLabel="Retry Connection"
         />
       ) : (
         <>
-          {error && (
-            <div className="paper-error-banner" role="alert">
-              <div className="paper-error-icon">!</div>
-
-              <div>
-                <strong>Paper Trading API unavailable</strong>
-                <span>{error}</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={loadPaperTradingData}
-                disabled={isBusy}
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
+          {/* 1. Performance Summary (Phase 17J) */}
           <section className="paper-stats-grid">
-        <StatCard
-          label="Starting Capital"
-          value={formatCurrency(
-            displayReport.starting_capital,
-          )}
-          subValue="Initial paper capital"
-          className="capital"
-        />
-
-        <StatCard
-          label="Current Equity"
-          value={formatCurrency(
-            displayReport.ending_equity,
-          )}
-          subValue={
-            equityChange !== null
-              ? `${equityChange >= 0 ? '+' : ''}${formatCurrency(equityChange)}`
-              : '—'
-          }
-          className={
-            equityChangeClass
-              ? `equity ${equityChangeClass}`
-              : 'equity'
-          }
-        />
-
-        <StatCard
-          label="Realized P&L"
-          value={formatCurrency(
-            displayReport.realized_pnl,
-          )}
-          subValue={formatPercent(
-            displayReport.net_return_pct,
-          )}
-          className={`pnl ${pnlClass}`}
-        />
-
-        <StatCard
-          label="Return"
-          value={formatPercent(
-            displayReport.net_return_pct,
-          )}
-          subValue="Based on starting capital"
-          className={`return ${returnClass}`}
-        />
-      </section>
-
-      <section className="paper-secondary-stats">
-        <StatCard
-          label="Trade Count"
-          value={formatNumber(
-            displayReport.trade_count,
-            0,
-          )}
-          subValue={`${displayReport.long_trades} long · ${displayReport.short_trades} short`}
-        />
-
-        <StatCard
-          label="Win Rate"
-          value={formatPercent(
-            displayReport.win_rate_pct,
-          )}
-          subValue={`${displayReport.winning_trades} wins · ${displayReport.losing_trades} losses`}
-        />
-
-        <StatCard
-          label="Profit Factor"
-          value={
-            Number.isFinite(
-              displayReport.profit_factor,
-            )
-              ? formatNumber(
-                  displayReport.profit_factor,
-                  2,
-                )
-              : '∞'
-          }
-          subValue="Gross profit / gross loss"
-        />
-
-        <StatCard
-          label="Transaction Costs"
-          value={formatCurrency(
-            displayReport.total_transaction_cost,
-          )}
-          subValue="Entry + exit costs"
-        />
-      </section>
-
-      <section className="paper-session-panel">
-        <SectionHeader
-          title="Session Controls"
-          subtitle="Run a deterministic replay using the recent NIFTY 1-minute dataset."
-          right={
-            <div className="paper-control-actions">
-              <button
-                type="button"
-                className="paper-start-button"
-                onClick={handleStartReplay}
-                disabled={isBusy}
-              >
-                <span className="paper-button-icon">
-                  {starting ? '…' : '▶'}
-                </span>
-
-                <span>
-                  {starting
-                    ? 'Running Replay…'
-                    : 'Start Replay'}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className="paper-reset-button"
-                onClick={handleReset}
-                disabled={isBusy}
-              >
-                <span>↻</span>
-
-                {resetting
-                  ? 'Resetting…'
-                  : 'Reset'}
-              </button>
-            </div>
-          }
-        />
-
-        <div className="paper-session-meta">
-          <div className="paper-session-status">
-            <span
-              className={`paper-status-indicator ${sessionClass}`}
+            <StatCard
+              label="Gross P&L"
+              value={formatCurrency(displaySummary.gross_pnl)}
+              subValue="Realized gross trading profit"
+              className={`pnl ${getPnlClass(displaySummary.gross_pnl)}`}
             />
 
-            <div>
-              <span>Session Status</span>
-              <strong>{sessionLabel}</strong>
-            </div>
-          </div>
+            <StatCard
+              label="Win Rate"
+              value={formatPercent(displaySummary.win_rate)}
+              subValue={`${displaySummary.winning_trades} wins · ${displaySummary.losing_trades} losses`}
+            />
 
-          <div className="paper-session-stat">
-            <span>Open Position</span>
+            <StatCard
+              label="Total Trades"
+              value={formatNumber(displaySummary.total_trades, 0)}
+              subValue={`${displaySummary.open_trades} active open`}
+            />
 
-            <strong>
-              {displayStatus.has_position
-                ? 'YES'
-                : 'NO'}
-            </strong>
-          </div>
+            <StatCard
+              label="Average Trade"
+              value={formatCurrency(displaySummary.average_trade)}
+              subValue="Gross P&L per trade"
+              className={getPnlClass(displaySummary.average_trade)}
+            />
+          </section>
 
-          <div className="paper-session-stat">
-            <span>Trades</span>
+          <section className="paper-secondary-stats">
+            <StatCard
+              label="Open Trades"
+              value={formatNumber(displaySummary.open_trades, 0)}
+              subValue="Active in current market"
+            />
 
-            <strong className="tabular-num">
-              {displayStatus.trade_count}
-            </strong>
-          </div>
+            <StatCard
+              label="Best Trade"
+              value={formatCurrency(displaySummary.largest_win)}
+              subValue="Largest winning trade"
+              className="paper-positive"
+            />
 
-          <div className="paper-session-stat">
-            <span>Current Equity</span>
+            <StatCard
+              label="Worst Trade"
+              value={formatCurrency(displaySummary.largest_loss)}
+              subValue="Largest drawdown trade"
+              className="paper-negative"
+            />
 
-            <strong className="tabular-num">
-              {formatCurrency(
-                displayStatus.current_equity,
-              )}
-            </strong>
-          </div>
+            <StatCard
+              label="Active Mode"
+              value="GROSS P&L"
+              subValue="Simulated zero-cost execution"
+            />
+          </section>
 
-          <div className="paper-session-stat">
-            <span>Realized P&L</span>
+          {/* 2. Open Positions (Phase 17J) */}
+          <section className="paper-session-panel" style={{ marginTop: '20px' }}>
+            <SectionHeader
+              title="Active Open Positions"
+              subtitle="Positions currently active and monitoring Stop Loss / Targets."
+              right={
+                <span className="paper-trade-count" style={{ background: openTrades.length > 0 ? 'rgba(0, 217, 163, 0.2)' : undefined, color: openTrades.length > 0 ? '#00eaaf' : undefined }}>
+                  {openTrades.length} open
+                </span>
+              }
+            />
 
-            <strong
-              className={`tabular-num ${getPnlClass(displayStatus.realized_pnl)}`}
-            >
-              {formatCurrency(
-                displayStatus.realized_pnl,
-              )}
-            </strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="paper-trades-panel">
-        <SectionHeader
-          title="Recent Paper Trades"
-          subtitle="Completed trades generated by the causal SignalForge strategy."
-          right={
-            <span className="paper-trade-count">
-              {recentTrades.length} trades
-            </span>
-          }
-        />
-
-        <div className="paper-table-scroll">
-          <div className="paper-trades-table">
-            <div className="paper-table-head">
-              <span>#</span>
-              <span>Position</span>
-              <span>Entry Time</span>
-              <span>Exit Time</span>
-
-              <span className="text-right">
-                Entry Price
-              </span>
-
-              <span className="text-right">
-                Exit Price
-              </span>
-
-              <span className="text-right">
-                Qty
-              </span>
-
-              <span className="text-right">
-                Gross P&L
-              </span>
-
-              <span className="text-right">
-                Costs
-              </span>
-
-              <span className="text-right">
-                Net P&L
-              </span>
-
-              <span className="text-right">
-                Return
-              </span>
-
-              <span>Reason</span>
-            </div>
-
-            {recentTrades.length === 0 ? (
+            {openTrades.length === 0 ? (
               <EmptyState
-                title="No Paper Trades Yet"
-                description="Start a simulation replay to execute trades against frozen historical data."
-                action={
-                  <button
-                    type="button"
-                    className="sf-state-retry-btn"
-                    onClick={handleStartReplay}
-                    disabled={starting || resetting}
-                  >
-                    {starting ? 'Starting Simulation...' : 'Start Simulation Replay'}
-                  </button>
-                }
+                title="No Active Positions"
+                description="Open a paper trade from the Strategy Signal Panel when an active BUY or SELL signal triggers."
+                compact
               />
             ) : (
-              recentTrades.map((trade, index) => {
-                const netPnlClass =
-                  getPnlClass(trade.net_pnl)
-
-                const position =
-                  getPositionLabel(
-                    trade.position,
-                  )
-
-                return (
-                  <div
-                    className="paper-trade-row"
-                    key={`${trade.entry_time}-${index}`}
-                  >
-                    <span className="paper-trade-number">
-                      {index + 1}
-                    </span>
-
-                    <span>
-                      <strong
-                        className={`paper-position ${position.toLowerCase()}`}
-                      >
-                        {position}
-                      </strong>
-                    </span>
-
-                    <span className="tabular-num">
-                      {formatTimestamp(
-                        trade.entry_time,
-                      )}
-                    </span>
-
-                    <span className="tabular-num">
-                      {formatTimestamp(
-                        trade.exit_time,
-                      )}
-                    </span>
-
-                    <span className="text-right tabular-num">
-                      {formatCurrency(
-                        trade.entry_price,
-                      )}
-                    </span>
-
-                    <span className="text-right tabular-num">
-                      {formatCurrency(
-                        trade.exit_price,
-                      )}
-                    </span>
-
-                    <span className="text-right tabular-num">
-                      {trade.quantity}
-                    </span>
-
-                    <span className="text-right tabular-num">
-                      {formatCurrency(
-                        trade.gross_pnl,
-                      )}
-                    </span>
-
-                    <span className="text-right tabular-num paper-cost">
-                      {formatCurrency(
-                        trade.transaction_cost,
-                      )}
-                    </span>
-
-                    <strong
-                      className={`text-right tabular-num ${netPnlClass}`}
-                    >
-                      {formatCurrency(
-                        trade.net_pnl,
-                      )}
-                    </strong>
-
-                    <span
-                      className={`text-right tabular-num ${netPnlClass}`}
-                    >
-                      {formatPercent(
-                        trade.return_pct,
-                      )}
-                    </span>
-
-                    <span
-                      className="paper-trade-reason"
-                      title={trade.reason || ''}
-                    >
-                      {trade.reason || '—'}
-                    </span>
+              <div className="paper-table-scroll">
+                <div className="paper-trades-table">
+                  <div className="paper-table-head">
+                    <span>Trade ID</span>
+                    <span>Symbol</span>
+                    <span>Side</span>
+                    <span>Timeframe</span>
+                    <span className="text-right">Entry Price</span>
+                    <span className="text-right">Stop Loss</span>
+                    <span className="text-right">Target 1</span>
+                    <span className="text-right">Target 2</span>
+                    <span className="text-right">Qty</span>
+                    <span className="text-right">Unrealized P&L</span>
+                    <span>Status</span>
+                    <span className="text-right">Action</span>
                   </div>
-                )
-              })
+
+                  {openTrades.map((ot) => (
+                    <div className="paper-trade-row" key={ot.trade_id}>
+                      <span style={{ fontFamily: 'monospace', color: '#88a3b8' }}>{ot.trade_id}</span>
+                      <strong>{ot.symbol}</strong>
+                      <span className={`paper-position ${ot.side.toLowerCase()}`}>
+                        {ot.side}
+                      </span>
+                      <span>{ot.timeframe}</span>
+                      <span className="text-right tabular-num">{formatCurrency(ot.entry_price)}</span>
+                      <span className="text-right tabular-num" style={{ color: '#ff6876' }}>{formatCurrency(ot.stop_loss)}</span>
+                      <span className="text-right tabular-num" style={{ color: '#00eaaf' }}>{formatCurrency(ot.target_1)}</span>
+                      <span className="text-right tabular-num" style={{ color: '#00eaaf' }}>{formatCurrency(ot.target_2)}</span>
+                      <span className="text-right tabular-num">{ot.quantity}</span>
+                      <strong className={`text-right tabular-num ${getPnlClass(ot.unrealized_pnl)}`}>
+                        {formatCurrency(ot.unrealized_pnl)}
+                      </strong>
+                      <span>
+                        <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '3px', background: '#0a2338', color: '#00eaaf' }}>
+                          {ot.status}
+                        </span>
+                      </span>
+                      <span className="text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleClosePosition(ot.trade_id, ot.entry_price)}
+                          disabled={closingTradeId === ot.trade_id}
+                          style={{
+                            padding: '4px 10px',
+                            background: '#d92d3c',
+                            border: '0',
+                            borderRadius: '3px',
+                            color: '#fff',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {closingTradeId === ot.trade_id ? 'Closing...' : 'Close'}
+                        </button>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section className="paper-disclosure-panel">
-        <div className="paper-disclosure-icon">
-          i
-        </div>
+          {/* 3. Trade History & Filters (Phase 17J) */}
+          <section className="paper-trades-panel" style={{ marginTop: '20px' }}>
+            <SectionHeader
+              title="Trade History"
+              subtitle="All executed and completed paper trades with audit trail."
+              right={
+                <span className="paper-trade-count">
+                  {trades.length} trades
+                </span>
+              }
+            />
 
-        <div>
-          <strong>Paper Trading only</strong>
+            {/* Filter Controls Bar */}
+            <div style={{ display: 'flex', gap: '10px', padding: '10px 0', borderBottom: '1px solid #142a3a', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input
+                type="text"
+                placeholder="Filter Symbol..."
+                value={filterSymbol}
+                onChange={(e) => setFilterSymbol(e.target.value)}
+                style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '130px' }}
+              />
 
-          <p>
-            This workspace uses historical market data
-            and the frozen SignalForge strategy. It does
-            not place broker orders or use real money.
-          </p>
-        </div>
+              <select
+                value={filterSide}
+                onChange={(e) => setFilterSide(e.target.value)}
+                style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px' }}
+              >
+                <option value="">All Sides</option>
+                <option value="LONG">LONG</option>
+                <option value="SHORT">SHORT</option>
+              </select>
 
-        <div className="paper-disclosure-source">
-          <span>Data</span>
-          <strong>NIFTY 1-minute historical</strong>
-        </div>
+              <select
+                value={filterTimeframe}
+                onChange={(e) => setFilterTimeframe(e.target.value)}
+                style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px' }}
+              >
+                <option value="">All Timeframes</option>
+                <option value="5m">5m</option>
+                <option value="10m">10m</option>
+                <option value="15m">15m</option>
+                <option value="30m">30m</option>
+              </select>
+
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px' }}
+              >
+                <option value="">All Statuses</option>
+                <option value="OPEN">OPEN</option>
+                <option value="TARGET_1_HIT">TARGET_1_HIT</option>
+                <option value="TARGET_2_HIT">TARGET_2_HIT</option>
+                <option value="STOPPED_OUT">STOPPED_OUT</option>
+                <option value="CLOSED">CLOSED</option>
+              </select>
+
+              {(filterSymbol || filterSide || filterTimeframe || filterStatus) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterSymbol('')
+                    setFilterSide('')
+                    setFilterTimeframe('')
+                    setFilterStatus('')
+                  }}
+                  style={{ height: '30px', padding: '0 10px', background: '#0a1e30', border: '1px solid #23425d', borderRadius: '4px', color: '#88a3b8', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            <div className="paper-table-scroll">
+              <div className="paper-trades-table">
+                <div className="paper-table-head">
+                  <span>#</span>
+                  <span>Trade ID</span>
+                  <span>Symbol</span>
+                  <span>Side</span>
+                  <span>Timeframe</span>
+                  <span>Entry Time</span>
+                  <span>Exit Time</span>
+                  <span className="text-right">Entry</span>
+                  <span className="text-right">Exit</span>
+                  <span className="text-right">Qty</span>
+                  <span className="text-right">Gross P&L</span>
+                  <span>Status</span>
+                  <span>Reason</span>
+                </div>
+
+                {trades.length === 0 ? (
+                  <EmptyState
+                    title="No Trades Found"
+                    description="No trades match the current criteria. Start a paper trade from the Strategy Signal Panel or run historical replay."
+                    compact
+                  />
+                ) : (
+                  trades.map((trade, index) => {
+                    const side = getPositionLabel(trade.side || trade.position)
+                    const pnl = typeof trade.realized_pnl === 'number' ? trade.realized_pnl : (trade.gross_pnl || 0)
+
+                    return (
+                      <div className="paper-trade-row" key={trade.trade_id || index}>
+                        <span className="paper-trade-number">{index + 1}</span>
+                        <span style={{ fontFamily: 'monospace', color: '#88a3b8', fontSize: '10px' }}>
+                          {trade.trade_id || `tr_${index+1}`}
+                        </span>
+                        <strong>{trade.symbol || 'NIFTY 50'}</strong>
+                        <span className={`paper-position ${side.toLowerCase()}`}>
+                          {side}
+                        </span>
+                        <span>{trade.timeframe || '15m'}</span>
+                        <span className="tabular-num">
+                          {formatTimestamp(trade.entry_timestamp || trade.entry_time)}
+                        </span>
+                        <span className="tabular-num">
+                          {formatTimestamp(trade.exit_timestamp || trade.exit_time)}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {formatCurrency(trade.entry_price)}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {formatCurrency(trade.exit_price)}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {trade.quantity}
+                        </span>
+                        <strong className={`text-right tabular-num ${getPnlClass(pnl)}`}>
+                          {formatCurrency(pnl)}
+                        </strong>
+                        <span>
+                          <span style={{ fontSize: '9.5px', padding: '2px 5px', borderRadius: '3px', background: '#0a1d2f', color: trade.status === 'STOPPED_OUT' ? '#ff6876' : trade.status?.includes('TARGET') ? '#00eaaf' : '#7cb5ec' }}>
+                            {trade.status || 'CLOSED'}
+                          </span>
+                        </span>
+                        <span className="paper-trade-reason" title={trade.exit_reason || trade.reason || ''}>
+                          {trade.exit_reason || trade.reason || '—'}
+                        </span>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* 4. Session Controls & Replay Engine */}
+          <section className="paper-session-panel" style={{ marginTop: '20px' }}>
+            <SectionHeader
+              title="Session Reset & Historical Simulation"
+              subtitle="Reset all paper trading state or run historical backfill replay."
+              right={
+                <div className="paper-control-actions">
+                  <button
+                    type="button"
+                    className="paper-start-button"
+                    onClick={handleStartReplay}
+                    disabled={isBusy}
+                  >
+                    <span className="paper-button-icon">
+                      {starting ? '…' : '▶'}
+                    </span>
+                    <span>{starting ? 'Running Replay…' : 'Run Historical Replay'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="paper-reset-button"
+                    onClick={handleReset}
+                    disabled={isBusy}
+                  >
+                    <span>↻</span>
+                    <span>{resetting ? 'Resetting…' : 'Reset Everything'}</span>
+                  </button>
+                </div>
+              }
+            />
+          </section>
+
+          <section className="paper-disclosure-panel">
+            <div className="paper-disclosure-icon">i</div>
+            <div>
+              <strong>Simulated Paper Trading Only</strong>
+              <p>
+                SignalForge paper trading is completely simulated for forward validation and algorithmic performance evaluation. It does not place broker orders or risk real capital.
+              </p>
+            </div>
+            <div className="paper-disclosure-source">
+              <span>Engine</span>
+              <strong>Causal Strategy Engine (5m, 10m, 15m, 30m)</strong>
+            </div>
           </section>
         </>
       )}

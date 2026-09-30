@@ -1,5 +1,11 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { LoadingState, ErrorState, EmptyState } from './StateViews'
+import {
+  fetchOpenPaperTrades,
+  createPaperTrade,
+  closePaperTrade,
+  updatePaperTrade,
+} from './api'
 
 function formatPrice(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -40,6 +46,19 @@ function formatApiTimestamp(timestamp) {
   }).format(date)
 }
 
+function formatDuration(startTimestamp) {
+  if (!startTimestamp) return '—'
+  const start = new Date(startTimestamp).getTime()
+  if (Number.isNaN(start)) return '—'
+  const diffSec = Math.max(0, Math.floor((Date.now() - start) / 1000))
+  if (diffSec < 60) return `${diffSec}s`
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin}m`
+  const diffHours = Math.floor(diffMin / 60)
+  const remMin = diffMin % 60
+  return `${diffHours}h ${remMin}m`
+}
+
 function PanelIcon({ type }) {
   if (type === 'check-small') {
     return (
@@ -75,6 +94,8 @@ export function StrategySignalPanel({
   onSelectTimeframe = null,
   onRetry = null,
   onNavigateFullAnalysis = null,
+  onTradeCreated = null,
+  onTradeClosed = null,
 }) {
   const isHistorical = signalData?.status === 'HISTORICAL' || !signalData?.status
   const badgeType = loading
@@ -131,6 +152,7 @@ export function StrategySignalPanel({
   const displayTimestamp = rawTimestamp ? formatApiTimestamp(rawTimestamp) : '—'
   const displayReason = signalData?.signal_reason || '—'
   const timeframe = signalData?.timeframe || activeTimeframe
+  const symbol = signalData?.symbol || 'NIFTY 50'
 
   // Confirmation factors
   const emaConfirmed = signalData?.confirmation?.ema === true
@@ -171,11 +193,113 @@ export function StrategySignalPanel({
       ? `+${(((target2 - entryPrice) / entryPrice) * 100).toFixed(2)}%`
       : 'No active setup'
 
+  // -------------------------------------------------------------------------
+  // Phase 17: Interactive Paper Trading State & Actions
+  // -------------------------------------------------------------------------
+  const [activeTrade, setActiveTrade] = useState(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [orderQuantity, setOrderQuantity] = useState(1)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [actionError, setActionError] = useState(null)
+  const [actionSuccess, setActionSuccess] = useState(null)
+
+  // Query active open paper trades for this symbol + timeframe
+  const refreshActiveTrade = useCallback(async () => {
+    try {
+      const openTrades = await fetchOpenPaperTrades()
+      if (Array.isArray(openTrades)) {
+        const match = openTrades.find(
+          (t) =>
+            t.symbol === symbol &&
+            t.timeframe === timeframe &&
+            (t.status === 'OPEN' || t.status === 'TARGET_1_HIT'),
+        )
+        setActiveTrade(match || null)
+      }
+    } catch {
+      // Ignore background fetch error
+    }
+  }, [symbol, timeframe])
+
+  useEffect(() => {
+    refreshActiveTrade()
+  }, [refreshActiveTrade])
+
+  // Handle Trade Execution
+  const handleConfirmPaperTrade = async () => {
+    if (orderQuantity <= 0 || !Number.isInteger(orderQuantity)) {
+      setActionError('Quantity must be an integer > 0')
+      return
+    }
+    if (!entryPrice || !stopLoss || !target1 || !target2) {
+      setActionError('Incomplete strategy brackets. Cannot open paper trade.')
+      return
+    }
+
+    setActionLoading(true)
+    setActionError(null)
+    setActionSuccess(null)
+
+    try {
+      const created = await createPaperTrade({
+        symbol,
+        side: rawSignal === 'BUY' ? 'LONG' : 'SHORT',
+        timeframe,
+        entry_price: entryPrice,
+        stop_loss: stopLoss,
+        target_1: target1,
+        target_2: target2,
+        quantity: orderQuantity,
+        signal_price: currentPrice || entryPrice,
+        strategy_signal: rawSignal,
+      })
+      setActiveTrade(created)
+      setShowConfirmModal(false)
+      setActionSuccess(`Paper trade ${created.trade_id} opened successfully!`)
+      if (onTradeCreated) onTradeCreated(created)
+    } catch (err) {
+      setActionError(err.message || 'Failed to open paper trade')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // Handle Trade Manual Close
+  const handleClosePaperTrade = async () => {
+    if (!activeTrade) return
+
+    setActionLoading(true)
+    setActionError(null)
+    setActionSuccess(null)
+
+    try {
+      const closed = await closePaperTrade(activeTrade.trade_id, {
+        exit_price: currentPrice || activeTrade.entry_price,
+        reason: 'MANUAL_CLOSE',
+      })
+      setActiveTrade(null)
+      setActionSuccess(`Paper trade closed at ₹${formatPrice(closed.exit_price)}. Realized P&L: ₹${formatPrice(closed.realized_pnl)}`)
+      if (onTradeClosed) onTradeClosed(closed)
+    } catch (err) {
+      setActionError(err.message || 'Failed to close paper trade')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // Calculate live unrealized P&L for display
+  const liveUnrealizedPnl =
+    activeTrade && typeof currentPrice === 'number'
+      ? activeTrade.side === 'LONG'
+        ? (currentPrice - activeTrade.entry_price) * activeTrade.quantity
+        : (activeTrade.entry_price - currentPrice) * activeTrade.quantity
+      : activeTrade?.unrealized_pnl ?? 0.0
+
   return (
     <div className="signal-panel panel" aria-label="Strategy Signal Panel">
       <div className="panel-header signal-panel-header">
         <div className="signal-header-left">
-          <h2>{signalData?.symbol || 'NIFTY 50'} • Strategy Signal</h2>
+          <h2>{symbol} • Strategy Signal</h2>
         </div>
         <div className="signal-header-right">
           <span className={`signal-live-badge ${badgeType}`}>
@@ -260,9 +384,7 @@ export function StrategySignalPanel({
             <div className="signal-metrics-list">
               <div className="signal-metric-row">
                 <span className="detail-muted">Instrument</span>
-                <strong className="instrument-title">
-                  {signalData.symbol || 'NIFTY 50 Index'}
-                </strong>
+                <strong className="instrument-title">{symbol}</strong>
               </div>
               <div className="signal-metric-row">
                 <span className="detail-muted">Current Price</span>
@@ -310,7 +432,6 @@ export function StrategySignalPanel({
               </div>
 
               <div className="factor-list">
-                {/* EMA Confirmation */}
                 <div
                   className={`factor-item ${
                     emaConfirmed ? 'factor-confirmed' : 'factor-neutral'
@@ -331,7 +452,6 @@ export function StrategySignalPanel({
                   </div>
                 </div>
 
-                {/* RSI + Momentum Confirmation */}
                 <div
                   className={`factor-item ${
                     rsiConfirmed ? 'factor-confirmed' : 'factor-neutral'
@@ -352,7 +472,6 @@ export function StrategySignalPanel({
                   </div>
                 </div>
 
-                {/* Volume Confirmation */}
                 <div
                   className={`factor-item ${
                     volumeConfirmed ? 'factor-confirmed' : 'factor-neutral'
@@ -375,7 +494,6 @@ export function StrategySignalPanel({
                   </div>
                 </div>
 
-                {/* Multi-Timeframe Alignment */}
                 <div
                   className={`factor-item ${
                     mtfConfirmed ? 'factor-confirmed' : 'factor-neutral'
@@ -443,6 +561,197 @@ export function StrategySignalPanel({
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* ---------------------------------------------------------------
+                Phase 17: Interactive Paper Trading Panel Section
+                --------------------------------------------------------------- */}
+            <div className="paper-trade-panel-section" style={{ marginTop: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span className="detail-muted-title">PAPER TRADING ENGINE</span>
+                <span className="paper-sim-badge" style={{ fontSize: '9px', padding: '2px 6px', background: 'rgba(255, 179, 0, 0.15)', color: '#ffb300', border: '1px solid rgba(255, 179, 0, 0.4)', borderRadius: '3px', fontWeight: 'bold' }}>
+                  SIMULATED • NO REAL ORDER
+                </span>
+              </div>
+
+              {actionError && (
+                <div style={{ padding: '6px 8px', background: 'rgba(255, 79, 94, 0.15)', border: '1px solid #ff4f5e', borderRadius: '4px', color: '#ff6876', fontSize: '11px', marginBottom: '8px' }}>
+                  {actionError}
+                </div>
+              )}
+
+              {actionSuccess && (
+                <div style={{ padding: '6px 8px', background: 'rgba(0, 217, 163, 0.15)', border: '1px solid #00d9a3', borderRadius: '4px', color: '#00eaaf', fontSize: '11px', marginBottom: '8px' }}>
+                  {actionSuccess}
+                </div>
+              )}
+
+              {/* Case A: Active Open Paper Trade */}
+              {activeTrade ? (
+                <div className="paper-open-position-card" style={{ background: 'rgba(7, 26, 45, 0.8)', border: '1px solid #00d9a3', borderRadius: '6px', padding: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '12px', color: activeTrade.side === 'LONG' ? '#00eaaf' : '#ff6876' }}>
+                        OPEN {activeTrade.side} ({activeTrade.quantity} Qty)
+                      </span>
+                      <span style={{ fontSize: '10px', background: '#051b2c', padding: '2px 5px', borderRadius: '3px', color: '#88a3b8' }}>
+                        {activeTrade.status}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '10px', color: '#88a3b8' }}>
+                      Duration: {formatDuration(activeTrade.entry_timestamp)}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', fontSize: '11px', marginBottom: '10px' }}>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Entry Price: </span>
+                      <strong>₹{formatPrice(activeTrade.entry_price)}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Current Price: </span>
+                      <strong>{displayPrice}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Unrealized P&L: </span>
+                      <strong style={{ color: liveUnrealizedPnl >= 0 ? '#00eaaf' : '#ff6876' }}>
+                        {liveUnrealizedPnl >= 0 ? '+' : ''}₹{formatPrice(liveUnrealizedPnl)}
+                      </strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Trade ID: </span>
+                      <span style={{ fontFamily: 'monospace', color: '#a0c0d8' }}>{activeTrade.trade_id}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleClosePaperTrade}
+                    disabled={actionLoading}
+                    style={{
+                      width: '100%',
+                      padding: '7px 0',
+                      borderRadius: '4px',
+                      border: '1px solid rgba(255, 79, 94, 0.5)',
+                      background: 'linear-gradient(180deg, #ff4f5e 0%, #d92d3c 100%)',
+                      color: '#ffffff',
+                      fontWeight: 'bold',
+                      fontSize: '11.5px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {actionLoading ? 'CLOSING POSITION...' : 'CLOSE PAPER TRADE'}
+                  </button>
+                </div>
+              ) : showConfirmModal ? (
+                /* Case B: Confirmation Form */
+                <div className="paper-confirm-box" style={{ background: 'rgba(7, 26, 45, 0.95)', border: '1px solid rgba(16, 132, 255, 0.5)', borderRadius: '6px', padding: '10px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#7cb5ec', marginBottom: '6px' }}>
+                    CONFIRM SIMULATED ORDER
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', fontSize: '11px', marginBottom: '8px' }}>
+                    <div><span style={{ color: '#88a3b8' }}>Symbol:</span> <strong>{symbol}</strong></div>
+                    <div><span style={{ color: '#88a3b8' }}>Side:</span> <strong>{rawSignal === 'BUY' ? 'BUY (LONG)' : 'SELL (SHORT)'}</strong></div>
+                    <div><span style={{ color: '#88a3b8' }}>Timeframe:</span> <strong>{timeframe}</strong></div>
+                    <div><span style={{ color: '#88a3b8' }}>Entry:</span> <strong>₹{formatPrice(entryPrice)}</strong></div>
+                    <div><span style={{ color: '#88a3b8' }}>Stop Loss:</span> <strong style={{ color: '#ff6876' }}>₹{formatPrice(stopLoss)}</strong></div>
+                    <div><span style={{ color: '#88a3b8' }}>Target 1:</span> <strong style={{ color: '#00eaaf' }}>₹{formatPrice(target1)}</strong></div>
+                    <div><span style={{ color: '#88a3b8' }}>Target 2:</span> <strong style={{ color: '#00eaaf' }}>₹{formatPrice(target2)}</strong></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: '#88a3b8' }}>Quantity:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={orderQuantity}
+                        onChange={(e) => setOrderQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                        style={{ width: '50px', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '2px 4px', borderRadius: '3px', fontSize: '11px' }}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={handleConfirmPaperTrade}
+                      disabled={actionLoading}
+                      style={{
+                        flex: 1,
+                        padding: '6px 0',
+                        borderRadius: '4px',
+                        border: '0',
+                        background: 'linear-gradient(180deg, #00d9a3 0%, #00a87e 100%)',
+                        color: '#021019',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {actionLoading ? 'SUBMITTING...' : 'CONFIRM PAPER TRADE'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmModal(false)}
+                      disabled={actionLoading}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        border: '1px solid #23425d',
+                        background: '#0a1d2f',
+                        color: '#a0b4c5',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : rawSignal === 'BUY' || rawSignal === 'SELL' ? (
+                /* Case C: Trigger Button Available */
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(true)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 0',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(0, 217, 163, 0.4)',
+                    background: rawSignal === 'BUY'
+                      ? 'linear-gradient(180deg, rgba(0, 217, 163, 0.2) 0%, rgba(0, 168, 126, 0.3) 100%)'
+                      : 'linear-gradient(180deg, rgba(255, 79, 94, 0.2) 0%, rgba(217, 45, 60, 0.3) 100%)',
+                    color: rawSignal === 'BUY' ? '#00eaaf' : '#ff6876',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    letterSpacing: '0.04em',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 150ms ease',
+                  }}
+                >
+                  <span>⚡ PAPER TRADE ({rawSignal})</span>
+                </button>
+              ) : (
+                /* Case D: NO_TRADE setup */
+                <div
+                  style={{
+                    padding: '8px 10px',
+                    background: 'rgba(4, 16, 27, 0.6)',
+                    border: '1px dashed #1a3a54',
+                    borderRadius: '4px',
+                    fontSize: '10.5px',
+                    color: '#658299',
+                    textAlign: 'center',
+                  }}
+                >
+                  <strong style={{ display: 'block', color: '#88a3b8', marginBottom: '2px' }}>
+                    PAPER TRADING UNAVAILABLE
+                  </strong>
+                  <span>Strategy Signal is NO TRADE — trade execution requires an active BUY or SELL setup.</span>
+                </div>
+              )}
             </div>
 
             {/* 5. View Full Analysis Action */}

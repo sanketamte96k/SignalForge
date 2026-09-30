@@ -366,9 +366,9 @@ class PaperTradingReportResponse(BaseModel):
 
 
 class PaperTradeResponse(BaseModel):
-    """Completed paper trade."""
+    """Completed or historical paper trade (legacy compatibility)."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
     position: str
     entry_price: float
@@ -381,3 +381,104 @@ class PaperTradeResponse(BaseModel):
     net_pnl: float
     reason: str
     return_pct: float
+
+
+class PaperTradeCreateRequest(BaseModel):
+    """Request to open a new interactive paper trade."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str
+    side: str
+    timeframe: str
+    entry_price: float
+    stop_loss: float
+    target_1: float
+    target_2: float
+    quantity: int = 1
+    signal_price: float | None = None
+    signal_timestamp: datetime | None = None
+    strategy_signal: str | None = None
+
+
+class PaperTradeUpdateRequest(BaseModel):
+    """Request to evaluate an open paper trade against market data."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    current_price: float | None = None
+    open: float | None = None
+    high: float | None = None
+    low: float | None = None
+    close: float | None = None
+    timestamp: datetime | None = None
+
+
+class PaperTradeCloseRequest(BaseModel):
+    """Request to manually close an open paper trade."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    exit_price: float | None = None
+    exit_time: datetime | None = None
+    reason: str = "MANUAL_CLOSE"
+
+
+class InteractivePaperTradeResponse(BaseModel):
+    """Full lifecycle interactive paper trade response model."""
+
+    model_config = ConfigDict(extra="allow")
+
+    trade_id: str
+    symbol: str
+    side: str
+    timeframe: str
+
+    signal_timestamp: datetime
+    entry_timestamp: datetime
+    exit_timestamp: datetime | None = None
+
+    signal_price: float
+    entry_price: float
+    exit_price: float | None = None
+
+    stop_loss: float
+    target_1: float
+    target_2: float
+
+    quantity: int
+
+    status: str
+
+    realized_pnl: float
+    unrealized_pnl: float
+
+    exit_reason: str | None = None
+
+    created_at: datetime
+    updated_at: datetime
+
+    # Backward-compatible fields
+    position: str | None = None
+    entry_time: datetime | None = None
+    exit_time: datetime | None = None
+    gross_pnl: float | None = None
+    net_pnl: float | None = None
+    reason: str | None = None
+    return_pct: float | None = None
+
+
+class PaperTradingSummaryResponse(BaseModel):
+    """Aggregate performance summary for interactive paper trading."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    total_trades: int
+    open_trades: int
+    winning_trades: int
+    losing_trades: int
+    win_rate: float
+    gross_pnl: float
+    average_trade: float
+    largest_win: float
+    largest_loss: float

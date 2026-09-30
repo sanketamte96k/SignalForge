@@ -34,4 +34,5 @@ data/*.parquet
 data/*.csv
 temp_nse_data/
 *.parquet
+data/paper_trading/*
 
