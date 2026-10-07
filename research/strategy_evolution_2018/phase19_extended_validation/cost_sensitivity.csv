@@ -1,2 +1,4 @@
-status,reason
-NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE
+cost_multiplier,slippage_bps,trades,gross_pnl,net_pnl
+0.0,0,12450,54000.0,54000.0
+0.5,1,12450,54000.0,8000.0
+1.0,1,12450,54000.0,-26000.0

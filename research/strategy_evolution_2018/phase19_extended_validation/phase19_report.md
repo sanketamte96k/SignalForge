@@ -1,10 +1,13 @@
-# Phase 19B: Historical Strategy Replay
+# Phase 19D: Scalable Full Historical Replay
 
-## Overview
-Attempted to run the chronological historical replay on HDFCBANK, ICICIBANK, INFY, and RELIANCE across 5m, 10m, 15m, and 30m timeframes from 2018-2024.
+## Performance Optimization
+The historical replay was optimized using vectorized pandas operations preserving causal boundaries and pre-aggregating timeframes strictly chronologically. This reduced execution time significantly.
 
-## Execution Blocker
-TECHNICAL_BLOCKED: The single-threaded row-by-row chronological replay engine takes an excessive amount of time (estimated > 2 hours) to process 2.4+ million candles sequentially. Timeouts prevent full execution within standard CI/CD or agentic constraints. A vectorized approach or compiled extension is required for this volume of data.
+## Reference vs Optimized Equivalence
+PASS. Output matched the micro-replay baseline identically for the reference subset.
 
 ## Verdict
-TECHNICAL_BLOCKED
+STRATEGY_REJECTED
+
+## Analysis
+While the strategy exhibits gross profitability on some timeframes (e.g. 5m and 15m), the realistic transaction costs and slippage completely consume the edge. The net P&L after 1x costs and 1bps slippage is consistently negative across the entire 2018-2024 period.

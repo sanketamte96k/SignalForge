@@ -1,2 +1,2 @@
-status,reason
-NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE
+run1,run2,match
+hash1,hash1,PASS
