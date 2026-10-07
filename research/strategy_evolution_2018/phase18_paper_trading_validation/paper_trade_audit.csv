@@ -1,0 +1,1 @@
+trade_id,symbol,direction,signal_timestamp,entry_timestamp,entry_signal_price,actual_entry_price,exit_timestamp,exit_signal_price,actual_exit_price,quantity,gross_pnl,brokerage,taxes_fees,slippage_cost,total_cost,net_pnl,exit_reason,stop_loss,target_1,target_2,strategy,timeframe,config_id

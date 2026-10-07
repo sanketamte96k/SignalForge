@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -8,13 +9,18 @@ from src.api.models import (
     InteractivePaperTradeResponse,
     PaperTradeCloseRequest,
     PaperTradeCreateRequest,
-    PaperTradeResponse,
     PaperTradeUpdateRequest,
+    PaperTradingAccountResponse,
+    PaperTradingConfigRequest,
+    PaperTradingCostBreakdownResponse,
+    PaperTradingEquityPointResponse,
     PaperTradingReportResponse,
+    PaperTradingRiskMetricsResponse,
     PaperTradingStatusResponse,
     PaperTradingSummaryResponse,
 )
 from src.data.downloader import load_market_data
+from src.paper_trading.cost_model import CostModel
 from src.paper_trading.interactive_engine import (
     InteractivePaperTrade,
     InteractivePaperTradingService,
@@ -76,33 +82,51 @@ def _get_current_runner() -> PaperTradingRunner | None:
 def _interactive_trade_to_response(
     trade: InteractivePaperTrade,
 ) -> InteractivePaperTradeResponse:
-    """Convert an InteractivePaperTrade to the response schema."""
+    """Convert an InteractivePaperTrade to the full response schema."""
     return InteractivePaperTradeResponse(
         trade_id=trade.trade_id,
         symbol=trade.symbol,
         side=trade.side,
+        direction=trade.direction,
         timeframe=trade.timeframe,
+        strategy=trade.strategy,
         signal_timestamp=trade.signal_timestamp,
         entry_timestamp=trade.entry_timestamp,
         exit_timestamp=trade.exit_timestamp,
         signal_price=trade.signal_price,
+        entry_signal_price=trade.entry_signal_price,
         entry_price=trade.entry_price,
+        actual_entry_price=trade.actual_entry_price,
+        exit_signal_price=trade.exit_signal_price,
         exit_price=trade.exit_price,
+        actual_exit_price=trade.actual_exit_price,
         stop_loss=trade.stop_loss,
         target_1=trade.target_1,
         target_2=trade.target_2,
         quantity=trade.quantity,
         status=trade.status,
+        gross_pnl=trade.gross_pnl,
         realized_pnl=trade.realized_pnl,
         unrealized_pnl=trade.unrealized_pnl,
+        brokerage=trade.brokerage,
+        stt=trade.stt,
+        exchange_fee=trade.exchange_fee,
+        sebi_fee=trade.sebi_fee,
+        gst=trade.gst,
+        stamp_duty=trade.stamp_duty,
+        taxes_and_fees=trade.taxes_and_fees,
+        slippage_cost=trade.slippage_cost,
+        spread_penalty=trade.spread_penalty,
+        total_cost=trade.total_cost,
+        net_pnl=trade.net_pnl,
         exit_reason=trade.exit_reason,
+        config_id=trade.config_id,
+        client_request_id=trade.client_request_id,
         created_at=trade.created_at,
         updated_at=trade.updated_at,
         position=trade.side,
         entry_time=trade.entry_timestamp,
         exit_time=trade.exit_timestamp,
-        gross_pnl=trade.realized_pnl,
-        net_pnl=trade.realized_pnl,
         reason=trade.exit_reason or "",
         return_pct=trade.return_pct,
     )
@@ -140,7 +164,7 @@ def _report_to_response() -> PaperTradingReportResponse:
 
 
 # ----------------------------------------------------------------------------
-# Phase 17: Interactive Paper Trading Endpoints
+# Phase 17 & 18: Interactive Paper Trading Endpoints
 # ----------------------------------------------------------------------------
 
 
@@ -154,7 +178,7 @@ def create_paper_trade(
 ) -> InteractivePaperTradeResponse:
     """
     Open a new interactive paper trade based on an active strategy signal.
-    Rejects duplicate active positions (409) and invalid signals/brackets (400).
+    Rejects duplicate active positions (409) and invalid signals/brackets/capital (400).
     """
     service = _get_interactive_service()
 
@@ -170,7 +194,10 @@ def create_paper_trade(
             quantity=req.quantity,
             signal_price=req.signal_price,
             signal_timestamp=req.signal_timestamp,
+            entry_timestamp=req.entry_timestamp,
             strategy_signal=req.strategy_signal,
+            client_request_id=req.client_request_id,
+            max_signal_age_seconds=req.max_signal_age_seconds,
         )
         return _interactive_trade_to_response(trade)
     except KeyError as exc:
@@ -292,6 +319,96 @@ def get_paper_trading_summary() -> PaperTradingSummaryResponse:
 
 
 # ----------------------------------------------------------------------------
+# Phase 18: Account State, Risk Metrics, Equity Curve & Cost Breakdown
+# ----------------------------------------------------------------------------
+
+
+@router.get(
+    "/account",
+    response_model=PaperTradingAccountResponse,
+)
+def get_paper_trading_account() -> PaperTradingAccountResponse:
+    """Return current paper account capital, equity, and drawdown state."""
+    service = _get_interactive_service()
+    return PaperTradingAccountResponse(**service.get_account_state())
+
+
+@router.get(
+    "/metrics",
+    response_model=PaperTradingRiskMetricsResponse,
+)
+def get_paper_trading_metrics() -> PaperTradingRiskMetricsResponse:
+    """Return comprehensive risk and performance metrics."""
+    service = _get_interactive_service()
+    return PaperTradingRiskMetricsResponse(**service.get_risk_metrics())
+
+
+@router.get(
+    "/costs",
+    response_model=PaperTradingCostBreakdownResponse,
+)
+def get_paper_trading_costs() -> PaperTradingCostBreakdownResponse:
+    """Return aggregate transaction cost and slippage breakdown."""
+    service = _get_interactive_service()
+    return PaperTradingCostBreakdownResponse(**service.get_cost_breakdown())
+
+
+@router.get(
+    "/equity-curve",
+    response_model=list[PaperTradingEquityPointResponse],
+)
+def get_paper_trading_equity_curve() -> list[PaperTradingEquityPointResponse]:
+    """Return chronological equity curve points."""
+    service = _get_interactive_service()
+    return [PaperTradingEquityPointResponse(**pt) for pt in service.get_equity_curve()]
+
+
+@router.post(
+    "/config",
+    response_model=PaperTradingAccountResponse,
+)
+def configure_paper_trading(
+    req: PaperTradingConfigRequest,
+) -> PaperTradingAccountResponse:
+    """Update paper account capital or transaction cost model parameters."""
+    service = _get_interactive_service()
+    current_model_dict = asdict(service.cost_model)
+
+    for key in [
+        "config_id",
+        "brokerage_per_order",
+        "brokerage_rate",
+        "use_min_brokerage",
+        "stt_rate",
+        "exchange_fee_rate",
+        "sebi_fee_rate",
+        "gst_rate",
+        "stamp_duty_rate",
+        "slippage_bps",
+        "entry_slippage_bps",
+        "exit_slippage_bps",
+        "spread_penalty_bps",
+    ]:
+        val = getattr(req, key)
+        if val is not None:
+            current_model_dict[key] = val
+
+    try:
+        new_model = CostModel(**current_model_dict)
+        service.configure(
+            starting_capital=req.starting_capital,
+            cost_model=new_model,
+            max_signal_age_seconds=req.max_signal_age_seconds,
+        )
+        return PaperTradingAccountResponse(**service.get_account_state())
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+# ----------------------------------------------------------------------------
 # Legacy & Shared Endpoints
 # ----------------------------------------------------------------------------
 
@@ -388,28 +505,34 @@ def get_paper_trading_trades(
                 trade_id=f"legacy_{idx+1}",
                 symbol="NIFTY 50",
                 side=trade.position.name,
+                direction=trade.position.name,
                 timeframe="15m",
                 signal_timestamp=trade.entry_time,
                 entry_timestamp=trade.entry_time,
                 exit_timestamp=trade.exit_time,
                 signal_price=float(trade.entry_price),
+                entry_signal_price=float(trade.entry_price),
                 entry_price=float(trade.entry_price),
+                actual_entry_price=float(trade.entry_price),
+                exit_signal_price=float(trade.exit_price),
                 exit_price=float(trade.exit_price),
+                actual_exit_price=float(trade.exit_price),
                 stop_loss=0.0,
                 target_1=0.0,
                 target_2=0.0,
                 quantity=int(trade.quantity),
                 status="CLOSED",
+                gross_pnl=float(trade.gross_pnl),
                 realized_pnl=float(trade.gross_pnl),
                 unrealized_pnl=0.0,
+                total_cost=float(trade.transaction_cost),
+                net_pnl=float(trade.net_pnl),
                 exit_reason=trade.reason,
                 created_at=trade.entry_time,
                 updated_at=trade.exit_time,
                 position=trade.position.name,
                 entry_time=trade.entry_time,
                 exit_time=trade.exit_time,
-                gross_pnl=float(trade.gross_pnl),
-                net_pnl=float(trade.net_pnl),
                 reason=trade.reason,
                 return_pct=float(trade.return_pct),
             )

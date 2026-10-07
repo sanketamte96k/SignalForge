@@ -398,7 +398,10 @@ class PaperTradeCreateRequest(BaseModel):
     quantity: int = 1
     signal_price: float | None = None
     signal_timestamp: datetime | None = None
+    entry_timestamp: datetime | None = None
     strategy_signal: str | None = None
+    client_request_id: str | None = None
+    max_signal_age_seconds: float | None = None
 
 
 class PaperTradeUpdateRequest(BaseModel):
@@ -432,15 +435,21 @@ class InteractivePaperTradeResponse(BaseModel):
     trade_id: str
     symbol: str
     side: str
+    direction: str = "LONG"
     timeframe: str
+    strategy: str = "SignalForge"
 
     signal_timestamp: datetime
     entry_timestamp: datetime
     exit_timestamp: datetime | None = None
 
     signal_price: float
+    entry_signal_price: float = 0.0
     entry_price: float
+    actual_entry_price: float = 0.0
+    exit_signal_price: float | None = None
     exit_price: float | None = None
+    actual_exit_price: float | None = None
 
     stop_loss: float
     target_1: float
@@ -450,10 +459,25 @@ class InteractivePaperTradeResponse(BaseModel):
 
     status: str
 
+    gross_pnl: float = 0.0
     realized_pnl: float
     unrealized_pnl: float
 
+    brokerage: float = 0.0
+    stt: float = 0.0
+    exchange_fee: float = 0.0
+    sebi_fee: float = 0.0
+    gst: float = 0.0
+    stamp_duty: float = 0.0
+    taxes_and_fees: float = 0.0
+    slippage_cost: float = 0.0
+    spread_penalty: float = 0.0
+    total_cost: float = 0.0
+    net_pnl: float = 0.0
+
     exit_reason: str | None = None
+    config_id: str = "REALISTIC_INDIA_INTRADAY_V1"
+    client_request_id: str | None = None
 
     created_at: datetime
     updated_at: datetime
@@ -462,8 +486,6 @@ class InteractivePaperTradeResponse(BaseModel):
     position: str | None = None
     entry_time: datetime | None = None
     exit_time: datetime | None = None
-    gross_pnl: float | None = None
-    net_pnl: float | None = None
     reason: str | None = None
     return_pct: float | None = None
 
@@ -471,7 +493,7 @@ class InteractivePaperTradeResponse(BaseModel):
 class PaperTradingSummaryResponse(BaseModel):
     """Aggregate performance summary for interactive paper trading."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
     total_trades: int
     open_trades: int
@@ -479,6 +501,131 @@ class PaperTradingSummaryResponse(BaseModel):
     losing_trades: int
     win_rate: float
     gross_pnl: float
+    total_costs: float = 0.0
+    net_pnl: float = 0.0
     average_trade: float
+    average_net_trade: float = 0.0
     largest_win: float
     largest_loss: float
+    profit_factor: float | None = None
+    max_drawdown: float = 0.0
+
+
+class PaperTradingAccountResponse(BaseModel):
+    """Paper trading account capital, equity, and drawdown state."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    simulation_only: bool = True
+    starting_capital: float
+    available_capital: float
+    used_capital: float
+    gross_realized_pnl: float
+    total_costs: float
+    realized_pnl: float
+    unrealized_pnl: float
+    total_equity: float
+    peak_equity: float
+    drawdown: float
+    drawdown_pct: float
+    max_drawdown: float
+    max_drawdown_pct: float
+    open_positions_count: int
+    completed_trades_count: int
+    cost_model_id: str
+
+
+class PaperTradingRiskMetricsResponse(BaseModel):
+    """Comprehensive deterministic risk and performance metrics."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    simulation_only: bool = True
+    total_trades: int
+    open_trades: int
+    closed_trades: int
+    winning_trades: int
+    losing_trades: int
+    win_rate: float | None = None
+    gross_pnl: float
+    total_costs: float
+    net_pnl: float
+    average_gross_trade: float | None = None
+    average_net_trade: float | None = None
+    profit_factor: float | None = None
+    max_drawdown: float
+    max_drawdown_pct: float
+    average_win: float | None = None
+    average_loss: float | None = None
+    expectancy: float | None = None
+    largest_win: float | None = None
+    largest_loss: float | None = None
+
+
+class PaperTradingCostBreakdownResponse(BaseModel):
+    """Aggregate transaction cost & slippage breakdown."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    simulation_only: bool = True
+    config_id: str
+    cost_model: dict
+    completed_trades: int
+    gross_pnl: float
+    brokerage: float
+    stt: float
+    exchange_fee: float
+    sebi_fee: float
+    gst: float
+    stamp_duty: float
+    taxes_and_fees: float
+    slippage_cost: float
+    spread_penalty: float
+    total_cost: float
+    net_pnl: float
+
+
+class PaperTradingEquityPointResponse(BaseModel):
+    """Chronological equity curve snapshot."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    step: int
+    timestamp: str
+    event: str
+    trade_id: str | None = None
+    starting_capital: float
+    available_capital: float
+    used_capital: float
+    gross_realized_pnl: float
+    total_costs: float
+    realized_pnl: float
+    unrealized_pnl: float
+    total_equity: float
+    peak_equity: float
+    drawdown: float
+    drawdown_pct: float
+    max_drawdown: float
+    max_drawdown_pct: float
+
+
+class PaperTradingConfigRequest(BaseModel):
+    """Request to configure paper account capital or cost model."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    starting_capital: float | None = None
+    config_id: str | None = None
+    brokerage_per_order: float | None = None
+    brokerage_rate: float | None = None
+    use_min_brokerage: bool | None = None
+    stt_rate: float | None = None
+    exchange_fee_rate: float | None = None
+    sebi_fee_rate: float | None = None
+    gst_rate: float | None = None
+    stamp_duty_rate: float | None = None
+    slippage_bps: float | None = None
+    entry_slippage_bps: float | None = None
+    exit_slippage_bps: float | None = None
+    spread_penalty_bps: float | None = None
+    max_signal_age_seconds: float | None = None
