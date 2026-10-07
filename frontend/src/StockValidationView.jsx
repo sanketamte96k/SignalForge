@@ -728,6 +728,59 @@ function StockValidationView() {
           </div>
         </div>
       </section>
+
+      {/* LIVE PAPER TRADING SECTION */}
+      <section className="panel validation-summary-panel" style={{ marginTop: '2rem' }}>
+        <div className="panel-title">
+          <div className="panel-title-left">
+            <span className="section-kicker">PHASE 23</span>
+            <h2>Live Paper Trading Dashboard</h2>
+          </div>
+          <span className="validation-status-badge testing">RUNNING</span>
+        </div>
+        <div className="validation-summary-main" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '20px' }}>
+          <div>
+            <span className="validation-symbol-label">STRATEGY</span>
+            <strong>VARIANT_C_ONE_TRADE_PER_SYMBOL_PER_DAY</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">CONFIG HASH</span>
+            <strong style={{ fontSize: '0.8rem' }}>920515d71e...a45e4ec7</strong>
+          </div>
+          
+          <div style={{ width: '100%', marginTop: '1rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', fontSize: '0.9rem' }}>
+            <strong>Symbol</strong>
+            <strong>Signal</strong>
+            <strong>Paper Position</strong>
+            <strong>Paper P&L</strong>
+            
+            <span>HDFCBANK</span>
+            <span>NO_SIGNAL</span>
+            <span>FLAT</span>
+            <span>₹0.00</span>
+            
+            <span>ICICIBANK</span>
+            <span>NO_SIGNAL</span>
+            <span>FLAT</span>
+            <span>₹0.00</span>
+            
+            <span>INFY</span>
+            <span>NO_SIGNAL</span>
+            <span>FLAT</span>
+            <span>₹0.00</span>
+            
+            <span>RELIANCE</span>
+            <span>NO_SIGNAL</span>
+            <span>FLAT</span>
+            <span>₹0.00</span>
+          </div>
+          <div style={{ width: '100%', marginTop: '1rem', padding: '1rem', background: '#2a2a2a', borderRadius: '4px', display: 'flex', justifyContent: 'space-between' }}>
+            <div><span className="validation-symbol-label">CAPITAL</span><strong>₹100,000.00</strong></div>
+            <div><span className="validation-symbol-label">TOTAL P&L</span><strong>₹0.00</strong></div>
+            <div><span className="validation-symbol-label">DRAWDOWN</span><strong>0.00%</strong></div>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
