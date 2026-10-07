@@ -1,0 +1,8 @@
+{
+    "name": "VARIANT_C_ONE_TRADE_PER_SYMBOL_PER_DAY",
+    "timeframe": "15m",
+    "entry_rule": "OR breakout with volume confirmation",
+    "one_trade_per_day": true,
+    "cost_model": "Phase 18 Realistic 1x",
+    "slippage": "Phase 18 Deterministic 1bps"
+}
