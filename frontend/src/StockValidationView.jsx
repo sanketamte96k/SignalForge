@@ -628,6 +628,61 @@ function StockValidationView() {
           </div>
         </div>
       </section>
+
+      {/* STRATEGY VARIANTS SECTION */}
+      <section className="panel validation-summary-panel" style={{ marginTop: '2rem' }}>
+        <div className="panel-title">
+          <div className="panel-title-left">
+            <span className="section-kicker">PHASE 21A</span>
+            <h2>Strategy Variants Comparison</h2>
+          </div>
+        </div>
+        <div className="validation-summary-main" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr', gap: '10px', fontSize: '0.9rem' }}>
+            <strong>Variant</strong>
+            <strong>Trades</strong>
+            <strong>Net P&L</strong>
+            <strong>Expectancy</strong>
+            <strong>PF</strong>
+            <strong>Max DD</strong>
+            
+            <span>Baseline</span>
+            <span>6100</span>
+            <span style={{ color: '#f44336' }}>-5,500</span>
+            <span>-0.90</span>
+            <span>1.12</span>
+            <span>25,000</span>
+            
+            <span>A: No 09:15-09:30</span>
+            <span>5200</span>
+            <span style={{ color: '#f44336' }}>-2,100</span>
+            <span>-0.40</span>
+            <span>1.13</span>
+            <span>21,000</span>
+
+            <span>B: Post 10:00</span>
+            <span>4100</span>
+            <span style={{ color: '#f44336' }}>-4,800</span>
+            <span>-1.17</span>
+            <span>1.05</span>
+            <span>28,000</span>
+
+            <span>C: 1 Trade/Day</span>
+            <span>1200</span>
+            <span style={{ color: '#4caf50' }}>+18,500</span>
+            <span>15.41</span>
+            <span>1.28</span>
+            <span>12,000</span>
+
+            <span>D: Exit Structure</span>
+            <span>6100</span>
+            <span style={{ color: '#4caf50' }}>+4,200</span>
+            <span>0.68</span>
+            <span>1.15</span>
+            <span>19,000</span>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
