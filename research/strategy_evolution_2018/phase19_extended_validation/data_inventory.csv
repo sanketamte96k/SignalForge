@@ -1,0 +1,2 @@
+symbol,timeframe,start_date,end_date,row_count,ohlcv_available,missing_values,duplicate_timestamps
+NIFTY50,1m,2015-01-09 09:15:00,2024-03-26 15:29:00,847814,True,0,0
