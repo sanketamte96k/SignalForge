@@ -1,1 +1,2 @@
-timeframe,trades,win_rate,gross_pnl,costs,slippage,net_pnl,profit_factor,expectancy,max_drawdown
+status,reason
+NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE

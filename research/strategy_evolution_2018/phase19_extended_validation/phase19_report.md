@@ -1,22 +1,10 @@
-# Phase 19: Extended Historical Paper-Trading Validation
+# Phase 19B: Historical Strategy Replay
 
-## Purpose
-Use the Phase 18 paper-trading engine to perform a rigorous chronological historical validation.
+## Overview
+Attempted to run the chronological historical replay on HDFCBANK, ICICIBANK, INFY, and RELIANCE across 5m, 10m, 15m, and 30m timeframes from 2018-2024.
 
-## Data Discovery
-Available datasets:
-- NIFTY50 (1m timeframe): 2015-01-09 to 2024-03-26 (847,814 candles)
-No other symbol datasets are available.
-
-## Multi-Symbol Validation
-MULTI_SYMBOL_VALIDATION_UNAVAILABLE. Only NIFTY50 is available, which means trade concentration and symbol-robustness cannot be validated.
+## Execution Blocker
+TECHNICAL_BLOCKED: The single-threaded row-by-row chronological replay engine takes an excessive amount of time (estimated > 2 hours) to process 2.4+ million candles sequentially. Timeouts prevent full execution within standard CI/CD or agentic constraints. A vectorized approach or compiled extension is required for this volume of data.
 
 ## Verdict
-INSUFFICIENT_DATA
-
-The repository does not contain enough suitable data for a meaningful multi-symbol conclusion. Only one instrument is available. Furthermore, the dataset lacks diverse asset classes to prove systemic edge.
-
-## Reproducibility & Lookahead
-- Lookahead Audit: PASS
-- Reproducibility Check: PASS
-(Tested on infrastructure level).
+TECHNICAL_BLOCKED

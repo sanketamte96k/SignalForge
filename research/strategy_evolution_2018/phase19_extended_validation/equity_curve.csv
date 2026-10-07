@@ -1,1 +1,2 @@
-timestamp,event,total_equity,drawdown
+status,reason
+NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE

@@ -1,2 +1,2 @@
-status,message
-NOT_AVAILABLE,Insufficient data for multi-symbol validation.
+status,reason
+NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE

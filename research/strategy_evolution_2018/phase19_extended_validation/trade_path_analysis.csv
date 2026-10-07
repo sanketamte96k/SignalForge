@@ -1,1 +1,2 @@
-trade_id,mae,mfe,mae_pct,mfe_pct,mae_atr,mfe_atr,holding_duration
+status,reason
+NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE

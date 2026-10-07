@@ -1,1 +1,2 @@
-trade_id,symbol,side,entry_price,exit_price,quantity,net_pnl
+status,reason
+NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE

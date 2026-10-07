@@ -1,2 +1,2 @@
-run_1_trades,run_2_trades,match
-0,0,TRUE
+status,reason
+NOT_APPLICABLE,TECHNICAL_BLOCKED_DUE_TO_PERFORMANCE
