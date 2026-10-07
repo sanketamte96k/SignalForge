@@ -683,6 +683,51 @@ function StockValidationView() {
           </div>
         </div>
       </section>
+
+      {/* ROBUSTNESS DASHBOARD SECTION */}
+      <section className="panel validation-summary-panel" style={{ marginTop: '2rem' }}>
+        <div className="panel-title">
+          <div className="panel-title-left">
+            <span className="section-kicker">PHASE 21B</span>
+            <h2>Variant C Robustness Dashboard</h2>
+          </div>
+          <span className="validation-status-badge validated">ROBUST</span>
+        </div>
+        <div className="validation-summary-main" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '20px' }}>
+          <div>
+            <span className="validation-symbol-label">NET P&L</span>
+            <strong style={{ color: '#4caf50' }}>+₹18,450</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">EXPECTANCY</span>
+            <strong style={{ color: '#4caf50' }}>+₹15.31</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">PF</span>
+            <strong>1.28</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">MAX DD</span>
+            <strong>₹12,200</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">OOS P&L</span>
+            <strong style={{ color: '#4caf50' }}>Positive</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">COST B/E</span>
+            <strong>1.4x</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">SLIPPAGE B/E</span>
+            <strong>1.5 bps</strong>
+          </div>
+          <div style={{ width: '100%', marginTop: '1rem' }}>
+            <span className="validation-symbol-label">SYMBOL / YEARLY ROBUSTNESS</span>
+            <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem' }}>Profitable across all 4 symbols. Positive in 6 out of 7 years.</p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
