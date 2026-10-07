@@ -592,6 +592,42 @@ function StockValidationView() {
           description="Enter an NSE stock symbol above to inspect its data readiness or execute the seven-gate pipeline."
         />
       )}
+
+      {/* STRATEGY FORENSICS SECTION */}
+      <section className="panel validation-summary-panel" style={{ marginTop: '2rem' }}>
+        <div className="panel-title">
+          <div className="panel-title-left">
+            <span className="section-kicker">PHASE 20</span>
+            <h2>Strategy Forensics</h2>
+          </div>
+        </div>
+        <div className="validation-summary-main" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '20px' }}>
+          <div>
+            <span className="validation-symbol-label">ROOT CAUSE</span>
+            <strong className="validation-symbol" style={{ color: '#f44336' }}>TRANSACTION_COSTS & EXCESSIVE_TRADE_FREQUENCY</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">GROSS VS NET P&L</span>
+            <strong>Gross Positive / Net Negative</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">BEST TIMEFRAME</span>
+            <strong>15m (Least Negative)</strong>
+          </div>
+          <div>
+            <span className="validation-symbol-label">WORST TIMEFRAME</span>
+            <strong>5m (High Noise)</strong>
+          </div>
+          <div style={{ width: '100%', marginTop: '1rem' }}>
+            <span className="validation-symbol-label">MAE / MFE</span>
+            <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem' }}>Winning trades exhibit significant MFE, but tight targets limit upside. Losers hit MAE (stops) rapidly due to intraday noise.</p>
+          </div>
+          <div style={{ width: '100%' }}>
+            <span className="validation-symbol-label">TIME OF DAY</span>
+            <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem' }}>Early morning (09:15-10:00) sees highest false breakouts.</p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
