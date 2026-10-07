@@ -1,0 +1,5 @@
+symbol,source,file
+HDFCBANK,Nse_Historical_Data,temp_nse_data/NSE Minute Data/NSE_Stocks_Data/HDFCBANK__EQ__NSE__NSE__MINUTE.csv
+ICICIBANK,Nse_Historical_Data,temp_nse_data/NSE Minute Data/NSE_Stocks_Data/ICICIBANK__EQ__NSE__NSE__MINUTE.csv
+INFY,Nse_Historical_Data,temp_nse_data/NSE Minute Data/NSE_Stocks_Data/INFY__EQ__NSE__NSE__MINUTE.csv
+RELIANCE,Nse_Historical_Data,temp_nse_data/NSE Minute Data/NSE_Stocks_Data/RELIANCE__EQ__NSE__NSE__MINUTE.csv

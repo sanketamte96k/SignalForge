@@ -1,0 +1,5 @@
+symbol,issues,missing_values,duplicate_timestamps
+HDFCBANK,Market data contains missing OHLCV values.,705,0
+ICICIBANK,Market data contains missing OHLCV values.,705,0
+INFY,Market data contains missing OHLCV values.,705,0
+RELIANCE,Market data contains missing OHLCV values.,705,0
