@@ -1,0 +1,2 @@
+error,cause
+Timeout,Sequential row-by-row python processing of millions of candles.
