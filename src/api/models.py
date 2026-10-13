@@ -658,17 +658,21 @@ class QualificationUpdateRequest(BaseModel):
     status_reason: str | None = None
     evidence_reference: str | None = None
 
-    @field_validator("completed_trade_count")
+    @field_validator("completed_trade_count", mode="before")
     @classmethod
-    def validate_trade_count(cls, v: int) -> int:
-        if v < 0:
+    def validate_trade_count(cls, v: object) -> object:
+        if isinstance(v, bool):
+            raise ValueError("completed_trade_count cannot be boolean")
+        if isinstance(v, int) and v < 0:
             raise ValueError("completed_trade_count cannot be negative")
         return v
 
-    @field_validator("backtest_net_profit")
+    @field_validator("backtest_net_profit", mode="before")
     @classmethod
-    def validate_finite_profit(cls, v: float | None) -> float | None:
-        if v is not None:
+    def validate_finite_profit(cls, v: object) -> object:
+        if isinstance(v, bool):
+            raise ValueError("backtest_net_profit cannot be boolean")
+        if isinstance(v, (int, float)):
             if not math.isfinite(v):
                 raise ValueError("backtest_net_profit must be a finite number")
         return v

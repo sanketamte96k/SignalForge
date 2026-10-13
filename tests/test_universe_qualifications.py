@@ -334,3 +334,330 @@ def test_api_rejects_negative_trades(monkeypatch, registry):
         },
     )
     assert response.status_code == 422  # Pydantic validation error for negative integer
+
+
+def test_configurable_threshold_on_registry(temp_storage):
+    """Test registry configured with custom thresholds and per-call overrides."""
+    # Custom registry with min 40 trades and preferred 60 trades
+    custom_reg = StockUniverseRegistry(
+        temp_storage,
+        min_forward_trades=40,
+        preferred_forward_trades=60,
+    )
+    custom_reg.register("TCS", "NSE", UniverseCategory.NIFTY_50)
+
+    # 30 trades fails on custom threshold (40 required)
+    with pytest.raises(ValueError, match="fewer than 40 completed forward trades"):
+        custom_reg.update_qualification(
+            symbol="TCS",
+            strategy_id="strategy_v1",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=200.0,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="PASSED",
+            completed_trade_count=30,
+            qualification_status=QualificationStatus.APPROVED,
+        )
+
+    # 40 trades passes
+    qual = custom_reg.update_qualification(
+        symbol="TCS",
+        strategy_id="strategy_v1",
+        strategy_version="1.0",
+        historical_data_status="READY",
+        backtest_status="PASSED",
+        backtest_net_profit=200.0,
+        oos_validation_status="PASSED",
+        forward_paper_test_status="PASSED",
+        completed_trade_count=40,
+        qualification_status=QualificationStatus.APPROVED,
+    )
+    assert qual.qualification_status == QualificationStatus.APPROVED
+    assert qual.completed_trade_count == 40
+    assert qual.meets_initial_threshold is True
+    assert qual.meets_preferred_threshold is False
+    assert qual.is_approved is True
+
+    # Per-call override: allows custom threshold of 25 trades
+    qual_override = custom_reg.update_qualification(
+        symbol="TCS",
+        strategy_id="strategy_v2",
+        strategy_version="1.0",
+        historical_data_status="READY",
+        backtest_status="PASSED",
+        backtest_net_profit=300.0,
+        oos_validation_status="PASSED",
+        forward_paper_test_status="PASSED",
+        completed_trade_count=25,
+        qualification_status=QualificationStatus.APPROVED,
+        min_forward_trades=25,
+    )
+    assert qual_override.qualification_status == QualificationStatus.APPROVED
+
+    # Invalid constructor configuration
+    with pytest.raises(ValueError, match="non-negative integer"):
+        StockUniverseRegistry(temp_storage, min_forward_trades=-10)
+    with pytest.raises(ValueError, match="non-negative integer"):
+        StockUniverseRegistry(temp_storage, min_forward_trades=True)
+
+
+def test_contradictory_evidence_validation(registry):
+    """Test contradictory evidence combinations between pipeline stages."""
+    # Contradiction: historical data INCOMPLETE but backtest claims PASSED
+    with pytest.raises(ValueError, match="backtest_status cannot be 'PASSED' when historical_data_status is 'INCOMPLETE'"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_contra",
+            strategy_version="1.0",
+            historical_data_status="INCOMPLETE",
+            backtest_status="PASSED",
+            backtest_net_profit=100.0,
+            oos_validation_status="UNKNOWN",
+            forward_paper_test_status="UNKNOWN",
+            completed_trade_count=0,
+            qualification_status=QualificationStatus.IN_PROGRESS,
+        )
+
+    # Contradiction: historical data UNKNOWN but OOS claims PASSED
+    with pytest.raises(ValueError, match="oos_validation_status cannot be 'PASSED' when historical_data_status is 'UNKNOWN'"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_contra",
+            strategy_version="1.0",
+            historical_data_status="UNKNOWN",
+            backtest_status="UNKNOWN",
+            backtest_net_profit=None,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="UNKNOWN",
+            completed_trade_count=0,
+            qualification_status=QualificationStatus.IN_PROGRESS,
+        )
+
+    # Contradiction: backtest FAILED but OOS claims PASSED
+    with pytest.raises(ValueError, match="oos_validation_status cannot be 'PASSED' when backtest_status is 'FAILED'"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_contra",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="FAILED",
+            backtest_net_profit=-50.0,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="UNKNOWN",
+            completed_trade_count=0,
+            qualification_status=QualificationStatus.IN_PROGRESS,
+        )
+
+    # Contradiction: backtest PASSED but net profit is negative
+    with pytest.raises(ValueError, match="requires positive backtest_net_profit"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_contra",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=-150.0,
+            oos_validation_status="UNKNOWN",
+            forward_paper_test_status="UNKNOWN",
+            completed_trade_count=0,
+            qualification_status=QualificationStatus.IN_PROGRESS,
+        )
+
+    # Contradiction: backtest PASSED but net profit is 0.0
+    with pytest.raises(ValueError, match="requires positive backtest_net_profit"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_contra",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=0.0,
+            oos_validation_status="UNKNOWN",
+            forward_paper_test_status="UNKNOWN",
+            completed_trade_count=0,
+            qualification_status=QualificationStatus.IN_PROGRESS,
+        )
+
+
+def test_threshold_alone_not_proof_of_profitability(registry):
+    """50 trades with failed validation cannot be approved."""
+    # 50 completed trades, but forward paper test failed
+    with pytest.raises(ValueError, match="without all validation evidence passing"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_50_failed",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=100.0,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="FAILED",
+            completed_trade_count=50,
+            qualification_status=QualificationStatus.APPROVED,
+        )
+
+    # 50 completed trades, but backtest failed
+    with pytest.raises(ValueError, match="without all validation evidence passing"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_50_failed_bt",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="FAILED",
+            backtest_net_profit=-20.0,
+            oos_validation_status="FAILED",
+            forward_paper_test_status="PASSED",
+            completed_trade_count=50,
+            qualification_status=QualificationStatus.APPROVED,
+        )
+
+
+def test_malformed_numeric_and_boolean_types(registry):
+    """Reject boolean types masquerading as int/float and negative/non-finite values."""
+    # Boolean completed_trade_count
+    with pytest.raises(ValueError, match="non-negative integer"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_bool",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=100.0,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="PASSED",
+            completed_trade_count=True,
+            qualification_status=QualificationStatus.IN_PROGRESS,
+        )
+
+    # Float completed_trade_count
+    with pytest.raises(ValueError, match="non-negative integer"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_float",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=100.0,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="PASSED",
+            completed_trade_count=35.5,
+            qualification_status=QualificationStatus.APPROVED,
+        )
+
+    # Boolean backtest_net_profit
+    with pytest.raises(ValueError, match="finite number"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_profit_bool",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=True,
+            oos_validation_status="PASSED",
+            forward_paper_test_status="PASSED",
+            completed_trade_count=35,
+            qualification_status=QualificationStatus.APPROVED,
+        )
+
+    # Negative Infinity backtest_net_profit
+    with pytest.raises(ValueError, match="finite number"):
+        registry.update_qualification(
+            symbol="TCS",
+            strategy_id="strat_profit_neginf",
+            strategy_version="1.0",
+            historical_data_status="READY",
+            backtest_status="PASSED",
+            backtest_net_profit=float("-inf"),
+            oos_validation_status="PASSED",
+            forward_paper_test_status="PASSED",
+            completed_trade_count=35,
+            qualification_status=QualificationStatus.APPROVED,
+        )
+
+
+def test_evidence_reference_and_reason_recording(registry):
+    """Verify evidence reference and auto-generated status reasons are cleanly stored."""
+    qual = registry.update_qualification(
+        symbol="TCS",
+        strategy_id="strat_clean",
+        strategy_version="1.0",
+        historical_data_status="READY",
+        backtest_status="PASSED",
+        backtest_net_profit=500.0,
+        oos_validation_status="PASSED",
+        forward_paper_test_status="PASSED",
+        completed_trade_count=50,
+        qualification_status=QualificationStatus.APPROVED,
+        status_reason=None,  # Should generate informative approval reason
+        evidence_reference="   REF_EVID_WHITESPACE   ",
+    )
+    assert qual.evidence_reference == "REF_EVID_WHITESPACE"
+    assert "Approved: met all qualification gates with 50 completed forward trades" in qual.status_reason
+    assert qual.meets_preferred_threshold is True
+
+
+def test_api_contradictory_evidence_rejected(monkeypatch, registry):
+    """API endpoint returns 400 when contradictory evidence is submitted."""
+    import src.api.routes.universe as universe_routes
+    monkeypatch.setattr(universe_routes, "_registry", registry)
+
+    response = client.put(
+        "/api/universe/stocks/TCS/qualifications/strategy_v1",
+        json={
+            "strategy_version": "1.0",
+            "historical_data_status": "INCOMPLETE",
+            "backtest_status": "PASSED",
+            "backtest_net_profit": 500.5,
+            "oos_validation_status": "PASSED",
+            "forward_paper_test_status": "PASSED",
+            "completed_trade_count": 30,
+            "qualification_status": "APPROVED",
+        },
+    )
+    assert response.status_code == 400
+    assert "backtest_status cannot be 'PASSED' when historical_data_status is 'INCOMPLETE'" in response.json()["detail"]
+
+
+def test_api_rejects_boolean_trades(monkeypatch, registry):
+    """API model rejects booleans for completed_trade_count with 422."""
+    import src.api.routes.universe as universe_routes
+    monkeypatch.setattr(universe_routes, "_registry", registry)
+
+    response = client.put(
+        "/api/universe/stocks/TCS/qualifications/strategy_v1",
+        json={
+            "strategy_version": "1.0",
+            "historical_data_status": "READY",
+            "backtest_status": "PASSED",
+            "backtest_net_profit": 500.5,
+            "oos_validation_status": "PASSED",
+            "forward_paper_test_status": "PASSED",
+            "completed_trade_count": True,
+            "qualification_status": "IN_PROGRESS",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_api_unregistered_stock(monkeypatch, registry):
+    """API returns 404 for non-registered stock symbol."""
+    import src.api.routes.universe as universe_routes
+    monkeypatch.setattr(universe_routes, "_registry", registry)
+
+    response = client.put(
+        "/api/universe/stocks/UNKNOWN_STOCK/qualifications/strategy_v1",
+        json={
+            "strategy_version": "1.0",
+            "historical_data_status": "READY",
+            "backtest_status": "PASSED",
+            "backtest_net_profit": 500.5,
+            "oos_validation_status": "PASSED",
+            "forward_paper_test_status": "PASSED",
+            "completed_trade_count": 30,
+            "qualification_status": "APPROVED",
+        },
+    )
+    assert response.status_code == 404
+

@@ -7,8 +7,13 @@ from pathlib import Path
 from typing import Optional
 
 # Configurable Qualification Thresholds for Forward Paper Trading
-MIN_FORWARD_TRADES_FOR_APPROVAL: int = 30
-PREFERRED_FORWARD_TRADES_FOR_APPROVAL: int = 50
+# Configurable Qualification Thresholds for Forward Paper Trading
+DEFAULT_MIN_FORWARD_TRADES: int = 30
+DEFAULT_PREFERRED_FORWARD_TRADES: int = 50
+
+# Backwards-compatible constants
+MIN_FORWARD_TRADES_FOR_APPROVAL: int = DEFAULT_MIN_FORWARD_TRADES
+PREFERRED_FORWARD_TRADES_FOR_APPROVAL: int = DEFAULT_PREFERRED_FORWARD_TRADES
 
 
 class QualificationStatus(str, Enum):
@@ -36,6 +41,21 @@ class StrategyQualificationRecord:
     evidence_reference: Optional[str]
     updated_at: datetime
 
+    @property
+    def meets_initial_threshold(self) -> bool:
+        """Returns True if completed forward trade sample meets minimum evaluation threshold (30)."""
+        return self.completed_trade_count >= DEFAULT_MIN_FORWARD_TRADES
+
+    @property
+    def meets_preferred_threshold(self) -> bool:
+        """Returns True if completed forward trade sample meets preferred threshold (50+)."""
+        return self.completed_trade_count >= DEFAULT_PREFERRED_FORWARD_TRADES
+
+    @property
+    def is_approved(self) -> bool:
+        """Returns True if stock/strategy combination is APPROVED."""
+        return self.qualification_status == QualificationStatus.APPROVED
+
 
 class UniverseCategory(str, Enum):
     NIFTY_50 = "NIFTY_50"
@@ -61,11 +81,23 @@ class StockRecord:
 
 
 class StockUniverseRegistry:
-    """Manages the persistent stock universe registry."""
+    """Manages the persistent stock universe registry and qualification gates."""
 
-    def __init__(self, storage_path: Path):
+    def __init__(
+        self,
+        storage_path: Path,
+        min_forward_trades: int = DEFAULT_MIN_FORWARD_TRADES,
+        preferred_forward_trades: int = DEFAULT_PREFERRED_FORWARD_TRADES,
+    ):
+        if isinstance(min_forward_trades, bool) or not isinstance(min_forward_trades, int) or min_forward_trades < 0:
+            raise ValueError("min_forward_trades must be a non-negative integer")
+        if isinstance(preferred_forward_trades, bool) or not isinstance(preferred_forward_trades, int) or preferred_forward_trades < 0:
+            raise ValueError("preferred_forward_trades must be a non-negative integer")
+
         self.storage_path = storage_path
         self.qual_storage_path = storage_path.parent / (storage_path.stem + "_qualifications.json")
+        self.min_forward_trades = min_forward_trades
+        self.preferred_forward_trades = preferred_forward_trades
         self._cache: dict[str, StockRecord] = {}
         self._qual_cache: dict[str, dict[str, StrategyQualificationRecord]] = {}
         self._load()
@@ -123,7 +155,6 @@ class StockUniverseRegistry:
                         updated_at=datetime.fromisoformat(qd["updated_at"]),
                     )
 
-
     def _save(self) -> None:
         self.storage_path.parent.mkdir(parents=True, exist_ok=True)
         data = {}
@@ -147,7 +178,6 @@ class StockUniverseRegistry:
                 qual_data[sym][strat_id] = qr_dict
         with open(self.qual_storage_path, "w", encoding="utf-8") as f:
             json.dump(qual_data, f, indent=2)
-
 
     def _normalize_symbol(self, symbol: str) -> str:
         return symbol.strip().upper()
@@ -252,6 +282,7 @@ class StockUniverseRegistry:
         qualification_status: QualificationStatus,
         status_reason: Optional[str] = None,
         evidence_reference: Optional[str] = None,
+        min_forward_trades: Optional[int] = None,
     ) -> StrategyQualificationRecord:
         normalized_symbol = self._normalize_symbol(symbol)
         if normalized_symbol not in self._cache:
@@ -259,25 +290,52 @@ class StockUniverseRegistry:
             
         stock = self._cache[normalized_symbol]
 
-        # Numeric validations
-        if not isinstance(completed_trade_count, int) or completed_trade_count < 0:
+        # 1. Configurable threshold resolution & validation
+        if min_forward_trades is not None:
+            if isinstance(min_forward_trades, bool) or not isinstance(min_forward_trades, int) or min_forward_trades < 0:
+                raise ValueError("min_forward_trades override must be a non-negative integer")
+            effective_min_trades = min_forward_trades
+        else:
+            effective_min_trades = self.min_forward_trades
+
+        # 2. Strict numeric validations (reject bools, non-integers, negatives, and non-finite numbers)
+        if isinstance(completed_trade_count, bool) or not isinstance(completed_trade_count, int) or completed_trade_count < 0:
             raise ValueError("completed_trade_count must be a non-negative integer")
 
         if backtest_net_profit is not None:
-            if not isinstance(backtest_net_profit, (int, float)) or not math.isfinite(backtest_net_profit):
+            if isinstance(backtest_net_profit, bool) or not isinstance(backtest_net_profit, (int, float)) or not math.isfinite(backtest_net_profit):
                 raise ValueError("backtest_net_profit must be a finite number")
 
-        # Inconsistent trade counts and status checks
-        # If backtest claims PASSED, actual finite net profit metric is required
-        if backtest_status == "PASSED" and backtest_net_profit is None:
-            raise ValueError("backtest_status 'PASSED' requires evidence of backtest_net_profit")
+        # 3. Missing or Contradictory Validation Evidence Checks
+        # Historical data must be READY before backtesting or OOS validation can claim PASSED
+        if backtest_status == "PASSED" and historical_data_status != "READY":
+            raise ValueError(f"backtest_status cannot be 'PASSED' when historical_data_status is '{historical_data_status}'")
 
-        # If forward paper test status claims PASSED, trade count cannot be zero
+        if oos_validation_status == "PASSED" and historical_data_status != "READY":
+            raise ValueError(f"oos_validation_status cannot be 'PASSED' when historical_data_status is '{historical_data_status}'")
+
+        # Out-Of-Sample validation cannot pass if the backtest did not pass
+        if oos_validation_status == "PASSED" and backtest_status != "PASSED":
+            raise ValueError(f"oos_validation_status cannot be 'PASSED' when backtest_status is '{backtest_status}'")
+
+        # Unsupported assertion: backtest_status 'PASSED' requires evidence of positive finite net profit
+        if backtest_status == "PASSED":
+            if backtest_net_profit is None:
+                raise ValueError("backtest_status 'PASSED' requires evidence of backtest_net_profit")
+            if backtest_net_profit <= 0:
+                raise ValueError(f"backtest_status 'PASSED' requires positive backtest_net_profit (found {backtest_net_profit})")
+
+        # Unsupported assertion: forward_paper_test_status 'PASSED' requires actual completed forward trades
         if forward_paper_test_status == "PASSED" and completed_trade_count == 0:
             raise ValueError("forward_paper_test_status 'PASSED' requires completed forward trades (cannot be 0)")
 
-        # Gate hardening for APPROVED qualification status
+        # Clean/normalize evidence reference and reason
+        cleaned_reason = status_reason.strip() if status_reason and status_reason.strip() else None
+        cleaned_evidence = evidence_reference.strip() if evidence_reference and evidence_reference.strip() else None
+
+        # 4. Gate hardening for APPROVED qualification status
         if qualification_status == QualificationStatus.APPROVED:
+            # All validation evidence gates must explicitly pass
             if (
                 historical_data_status != "READY"
                 or backtest_status != "PASSED"
@@ -286,14 +344,25 @@ class StockUniverseRegistry:
             ):
                 raise ValueError("Cannot approve strategy without all validation evidence passing")
 
-            if completed_trade_count < MIN_FORWARD_TRADES_FOR_APPROVAL:
+            # Must satisfy configurable minimum completed forward trades
+            if completed_trade_count < effective_min_trades:
                 raise ValueError(
-                    f"Cannot approve strategy with fewer than {MIN_FORWARD_TRADES_FOR_APPROVAL} completed forward trades "
+                    f"Cannot approve strategy with fewer than {effective_min_trades} completed forward trades "
                     f"(found {completed_trade_count})"
                 )
 
-            if backtest_net_profit is None or not math.isfinite(backtest_net_profit):
-                raise ValueError("Cannot approve strategy without valid finite backtest net profit")
+            # Must have valid positive finite net profit
+            if backtest_net_profit is None or not math.isfinite(backtest_net_profit) or backtest_net_profit <= 0:
+                raise ValueError("Cannot approve strategy without valid positive finite backtest net profit")
+
+            if cleaned_reason is None:
+                cleaned_reason = (
+                    f"Approved: met all qualification gates with {completed_trade_count} completed forward trades "
+                    f"(threshold: {effective_min_trades})"
+                )
+
+        if qualification_status == QualificationStatus.REJECTED and cleaned_reason is None:
+            cleaned_reason = "Rejected: failed qualification criteria"
 
         if normalized_symbol not in self._qual_cache:
             self._qual_cache[normalized_symbol] = {}
@@ -310,8 +379,8 @@ class StockUniverseRegistry:
             forward_paper_test_status=forward_paper_test_status,
             completed_trade_count=completed_trade_count,
             qualification_status=qualification_status,
-            status_reason=status_reason,
-            evidence_reference=evidence_reference,
+            status_reason=cleaned_reason,
+            evidence_reference=cleaned_evidence,
             updated_at=datetime.now(timezone.utc),
         )
         self._qual_cache[normalized_symbol][strategy_id] = record

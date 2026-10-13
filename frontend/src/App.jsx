@@ -17,6 +17,7 @@ import StockScannerView from './StockScannerView'
 import StockAnalysisView from './StockAnalysisView'
 import SettingsView from './SettingsView'
 import TradingModeView from './TradingModeView'
+import StockUniverseView from './StockUniverseView'
 import { loadSettings, applySettingsToDOM } from './settingsUtils'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import SignalForgeLogo from './SignalForgeLogo'
@@ -31,6 +32,7 @@ import {
 const navItems = [
   ['Dashboard', 'dashboard'],
   ['Trading Mode', 'activity'],
+  ['Stock Universe', 'globe'],
   ['NIFTY Analysis', 'chart'],
   ['Stock Scanner', 'search'],
   ['Market Intelligence', 'chart'],
@@ -712,6 +714,8 @@ function App() {
             <SettingsView onNavigate={handleNavigation} />
           ) : activeNav === 'Trading Mode' ? (
             <TradingModeView />
+          ) : activeNav === 'Stock Universe' || activeNav === 'Universe' ? (
+            <StockUniverseView />
           ) : (
             <>
               {/* Top Section: LARGE NIFTY 50 CHART + NIFTY 50 STRATEGY SIGNAL */}

@@ -16,6 +16,10 @@ async function fetchJson(path, options = {}) {
 
       if (typeof body?.detail === 'string') {
         detail = body.detail
+      } else if (Array.isArray(body?.detail)) {
+        detail = body.detail
+          .map((item) => (item?.msg ? (item?.loc ? `${item.loc.join('.')}: ${item.msg}` : item.msg) : JSON.stringify(item)))
+          .join(', ')
       }
     } catch {
       // Keep the HTTP-status error when the response is not JSON.
@@ -336,5 +340,63 @@ export function fetchSymbolExplanation(symbol) {
 
 export function fetchSymbolIntelligenceHistory(symbol, bars = 60, step = 5) {
   return fetchJson(`/api/intelligence/${encodeURIComponent(symbol)}/history?bars=${bars}&step=${step}`)
+}
+
+// ---------------------------------------------------------------------------
+// Stock Universe & Qualification Gate API (Phase 24E)
+// ---------------------------------------------------------------------------
+
+export function fetchUniverseStocks(category = null, search = '') {
+  const params = new URLSearchParams()
+  if (category && category !== 'ALL') {
+    params.append('category', category)
+  }
+  if (search && search.trim()) {
+    params.append('q', search.trim())
+  }
+  const qs = params.toString()
+  return fetchJson(`/api/universe/stocks${qs ? `?${qs}` : ''}`)
+}
+
+export function fetchUniverseStock(symbol) {
+  return fetchJson(`/api/universe/stocks/${encodeURIComponent(symbol.trim().toUpperCase())}`)
+}
+
+export function addUniverseStock(stock) {
+  return fetchJson('/api/universe/stocks', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      symbol: stock.symbol.trim().toUpperCase(),
+      exchange: stock.exchange ? stock.exchange.trim().toUpperCase() : 'NSE',
+      category: stock.category,
+      name: stock.name && stock.name.trim() ? stock.name.trim() : null,
+    }),
+  })
+}
+
+export function fetchStockQualifications(symbol) {
+  return fetchJson(`/api/universe/stocks/${encodeURIComponent(symbol.trim().toUpperCase())}/qualifications`)
+}
+
+export function fetchStockQualification(symbol, strategyId) {
+  return fetchJson(
+    `/api/universe/stocks/${encodeURIComponent(symbol.trim().toUpperCase())}/qualifications/${encodeURIComponent(strategyId.trim())}`
+  )
+}
+
+export function updateStockQualification(symbol, strategyId, data) {
+  return fetchJson(
+    `/api/universe/stocks/${encodeURIComponent(symbol.trim().toUpperCase())}/qualifications/${encodeURIComponent(strategyId.trim())}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  )
 }
 
