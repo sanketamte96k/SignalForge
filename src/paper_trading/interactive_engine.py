@@ -287,8 +287,7 @@ class InteractivePaperTradingService:
             if starting_capital <= 0 or math.isnan(starting_capital) or math.isinf(starting_capital):
                 raise ValueError("starting_capital must be positive")
             self.starting_capital = float(starting_capital)
-        else:
-            self.starting_capital = DEFAULT_STARTING_CAPITAL
+        # If None, preserve the current self.starting_capital
 
         if cost_model is not None:
             self.cost_model = cost_model

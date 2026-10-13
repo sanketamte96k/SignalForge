@@ -33,7 +33,24 @@ from src.api.main import app
 from src.api.routes import paper_trading
 
 
+from src.paper_trading.interactive_engine import InteractivePaperTradingService
+import tempfile
+from pathlib import Path
+from src.api.routes import paper_trading
+
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def isolated_engine():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_ledger = Path(tmp_dir) / "test_trades.json"
+        paper_trading._interactive_service = InteractivePaperTradingService(persistence_file=tmp_ledger)
+        paper_trading._runner = None
+        paper_trading._replay_runner = None
+        yield
+        paper_trading._interactive_service = None
+        paper_trading._runner = None
+        paper_trading._replay_runner = None
 
 
 @pytest.fixture(autouse=True)

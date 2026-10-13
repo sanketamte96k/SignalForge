@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import math
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class HealthResponse(BaseModel):
@@ -629,3 +630,52 @@ class PaperTradingConfigRequest(BaseModel):
     exit_slippage_bps: float | None = None
     spread_penalty_bps: float | None = None
     max_signal_age_seconds: float | None = None
+class UniverseStockResponse(BaseModel):
+    symbol: str
+    exchange: str
+    name: str | None = None
+    category: str
+    membership_verified_at: datetime | None = None
+    data_quality_status: str
+    created_at: datetime
+
+class UniverseStockAddRequest(BaseModel):
+    symbol: str
+    exchange: str
+    name: str | None = None
+    category: str
+
+
+class QualificationUpdateRequest(BaseModel):
+    strategy_version: str
+    historical_data_status: str
+    backtest_status: str
+    backtest_net_profit: float | None = None
+    oos_validation_status: str
+    forward_paper_test_status: str
+    completed_trade_count: int = 0
+    qualification_status: str
+    status_reason: str | None = None
+    evidence_reference: str | None = None
+
+    @field_validator("completed_trade_count")
+    @classmethod
+    def validate_trade_count(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("completed_trade_count cannot be negative")
+        return v
+
+    @field_validator("backtest_net_profit")
+    @classmethod
+    def validate_finite_profit(cls, v: float | None) -> float | None:
+        if v is not None:
+            if not math.isfinite(v):
+                raise ValueError("backtest_net_profit must be a finite number")
+        return v
+
+class QualificationResponse(QualificationUpdateRequest):
+    symbol: str
+    exchange: str
+    strategy_id: str
+    updated_at: datetime
+

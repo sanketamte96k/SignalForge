@@ -1,0 +1,5 @@
+component,path,status,notes
+API_Endpoint,src/api/routes/nifty.py,HISTORICAL_ONLY,Uses cached local CSV
+Live_Provider,src/data/providers/groww.py,AUTH_FAILED,HTTP 403 on token gen
+Replay_Engine,src/paper_trading/replay_runner.py,READY,Historical paper trading functional
+Forward_Engine,src/paper_trading/runner.py,NO_LIVE_DATA,No active daemon feed verified

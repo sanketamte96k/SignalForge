@@ -1,0 +1,6 @@
+diagnostic,result,notes
+credentials_present,True,API key and secret loaded from .env
+timestamp_format,Valid,Epoch seconds used as required
+checksum_algorithm,Valid,SHA-256(secret+timestamp) used
+http_status,403,Provider authorization failed
+provider_message,"Session approval required before generating token",User action required outside system

@@ -1,0 +1,2 @@
+endpoint,method,status_code,error_code,error_message
+/v1/token/api/access,POST,403,403,Session approval required before generating token

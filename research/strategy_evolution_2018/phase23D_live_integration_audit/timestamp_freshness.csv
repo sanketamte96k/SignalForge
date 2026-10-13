@@ -1,0 +1,5 @@
+symbol,provider_timestamp,local_receive_timestamp,is_stale,delay_ms
+RELIANCE,N/A,N/A,True,N/A
+HDFCBANK,N/A,N/A,True,N/A
+ICICIBANK,N/A,N/A,True,N/A
+INFY,N/A,N/A,True,N/A

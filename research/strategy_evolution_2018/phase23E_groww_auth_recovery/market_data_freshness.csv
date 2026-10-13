@@ -1,0 +1,2 @@
+symbol,provider_timestamp,local_receive_timestamp,is_stale,delay_ms
+N/A,N/A,N/A,True,N/A

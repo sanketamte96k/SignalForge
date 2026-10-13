@@ -10,13 +10,37 @@ Tests for:
 """
 
 import unittest
+from unittest.mock import patch
+import pandas as pd
+import numpy as np
 from fastapi.testclient import TestClient
 from src.api.main import app
 
 client = TestClient(app)
 
+from fastapi import HTTPException
+
+def _dummy_df(symbol, *args, **kwargs):
+    if symbol == "NONEXISTENT_XYZ":
+        raise HTTPException(status_code=404, detail="Not found")
+    dates = pd.date_range("2024-01-01", periods=300, freq="15min")
+    return pd.DataFrame({
+        "open": np.linspace(100, 110, 300),
+        "high": np.linspace(102, 112, 300),
+        "low": np.linspace(98, 108, 300),
+        "close": np.linspace(101, 111, 300),
+        "volume": [1000] * 300
+    }, index=dates)
+
 
 class TestIntelligenceAPI(unittest.TestCase):
+    def setUp(self):
+        self.patcher = patch("src.api.intelligence.routes._load_symbol_dataframe", side_effect=_dummy_df)
+        self.patcher.start()
+
+    def tearDown(self):
+        self.patcher.stop()
+
     def test_01_get_overview(self):
         """GET /api/intelligence/overview should return consolidated market state."""
         response = client.get("/api/intelligence/overview")

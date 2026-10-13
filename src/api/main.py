@@ -60,3 +60,6 @@ def root() -> dict[str, str]:
         "status": "ok",
         "version": "0.1.0",
     }
+from src.api.routes.universe import router as universe_router
+app.include_router(universe_router)
+

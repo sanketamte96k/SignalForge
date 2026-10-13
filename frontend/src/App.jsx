@@ -16,6 +16,7 @@ import WatchlistsView from './WatchlistsView'
 import StockScannerView from './StockScannerView'
 import StockAnalysisView from './StockAnalysisView'
 import SettingsView from './SettingsView'
+import TradingModeView from './TradingModeView'
 import { loadSettings, applySettingsToDOM } from './settingsUtils'
 import KeyboardShortcutsModal from './KeyboardShortcutsModal'
 import SignalForgeLogo from './SignalForgeLogo'
@@ -29,6 +30,7 @@ import {
 
 const navItems = [
   ['Dashboard', 'dashboard'],
+  ['Trading Mode', 'activity'],
   ['NIFTY Analysis', 'chart'],
   ['Stock Scanner', 'search'],
   ['Market Intelligence', 'chart'],
@@ -708,6 +710,8 @@ function App() {
             <PaperTradingView />
           ) : activeNav === 'Settings' ? (
             <SettingsView onNavigate={handleNavigation} />
+          ) : activeNav === 'Trading Mode' ? (
+            <TradingModeView />
           ) : (
             <>
               {/* Top Section: LARGE NIFTY 50 CHART + NIFTY 50 STRATEGY SIGNAL */}
@@ -1946,6 +1950,12 @@ const ICON_PATHS = {
       <path d="M5 20V10" />
       <path d="M12 20V4" />
       <path d="M19 20v-7" />
+    </>
+  ),
+
+  activity: (
+    <>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
     </>
   ),
 
