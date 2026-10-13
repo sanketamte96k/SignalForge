@@ -1,0 +1,902 @@
+{
+  "ADANIENT": {
+    "symbol": "ADANIENT",
+    "exchange": "NSE",
+    "name": "Adani Enterprises Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.287577+00:00"
+  },
+  "ADANIPORTS": {
+    "symbol": "ADANIPORTS",
+    "exchange": "NSE",
+    "name": "Adani Ports and Special Economic Zone Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.293800+00:00"
+  },
+  "APOLLOHOSP": {
+    "symbol": "APOLLOHOSP",
+    "exchange": "NSE",
+    "name": "Apollo Hospitals Enterprise Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.299616+00:00"
+  },
+  "ASIANPAINT": {
+    "symbol": "ASIANPAINT",
+    "exchange": "NSE",
+    "name": "Asian Paints Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.304577+00:00"
+  },
+  "AXISBANK": {
+    "symbol": "AXISBANK",
+    "exchange": "NSE",
+    "name": "Axis Bank Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.309016+00:00"
+  },
+  "BSE": {
+    "symbol": "BSE",
+    "exchange": "NSE",
+    "name": "BSE Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.313793+00:00"
+  },
+  "BAJAJ-AUTO": {
+    "symbol": "BAJAJ-AUTO",
+    "exchange": "NSE",
+    "name": "Bajaj Auto Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.318729+00:00"
+  },
+  "BAJFINANCE": {
+    "symbol": "BAJFINANCE",
+    "exchange": "NSE",
+    "name": "Bajaj Finance Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.323855+00:00"
+  },
+  "BAJAJFINSV": {
+    "symbol": "BAJAJFINSV",
+    "exchange": "NSE",
+    "name": "Bajaj Finserv Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.329713+00:00"
+  },
+  "BEL": {
+    "symbol": "BEL",
+    "exchange": "NSE",
+    "name": "Bharat Electronics Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.335609+00:00"
+  },
+  "BHARTIARTL": {
+    "symbol": "BHARTIARTL",
+    "exchange": "NSE",
+    "name": "Bharti Airtel Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.340846+00:00"
+  },
+  "CIPLA": {
+    "symbol": "CIPLA",
+    "exchange": "NSE",
+    "name": "Cipla Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.347014+00:00"
+  },
+  "COALINDIA": {
+    "symbol": "COALINDIA",
+    "exchange": "NSE",
+    "name": "Coal India Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.353596+00:00"
+  },
+  "DRREDDY": {
+    "symbol": "DRREDDY",
+    "exchange": "NSE",
+    "name": "Dr. Reddy's Laboratories Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.359894+00:00"
+  },
+  "EICHERMOT": {
+    "symbol": "EICHERMOT",
+    "exchange": "NSE",
+    "name": "Eicher Motors Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.366526+00:00"
+  },
+  "ETERNAL": {
+    "symbol": "ETERNAL",
+    "exchange": "NSE",
+    "name": "Eternal Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.373835+00:00"
+  },
+  "GRASIM": {
+    "symbol": "GRASIM",
+    "exchange": "NSE",
+    "name": "Grasim Industries Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.380531+00:00"
+  },
+  "HCLTECH": {
+    "symbol": "HCLTECH",
+    "exchange": "NSE",
+    "name": "HCL Technologies Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.388414+00:00"
+  },
+  "HDFCBANK": {
+    "symbol": "HDFCBANK",
+    "exchange": "NSE",
+    "name": "HDFC Bank Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.394605+00:00"
+  },
+  "HDFCLIFE": {
+    "symbol": "HDFCLIFE",
+    "exchange": "NSE",
+    "name": "HDFC Life Insurance Company Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.402878+00:00"
+  },
+  "HINDALCO": {
+    "symbol": "HINDALCO",
+    "exchange": "NSE",
+    "name": "Hindalco Industries Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.409241+00:00"
+  },
+  "HINDUNILVR": {
+    "symbol": "HINDUNILVR",
+    "exchange": "NSE",
+    "name": "Hindustan Unilever Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.415838+00:00"
+  },
+  "ICICIBANK": {
+    "symbol": "ICICIBANK",
+    "exchange": "NSE",
+    "name": "ICICI Bank Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.422229+00:00"
+  },
+  "ITC": {
+    "symbol": "ITC",
+    "exchange": "NSE",
+    "name": "ITC Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.428902+00:00"
+  },
+  "INFY": {
+    "symbol": "INFY",
+    "exchange": "NSE",
+    "name": "Infosys Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.436448+00:00"
+  },
+  "INDIGO": {
+    "symbol": "INDIGO",
+    "exchange": "NSE",
+    "name": "InterGlobe Aviation Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.443553+00:00"
+  },
+  "JSWSTEEL": {
+    "symbol": "JSWSTEEL",
+    "exchange": "NSE",
+    "name": "JSW Steel Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.452044+00:00"
+  },
+  "JIOFIN": {
+    "symbol": "JIOFIN",
+    "exchange": "NSE",
+    "name": "Jio Financial Services Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.459062+00:00"
+  },
+  "KOTAKBANK": {
+    "symbol": "KOTAKBANK",
+    "exchange": "NSE",
+    "name": "Kotak Mahindra Bank Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.466131+00:00"
+  },
+  "LT": {
+    "symbol": "LT",
+    "exchange": "NSE",
+    "name": "Larsen & Toubro Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.473776+00:00"
+  },
+  "M&M": {
+    "symbol": "M&M",
+    "exchange": "NSE",
+    "name": "Mahindra & Mahindra Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.482008+00:00"
+  },
+  "MARUTI": {
+    "symbol": "MARUTI",
+    "exchange": "NSE",
+    "name": "Maruti Suzuki India Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.489622+00:00"
+  },
+  "MAXHEALTH": {
+    "symbol": "MAXHEALTH",
+    "exchange": "NSE",
+    "name": "Max Healthcare Institute Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.497340+00:00"
+  },
+  "NTPC": {
+    "symbol": "NTPC",
+    "exchange": "NSE",
+    "name": "NTPC Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.505895+00:00"
+  },
+  "NESTLEIND": {
+    "symbol": "NESTLEIND",
+    "exchange": "NSE",
+    "name": "Nestle India Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.513752+00:00"
+  },
+  "ONGC": {
+    "symbol": "ONGC",
+    "exchange": "NSE",
+    "name": "Oil & Natural Gas Corporation Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.522174+00:00"
+  },
+  "POWERGRID": {
+    "symbol": "POWERGRID",
+    "exchange": "NSE",
+    "name": "Power Grid Corporation of India Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.530131+00:00"
+  },
+  "RELIANCE": {
+    "symbol": "RELIANCE",
+    "exchange": "NSE",
+    "name": "Reliance Industries Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.538552+00:00"
+  },
+  "SBILIFE": {
+    "symbol": "SBILIFE",
+    "exchange": "NSE",
+    "name": "SBI Life Insurance Company Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.547214+00:00"
+  },
+  "SHRIRAMFIN": {
+    "symbol": "SHRIRAMFIN",
+    "exchange": "NSE",
+    "name": "Shriram Finance Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.555674+00:00"
+  },
+  "SBIN": {
+    "symbol": "SBIN",
+    "exchange": "NSE",
+    "name": "State Bank of India",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.564776+00:00"
+  },
+  "SUNPHARMA": {
+    "symbol": "SUNPHARMA",
+    "exchange": "NSE",
+    "name": "Sun Pharmaceutical Industries Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.573214+00:00"
+  },
+  "TCS": {
+    "symbol": "TCS",
+    "exchange": "NSE",
+    "name": "Tata Consultancy Services Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.581836+00:00"
+  },
+  "TATACONSUM": {
+    "symbol": "TATACONSUM",
+    "exchange": "NSE",
+    "name": "Tata Consumer Products Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.590139+00:00"
+  },
+  "TMPV": {
+    "symbol": "TMPV",
+    "exchange": "NSE",
+    "name": "Tata Motors Passenger Vehicles Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.598919+00:00"
+  },
+  "TATASTEEL": {
+    "symbol": "TATASTEEL",
+    "exchange": "NSE",
+    "name": "Tata Steel Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.607255+00:00"
+  },
+  "TECHM": {
+    "symbol": "TECHM",
+    "exchange": "NSE",
+    "name": "Tech Mahindra Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.616176+00:00"
+  },
+  "TITAN": {
+    "symbol": "TITAN",
+    "exchange": "NSE",
+    "name": "Titan Company Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.625002+00:00"
+  },
+  "TRENT": {
+    "symbol": "TRENT",
+    "exchange": "NSE",
+    "name": "Trent Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.637270+00:00"
+  },
+  "ULTRACEMCO": {
+    "symbol": "ULTRACEMCO",
+    "exchange": "NSE",
+    "name": "UltraTech Cement Ltd.",
+    "category": "NIFTY_50",
+    "membership_verified_at": "2026-10-13T17:28:24+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.683425+00:00"
+  },
+  "ABB": {
+    "symbol": "ABB",
+    "exchange": "NSE",
+    "name": "ABB India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.696562+00:00"
+  },
+  "ADANIENSOL": {
+    "symbol": "ADANIENSOL",
+    "exchange": "NSE",
+    "name": "Adani Energy Solutions Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.708118+00:00"
+  },
+  "ADANIGREEN": {
+    "symbol": "ADANIGREEN",
+    "exchange": "NSE",
+    "name": "Adani Green Energy Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.719347+00:00"
+  },
+  "ADANIPOWER": {
+    "symbol": "ADANIPOWER",
+    "exchange": "NSE",
+    "name": "Adani Power Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.729314+00:00"
+  },
+  "AMBUJACEM": {
+    "symbol": "AMBUJACEM",
+    "exchange": "NSE",
+    "name": "Ambuja Cements Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.739413+00:00"
+  },
+  "DMART": {
+    "symbol": "DMART",
+    "exchange": "NSE",
+    "name": "Avenue Supermarts Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.750147+00:00"
+  },
+  "BAJAJHLDNG": {
+    "symbol": "BAJAJHLDNG",
+    "exchange": "NSE",
+    "name": "Bajaj Holdings & Investment Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.760284+00:00"
+  },
+  "BANKBARODA": {
+    "symbol": "BANKBARODA",
+    "exchange": "NSE",
+    "name": "Bank of Baroda",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.771337+00:00"
+  },
+  "BPCL": {
+    "symbol": "BPCL",
+    "exchange": "NSE",
+    "name": "Bharat Petroleum Corporation Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.780937+00:00"
+  },
+  "BOSCHLTD": {
+    "symbol": "BOSCHLTD",
+    "exchange": "NSE",
+    "name": "Bosch Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.791381+00:00"
+  },
+  "BRITANNIA": {
+    "symbol": "BRITANNIA",
+    "exchange": "NSE",
+    "name": "Britannia Industries Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.801543+00:00"
+  },
+  "CGPOWER": {
+    "symbol": "CGPOWER",
+    "exchange": "NSE",
+    "name": "CG Power and Industrial Solutions Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.811620+00:00"
+  },
+  "CANBK": {
+    "symbol": "CANBK",
+    "exchange": "NSE",
+    "name": "Canara Bank",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.822576+00:00"
+  },
+  "CHOLAFIN": {
+    "symbol": "CHOLAFIN",
+    "exchange": "NSE",
+    "name": "Cholamandalam Investment and Finance Company Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.832725+00:00"
+  },
+  "CUMMINSIND": {
+    "symbol": "CUMMINSIND",
+    "exchange": "NSE",
+    "name": "Cummins India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.842843+00:00"
+  },
+  "DLF": {
+    "symbol": "DLF",
+    "exchange": "NSE",
+    "name": "DLF Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.853896+00:00"
+  },
+  "DIVISLAB": {
+    "symbol": "DIVISLAB",
+    "exchange": "NSE",
+    "name": "Divi's Laboratories Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.863811+00:00"
+  },
+  "GAIL": {
+    "symbol": "GAIL",
+    "exchange": "NSE",
+    "name": "GAIL (India) Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.875378+00:00"
+  },
+  "GODREJCP": {
+    "symbol": "GODREJCP",
+    "exchange": "NSE",
+    "name": "Godrej Consumer Products Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.886757+00:00"
+  },
+  "HDFCAMC": {
+    "symbol": "HDFCAMC",
+    "exchange": "NSE",
+    "name": "HDFC Asset Management Company Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.921713+00:00"
+  },
+  "HAL": {
+    "symbol": "HAL",
+    "exchange": "NSE",
+    "name": "Hindustan Aeronautics Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.934296+00:00"
+  },
+  "HINDZINC": {
+    "symbol": "HINDZINC",
+    "exchange": "NSE",
+    "name": "Hindustan Zinc Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.948152+00:00"
+  },
+  "POWERINDIA": {
+    "symbol": "POWERINDIA",
+    "exchange": "NSE",
+    "name": "Hitachi Energy India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.961360+00:00"
+  },
+  "HYUNDAI": {
+    "symbol": "HYUNDAI",
+    "exchange": "NSE",
+    "name": "Hyundai Motor India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.973105+00:00"
+  },
+  "IOC": {
+    "symbol": "IOC",
+    "exchange": "NSE",
+    "name": "Indian Oil Corporation Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.986013+00:00"
+  },
+  "IRFC": {
+    "symbol": "IRFC",
+    "exchange": "NSE",
+    "name": "Indian Railway Finance Corporation Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:47.997968+00:00"
+  },
+  "JINDALSTEL": {
+    "symbol": "JINDALSTEL",
+    "exchange": "NSE",
+    "name": "Jindal Steel Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.010064+00:00"
+  },
+  "LTM": {
+    "symbol": "LTM",
+    "exchange": "NSE",
+    "name": "LTM Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.024475+00:00"
+  },
+  "MAZDOCK": {
+    "symbol": "MAZDOCK",
+    "exchange": "NSE",
+    "name": "Mazagoan Dock Shipbuilders Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.036586+00:00"
+  },
+  "MUTHOOTFIN": {
+    "symbol": "MUTHOOTFIN",
+    "exchange": "NSE",
+    "name": "Muthoot Finance Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.047835+00:00"
+  },
+  "PIDILITIND": {
+    "symbol": "PIDILITIND",
+    "exchange": "NSE",
+    "name": "Pidilite Industries Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.059264+00:00"
+  },
+  "POLYCAB": {
+    "symbol": "POLYCAB",
+    "exchange": "NSE",
+    "name": "Polycab India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.071191+00:00"
+  },
+  "PFC": {
+    "symbol": "PFC",
+    "exchange": "NSE",
+    "name": "Power Finance Corporation Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.083078+00:00"
+  },
+  "PNB": {
+    "symbol": "PNB",
+    "exchange": "NSE",
+    "name": "Punjab National Bank",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.094389+00:00"
+  },
+  "MOTHERSON": {
+    "symbol": "MOTHERSON",
+    "exchange": "NSE",
+    "name": "Samvardhana Motherson International Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.107631+00:00"
+  },
+  "ENRIN": {
+    "symbol": "ENRIN",
+    "exchange": "NSE",
+    "name": "Siemens Energy India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.119001+00:00"
+  },
+  "SIEMENS": {
+    "symbol": "SIEMENS",
+    "exchange": "NSE",
+    "name": "Siemens Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.136337+00:00"
+  },
+  "SOLARINDS": {
+    "symbol": "SOLARINDS",
+    "exchange": "NSE",
+    "name": "Solar Industries India Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.150843+00:00"
+  },
+  "TVSMOTOR": {
+    "symbol": "TVSMOTOR",
+    "exchange": "NSE",
+    "name": "TVS Motor Company Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.162848+00:00"
+  },
+  "TATACAP": {
+    "symbol": "TATACAP",
+    "exchange": "NSE",
+    "name": "Tata Capital Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.174703+00:00"
+  },
+  "TMCV": {
+    "symbol": "TMCV",
+    "exchange": "NSE",
+    "name": "Tata Motors Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.186555+00:00"
+  },
+  "TATAPOWER": {
+    "symbol": "TATAPOWER",
+    "exchange": "NSE",
+    "name": "Tata Power Co. Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.198548+00:00"
+  },
+  "TORNTPHARM": {
+    "symbol": "TORNTPHARM",
+    "exchange": "NSE",
+    "name": "Torrent Pharmaceuticals Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.210895+00:00"
+  },
+  "UNIONBANK": {
+    "symbol": "UNIONBANK",
+    "exchange": "NSE",
+    "name": "Union Bank of India",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.223737+00:00"
+  },
+  "VBL": {
+    "symbol": "VBL",
+    "exchange": "NSE",
+    "name": "Varun Beverages Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.236925+00:00"
+  },
+  "VAML": {
+    "symbol": "VAML",
+    "exchange": "NSE",
+    "name": "Vedanta Aluminium Metal Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.249755+00:00"
+  },
+  "VEDL": {
+    "symbol": "VEDL",
+    "exchange": "NSE",
+    "name": "Vedanta Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.262479+00:00"
+  },
+  "IDEA": {
+    "symbol": "IDEA",
+    "exchange": "NSE",
+    "name": "Vodafone Idea Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.275214+00:00"
+  },
+  "WIPRO": {
+    "symbol": "WIPRO",
+    "exchange": "NSE",
+    "name": "Wipro Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.287874+00:00"
+  },
+  "ZYDUSLIFE": {
+    "symbol": "ZYDUSLIFE",
+    "exchange": "NSE",
+    "name": "Zydus Lifesciences Ltd.",
+    "category": "NIFTY_NEXT_50",
+    "membership_verified_at": "2026-10-13T17:28:52+00:00",
+    "data_quality_status": "UNKNOWN",
+    "created_at": "2026-10-13T18:05:48.301962+00:00"
+  }
+}

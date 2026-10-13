@@ -1,0 +1,25 @@
+{
+  "manifest_version": "1.0",
+  "created_at": "2026-10-13T17:59:00Z",
+  "as_of_date": "2026-10-13",
+  "sources": {
+    "NIFTY_50": {
+      "source_name": "National Stock Exchange of India (NSE Indices)",
+      "source_url": "https://archives.nseindia.com/content/indices/ind_nifty50list.csv",
+      "local_file": "data/universe/sources/ind_nifty50list.csv",
+      "retrieval_timestamp": "2026-10-13T17:28:24Z",
+      "as_of_date": "2026-10-13",
+      "constituent_count": 50,
+      "sha256": "f5ba4027d935ae72879d5c24bbebf0e8439ec8ed504ffdf4175fde69206244b3"
+    },
+    "NIFTY_NEXT_50": {
+      "source_name": "National Stock Exchange of India (NSE Indices)",
+      "source_url": "https://archives.nseindia.com/content/indices/ind_niftynext50list.csv",
+      "local_file": "data/universe/sources/ind_niftynext50list.csv",
+      "retrieval_timestamp": "2026-10-13T17:28:52Z",
+      "as_of_date": "2026-10-13",
+      "constituent_count": 50,
+      "sha256": "b05337532e755953b588677216012f9b59e69ff39f3dfbbab61e96fc2d724e47"
+    }
+  }
+}

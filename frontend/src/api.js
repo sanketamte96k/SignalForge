@@ -400,3 +400,16 @@ export function updateStockQualification(symbol, strategyId, data) {
   )
 }
 
+export function fetchUniverseStockReadiness(symbol, strategyId = 'SignalForge_V1') {
+  return fetchJson(
+    `/api/universe/stocks/${encodeURIComponent(symbol.trim().toUpperCase())}/readiness?strategy_id=${encodeURIComponent(strategyId.trim())}`
+  )
+}
+
+export function fetchUniverseReadinessSummary(strategyId = 'SignalForge_V1') {
+  return fetchJson(
+    `/api/universe/stocks/readiness/summary?strategy_id=${encodeURIComponent(strategyId.trim())}`
+  )
+}
+
+

@@ -10,6 +10,8 @@ import {
   fetchStockQualifications,
   fetchStockQualification,
   updateStockQualification,
+  fetchUniverseStockReadiness,
+  fetchUniverseReadinessSummary,
 } from '../src/api.js'
 
 describe('Stock Universe & Qualification Governance (Phase 24E.3 Frontend Integration)', () => {
@@ -342,5 +344,77 @@ describe('Stock Universe & Qualification Governance (Phase 24E.3 Frontend Integr
     assert.match(markup, /eliminate market risk/)
     assert.match(markup, /authorize live broker execution/)
   })
+
+  // 17. Readiness API - fetchUniverseStockReadiness
+  it('17. fetchUniverseStockReadiness calls GET /api/universe/stocks/{symbol}/readiness', async () => {
+    let capturedUrl = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = async (url) => {
+      capturedUrl = url.toString()
+      return {
+        ok: true,
+        json: async () => ({
+          symbol: 'TCS',
+          exchange: 'NSE',
+          category: 'NIFTY_50',
+          strategy_id: 'SignalForge_V1',
+          strategy_version: '1.0',
+          readiness_state: 'INSUFFICIENT_DATA',
+          exchange_valid: true,
+          data_quality: {
+            symbol: 'TCS',
+            has_local_data: false,
+            total_candles: 0,
+            data_quality_status: 'UNKNOWN',
+          },
+          next_required_step: 'Ingest historical 1-minute OHLCV market data',
+        }),
+      }
+    }
+
+    try {
+      const res = await fetchUniverseStockReadiness('TCS', 'SignalForge_V1')
+      assert.match(capturedUrl, /\/api\/universe\/stocks\/TCS\/readiness\?strategy_id=SignalForge_V1$/)
+      assert.equal(res.symbol, 'TCS')
+      assert.equal(res.readiness_state, 'INSUFFICIENT_DATA')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  // 18. Readiness API - fetchUniverseReadinessSummary
+  it('18. fetchUniverseReadinessSummary calls GET /api/universe/stocks/readiness/summary', async () => {
+    let capturedUrl = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = async (url) => {
+      capturedUrl = url.toString()
+      return {
+        ok: true,
+        json: async () => ({
+          strategy_id: 'SignalForge_V1',
+          total_registered_stocks: 100,
+          summary: {
+            by_state: { INSUFFICIENT_DATA: 100 },
+          },
+        }),
+      }
+    }
+
+    try {
+      const res = await fetchUniverseReadinessSummary('SignalForge_V1')
+      assert.match(capturedUrl, /\/api\/universe\/stocks\/readiness\/summary\?strategy_id=SignalForge_V1$/)
+      assert.equal(res.total_registered_stocks, 100)
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  // 19. Initial state renders clean selection prompt
+  it('19. View mounts cleanly without unhandled runtime exceptions', () => {
+    const markup = renderToStaticMarkup(React.createElement(StockUniverseView))
+    assert.ok(typeof markup === 'string')
+    assert.ok(markup.length > 1000)
+  })
 })
+
 

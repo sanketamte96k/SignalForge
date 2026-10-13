@@ -6,6 +6,7 @@ import {
   fetchStockQualifications,
   fetchStockQualification,
   updateStockQualification,
+  fetchUniverseStockReadiness,
 } from './api'
 import { LoadingState, ErrorState, EmptyState } from './StateViews'
 
@@ -62,6 +63,9 @@ export default function StockUniverseView() {
   const [activeQualRecord, setActiveQualRecord] = useState(null)
   const [qualLoading, setQualLoading] = useState(false)
   const [qualError, setQualError] = useState(null)
+
+  // Readiness assessment state
+  const [readinessRecord, setReadinessRecord] = useState(null)
 
   // Add stock modal / drawer state
   const [showAddModal, setShowAddModal] = useState(false)
@@ -120,6 +124,7 @@ export default function StockUniverseView() {
       setSelectedStock(null)
       setQualifications([])
       setActiveQualRecord(null)
+      setReadinessRecord(null)
     }
   }, [stocks, selectedStock])
 
@@ -150,9 +155,18 @@ export default function StockUniverseView() {
       }
 
       setActiveQualRecord(record)
+
+      // 3. Fetch read-only readiness assessment
+      try {
+        const rData = await fetchUniverseStockReadiness(symbol, selectedStrategyId)
+        setReadinessRecord(rData)
+      } catch (rErr) {
+        setReadinessRecord(null)
+      }
     } catch (err) {
       setQualError(err instanceof Error ? err.message : 'Failed to load qualification record')
       setActiveQualRecord(null)
+      setReadinessRecord(null)
     } finally {
       setQualLoading(false)
     }
@@ -674,6 +688,62 @@ export default function StockUniverseView() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Readiness Assessment & Data Quality */}
+                  {readinessRecord && (
+                    <div className="readiness-section" role="region" aria-label="Strategy Readiness Assessment">
+                      <div className="readiness-section-header">
+                        <h3 className="section-title">Readiness Assessment & Data Audit</h3>
+                        <span className={`readiness-state-pill pill-${(readinessRecord.readiness_state || '').toLowerCase()}`}>
+                          {readinessRecord.readiness_state}
+                        </span>
+                      </div>
+
+                      <div className="next-step-card">
+                        <span className="next-step-label">NEXT REQUIRED EVALUATION STEP</span>
+                        <p className="next-step-text">{readinessRecord.next_required_step}</p>
+                      </div>
+
+                      <div className="readiness-grid">
+                        <div className="readiness-item">
+                          <span className="readiness-lbl">Local 1m Data:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.data_quality.has_local_data ? '✓ Present' : '✗ Missing'}
+                          </span>
+                        </div>
+                        <div className="readiness-item">
+                          <span className="readiness-lbl">Candle Count:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.data_quality.total_candles.toLocaleString()}
+                            {readinessRecord.data_quality.total_candles < 500 && ' (< 500)'}
+                          </span>
+                        </div>
+                        <div className="readiness-item">
+                          <span className="readiness-lbl">Data Quality Status:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.data_quality.data_quality_status}
+                          </span>
+                        </div>
+                        <div className="readiness-item">
+                          <span className="readiness-lbl">Exchange Validity:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.exchange_valid ? `✓ Valid (${readinessRecord.exchange})` : `✗ Invalid (${readinessRecord.exchange})`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {readinessRecord.missing_evidence && readinessRecord.missing_evidence.length > 0 && (
+                        <div className="missing-evidence-wrap">
+                          <span className="missing-evidence-label">Pending / Missing Evidence:</span>
+                          <ul className="missing-evidence-items">
+                            {readinessRecord.missing_evidence.map((item, idx) => (
+                              <li key={idx}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Audit Trail & Evidence Metadata */}
                   <div className="audit-trail-section">

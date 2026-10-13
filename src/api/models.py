@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
@@ -682,4 +683,62 @@ class QualificationResponse(QualificationUpdateRequest):
     exchange: str
     strategy_id: str
     updated_at: datetime
+
+
+class DataQualityResponse(BaseModel):
+    symbol: str
+    has_local_data: bool
+    data_source: str | None = None
+    file_path: str | None = None
+    total_candles: int
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    freshness_hours: float | None = None
+    missing_candle_count: int = 0
+    invalid_candle_count: int = 0
+    data_quality_status: str
+    notes: list[str] = []
+
+
+class StageAssessmentResponse(BaseModel):
+    stage_name: str
+    status: str
+    is_passing: bool
+    details: str
+
+
+class StockReadinessResponse(BaseModel):
+    symbol: str
+    exchange: str
+    category: str
+    strategy_id: str
+    strategy_version: str
+    readiness_state: str
+    exchange_valid: bool
+    data_quality: DataQualityResponse
+    has_sufficient_backtest_data: bool
+    backtest_stage: StageAssessmentResponse
+    oos_stage: StageAssessmentResponse
+    forward_paper_stage: StageAssessmentResponse
+    forward_trade_count: int
+    meets_initial_sample_threshold: bool
+    meets_preferred_sample_threshold: bool
+    qualification_status: str
+    missing_evidence: list[str]
+    next_required_step: str
+    assessed_at: datetime
+
+
+class UniverseReadinessSummaryResponse(BaseModel):
+    strategy_id: str
+    total_registered_stocks: int
+    assessed_at: datetime
+    summary: dict[str, Any]
+    assessments: list[StockReadinessResponse]
+
+
+class IngestionRequest(BaseModel):
+    category: str
+    confirm_removals: bool = False
+
 

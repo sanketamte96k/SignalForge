@@ -188,6 +188,7 @@ class StockUniverseRegistry:
         exchange: str,
         category: UniverseCategory,
         name: Optional[str] = None,
+        membership_verified_at: Optional[datetime] = None,
     ) -> StockRecord:
         normalized_symbol = self._normalize_symbol(symbol)
         
@@ -205,12 +206,54 @@ class StockUniverseRegistry:
             exchange=exchange.strip().upper(),
             name=name.strip() if name else None,
             category=category,
-            membership_verified_at=None,
+            membership_verified_at=membership_verified_at,
             data_quality_status=DataQualityStatus.UNKNOWN,
             created_at=datetime.now(timezone.utc),
         )
 
         self._cache[normalized_symbol] = record
+        self._save()
+        return record
+
+    def update_stock(
+        self,
+        symbol: str,
+        name: Optional[str] = None,
+        category: Optional[UniverseCategory] = None,
+        membership_verified_at: Optional[datetime] = None,
+        data_quality_status: Optional[DataQualityStatus] = None,
+    ) -> StockRecord:
+        normalized_symbol = self._normalize_symbol(symbol)
+        if normalized_symbol not in self._cache:
+            raise ValueError(f"stock not registered: {normalized_symbol}")
+
+        record = self._cache[normalized_symbol]
+        if name is not None:
+            record.name = name.strip() if name else None
+        if category is not None:
+            record.category = category
+        if membership_verified_at is not None:
+            record.membership_verified_at = membership_verified_at
+        if data_quality_status is not None:
+            record.data_quality_status = data_quality_status
+
+        self._save()
+        return record
+
+    def remove_stock(
+        self,
+        symbol: str,
+        allow_custom_removal: bool = False,
+    ) -> StockRecord:
+        normalized_symbol = self._normalize_symbol(symbol)
+        if normalized_symbol not in self._cache:
+            raise ValueError(f"stock not registered: {normalized_symbol}")
+
+        record = self._cache[normalized_symbol]
+        if record.category == UniverseCategory.CUSTOM and not allow_custom_removal:
+            raise ValueError(f"cannot remove custom stock {normalized_symbol} without explicit authorization")
+
+        del self._cache[normalized_symbol]
         self._save()
         return record
 

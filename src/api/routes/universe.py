@@ -3,9 +3,26 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from src.api.models import UniverseStockResponse, UniverseStockAddRequest, QualificationResponse, QualificationUpdateRequest
-from src.universe.registry import QualificationStatus
-from src.universe.registry import StockUniverseRegistry, UniverseCategory
+from src.api.models import (
+    UniverseStockResponse,
+    UniverseStockAddRequest,
+    QualificationResponse,
+    QualificationUpdateRequest,
+    StockReadinessResponse,
+    UniverseReadinessSummaryResponse,
+    IngestionRequest,
+)
+from src.universe.ingestion import (
+    load_canonical_source,
+    parse_constituent_csv,
+    create_ingestion_plan,
+    execute_ingestion,
+)
+from src.universe.readiness import (
+    assess_stock_readiness,
+    assess_universe_readiness,
+)
+from src.universe.registry import QualificationStatus, StockUniverseRegistry, UniverseCategory
 
 router = APIRouter(
     prefix="/api/universe/stocks",
@@ -40,6 +57,49 @@ def list_stocks(
         
     records = _registry.list_all(category=cat_enum, search_query=q)
     return [_to_response(r) for r in records]
+
+@router.get("/readiness/summary", response_model=UniverseReadinessSummaryResponse)
+def get_universe_readiness_summary(
+    strategy_id: str = Query("SignalForge_V1"),
+) -> UniverseReadinessSummaryResponse:
+    """Read-only audit of readiness across the entire registered stock universe."""
+    summary = assess_universe_readiness(
+        registry=_registry,
+        strategy_id=strategy_id,
+    )
+    return UniverseReadinessSummaryResponse(**summary)
+
+@router.post("/ingest/plan")
+def preview_ingestion(request: IngestionRequest) -> dict:
+    """Dry-run preview of constituent ingestion from verified canonical source."""
+    try:
+        cat_enum = UniverseCategory(request.category)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid category")
+
+    try:
+        csv_text, provenance = load_canonical_source(cat_enum)
+        constituents, parse_errors = parse_constituent_csv(csv_text, cat_enum, provenance)
+        plan = create_ingestion_plan(_registry, constituents, cat_enum, provenance)
+        return execute_ingestion(_registry, plan, dry_run=True, confirm_removals=request.confirm_removals)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+@router.post("/ingest/apply")
+def apply_ingestion(request: IngestionRequest) -> dict:
+    """Execute constituent ingestion from verified canonical source into registry."""
+    try:
+        cat_enum = UniverseCategory(request.category)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid category")
+
+    try:
+        csv_text, provenance = load_canonical_source(cat_enum)
+        constituents, parse_errors = parse_constituent_csv(csv_text, cat_enum, provenance)
+        plan = create_ingestion_plan(_registry, constituents, cat_enum, provenance)
+        return execute_ingestion(_registry, plan, dry_run=False, confirm_removals=request.confirm_removals)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 @router.get("/{symbol}", response_model=UniverseStockResponse)
 def get_stock(symbol: str) -> UniverseStockResponse:
@@ -102,6 +162,23 @@ def get_qualification(symbol: str, strategy_id: str) -> QualificationResponse:
         return _to_qual_response(record)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/{symbol}/readiness", response_model=StockReadinessResponse)
+def get_stock_readiness(
+    symbol: str,
+    strategy_id: str = Query("SignalForge_V1"),
+) -> StockReadinessResponse:
+    """Retrieve read-only readiness assessment for a stock and strategy."""
+    record = _registry.get(symbol)
+    if not record:
+        raise HTTPException(status_code=404, detail="Stock not found")
+
+    assessment = assess_stock_readiness(
+        stock=record,
+        strategy_id=strategy_id,
+        registry=_registry,
+    )
+    return StockReadinessResponse(**assessment.to_dict())
 
 @router.put("/{symbol}/qualifications/{strategy_id}", response_model=QualificationResponse)
 def update_qualification(symbol: str, strategy_id: str, request: QualificationUpdateRequest) -> QualificationResponse:
