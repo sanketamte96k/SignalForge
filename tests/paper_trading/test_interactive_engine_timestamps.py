@@ -4,8 +4,11 @@ import pandas as pd
 from zoneinfo import ZoneInfo
 from src.paper_trading.interactive_engine import InteractivePaperTradingService
 
-def test_signal_timestamp_localization_and_ordering():
-    service = InteractivePaperTradingService(starting_capital=100000.0)
+def test_signal_timestamp_localization_and_ordering(tmp_path):
+    service = InteractivePaperTradingService(
+        persistence_file=tmp_path / "trades_1.json",
+        starting_capital=100000.0,
+    )
     
     # 1. Simulate the exact scenario from Phase 23M.2
     # Signal candle: 2026-10-09 10:00 IST = 2026-10-09 04:30 UTC
@@ -53,8 +56,11 @@ def test_signal_timestamp_localization_and_ordering():
             strategy_signal="BUY"
         )
 
-def test_legacy_naive_utc_fallthrough():
-    service = InteractivePaperTradingService(starting_capital=100000.0)
+def test_legacy_naive_utc_fallthrough(tmp_path):
+    service = InteractivePaperTradingService(
+        persistence_file=tmp_path / "trades_2.json",
+        starting_capital=100000.0,
+    )
     
     # In interactive_engine, naive datetime is interpreted as UTC
     # 2026-10-09 04:30:00 (Naive, assumed UTC)
