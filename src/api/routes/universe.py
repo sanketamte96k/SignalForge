@@ -11,6 +11,12 @@ from src.api.models import (
     StockReadinessResponse,
     UniverseReadinessSummaryResponse,
     IngestionRequest,
+    PipelineIngestSymbolRequest,
+    PipelineBatchIngestRequest,
+)
+from src.data.historical_pipeline import (
+    HistoricalDataPipeline,
+    PipelineIngestionRequest,
 )
 from src.universe.ingestion import (
     load_canonical_source,
@@ -32,6 +38,7 @@ router = APIRouter(
 # Use a default registry for the API
 STORAGE_PATH = Path("data/universe_registry.json")
 _registry = StockUniverseRegistry(STORAGE_PATH)
+_pipeline = HistoricalDataPipeline(registry=_registry)
 
 def _to_response(record) -> UniverseStockResponse:
     return UniverseStockResponse(
@@ -98,6 +105,40 @@ def apply_ingestion(request: IngestionRequest) -> dict:
         constituents, parse_errors = parse_constituent_csv(csv_text, cat_enum, provenance)
         plan = create_ingestion_plan(_registry, constituents, cat_enum, provenance)
         return execute_ingestion(_registry, plan, dry_run=False, confirm_removals=request.confirm_removals)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+@router.post("/data/pipeline/symbol")
+def ingest_pipeline_symbol(request: PipelineIngestSymbolRequest) -> dict:
+    """Execute or dry-run historical market data pipeline for a single stock."""
+    try:
+        req = PipelineIngestionRequest(
+            symbol=request.symbol,
+            exchange=request.exchange,
+            interval=request.interval,
+            provider=request.provider,
+            dry_run=request.dry_run,
+            confirm_replace=request.confirm_replace,
+        )
+        result = _pipeline.ingest_symbol(req)
+        return result.to_dict()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+@router.post("/data/pipeline/batch")
+def ingest_pipeline_batch(request: PipelineBatchIngestRequest) -> dict:
+    """Execute or dry-run historical market data pipeline for a batch of stocks."""
+    try:
+        batch_res = _pipeline.ingest_batch(
+            symbols=request.symbols,
+            exchange=request.exchange,
+            interval=request.interval,
+            provider=request.provider,
+            dry_run=request.dry_run,
+            confirm_replace=request.confirm_replace,
+            confirm_large_batch=request.confirm_large_batch,
+        )
+        return batch_res.to_dict()
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

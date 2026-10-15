@@ -725,6 +725,26 @@ export default function StockUniverseView() {
                           </span>
                         </div>
                         <div className="readiness-item">
+                          <span className="readiness-lbl">Readiness Tier:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.data_quality.readiness_classification || 'UNKNOWN'}
+                          </span>
+                        </div>
+                        <div className="readiness-item">
+                          <span className="readiness-lbl">Covered Dates:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.data_quality.start_time && readinessRecord.data_quality.end_time
+                              ? `${readinessRecord.data_quality.start_time.slice(0, 10)} to ${readinessRecord.data_quality.end_time.slice(0, 10)}`
+                              : 'None'}
+                          </span>
+                        </div>
+                        <div className="readiness-item">
+                          <span className="readiness-lbl">Intraday Gaps:</span>
+                          <span className="readiness-v">
+                            {readinessRecord.data_quality.gap_count ?? 0} missing min
+                          </span>
+                        </div>
+                        <div className="readiness-item">
                           <span className="readiness-lbl">Exchange Validity:</span>
                           <span className="readiness-v">
                             {readinessRecord.exchange_valid ? `✓ Valid (${readinessRecord.exchange})` : `✗ Invalid (${readinessRecord.exchange})`}

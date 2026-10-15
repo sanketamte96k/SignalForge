@@ -697,6 +697,8 @@ class DataQualityResponse(BaseModel):
     missing_candle_count: int = 0
     invalid_candle_count: int = 0
     data_quality_status: str
+    readiness_classification: str = "NO_DATA"
+    gap_count: int = 0
     notes: list[str] = []
 
 
@@ -740,5 +742,24 @@ class UniverseReadinessSummaryResponse(BaseModel):
 class IngestionRequest(BaseModel):
     category: str
     confirm_removals: bool = False
+
+
+class PipelineIngestSymbolRequest(BaseModel):
+    symbol: str
+    exchange: str = "NSE"
+    interval: str = "1m"
+    provider: str = "local_archive"
+    dry_run: bool = True
+    confirm_replace: bool = False
+
+
+class PipelineBatchIngestRequest(BaseModel):
+    symbols: list[str]
+    exchange: str = "NSE"
+    interval: str = "1m"
+    provider: str = "local_archive"
+    dry_run: bool = True
+    confirm_replace: bool = False
+    confirm_large_batch: bool = False
 
 

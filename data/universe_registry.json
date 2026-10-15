@@ -5,7 +5,7 @@
     "name": "Adani Enterprises Ltd.",
     "category": "NIFTY_50",
     "membership_verified_at": "2026-10-13T17:28:24+00:00",
-    "data_quality_status": "UNKNOWN",
+    "data_quality_status": "READY",
     "created_at": "2026-10-13T18:05:47.287577+00:00"
   },
   "ADANIPORTS": {
@@ -14,7 +14,7 @@
     "name": "Adani Ports and Special Economic Zone Ltd.",
     "category": "NIFTY_50",
     "membership_verified_at": "2026-10-13T17:28:24+00:00",
-    "data_quality_status": "UNKNOWN",
+    "data_quality_status": "READY",
     "created_at": "2026-10-13T18:05:47.293800+00:00"
   },
   "APOLLOHOSP": {

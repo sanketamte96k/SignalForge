@@ -43,6 +43,16 @@ class ReadinessState(str, Enum):
     APPROVED = "APPROVED"
 
 
+class HistoricalReadinessClassification(str, Enum):
+    """Granular readiness classification for historical market data."""
+
+    NO_DATA = "NO_DATA"
+    INVALID_DATA = "INVALID_DATA"
+    INCOMPLETE_COVERAGE = "INCOMPLETE_COVERAGE"
+    PRELIMINARY_BACKTEST_READY = "PRELIMINARY_BACKTEST_READY"
+    VERIFICATION_REQUIRED = "VERIFICATION_REQUIRED"
+
+
 MIN_BACKTEST_CANDLES: int = 500
 VALID_EXCHANGES: set[str] = {"NSE", "BSE"}
 
@@ -62,6 +72,8 @@ class DataQualityReport:
     missing_candle_count: int = 0
     invalid_candle_count: int = 0
     data_quality_status: str = "UNKNOWN"
+    readiness_classification: str = HistoricalReadinessClassification.NO_DATA.value
+    gap_count: int = 0
     notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -77,6 +89,8 @@ class DataQualityReport:
             "missing_candle_count": self.missing_candle_count,
             "invalid_candle_count": self.invalid_candle_count,
             "data_quality_status": self.data_quality_status,
+            "readiness_classification": self.readiness_classification,
+            "gap_count": self.gap_count,
             "notes": self.notes,
         }
 
@@ -168,6 +182,8 @@ def inspect_stock_historical_data(
             file_path=str(file_path),
             total_candles=0,
             data_quality_status="UNKNOWN",
+            readiness_classification=HistoricalReadinessClassification.NO_DATA.value,
+            gap_count=0,
             notes=["No local historical data file found."],
         )
 
@@ -181,6 +197,8 @@ def inspect_stock_historical_data(
             file_path=str(file_path),
             total_candles=0,
             data_quality_status="INCOMPLETE",
+            readiness_classification=HistoricalReadinessClassification.INVALID_DATA.value,
+            gap_count=0,
             notes=[f"Failed to read CSV: {exc}"],
         )
 
@@ -192,6 +210,8 @@ def inspect_stock_historical_data(
             file_path=str(file_path),
             total_candles=0,
             data_quality_status="UNKNOWN",
+            readiness_classification=HistoricalReadinessClassification.NO_DATA.value,
+            gap_count=0,
             notes=["Market data file is empty."],
         )
 
@@ -203,7 +223,7 @@ def inspect_stock_historical_data(
             break
 
     if time_col is None and isinstance(df.index, pd.DatetimeIndex):
-        ts_series = df.index
+        ts_series = df.index.to_series()
     elif time_col is not None:
         try:
             ts_series = pd.to_datetime(df[time_col], utc=True)
@@ -246,6 +266,8 @@ def inspect_stock_historical_data(
             end_time=end_dt,
             freshness_hours=freshness_hours,
             data_quality_status="INCOMPLETE",
+            readiness_classification=HistoricalReadinessClassification.INVALID_DATA.value,
+            gap_count=0,
             notes=[f"Missing required OHLCV columns: {sorted(missing_cols)}"],
         )
 
@@ -278,14 +300,44 @@ def inspect_stock_historical_data(
         if not ts_series.is_monotonic_increasing:
             notes.append("Timestamps are not monotonically increasing.")
 
+        # Intra-day gap detection within NSE trading session (09:15 to 15:30)
+        try:
+            ts_sorted = ts_series.sort_values().reset_index(drop=True)
+            for i in range(len(ts_sorted) - 1):
+                t1 = ts_sorted.iloc[i]
+                t2 = ts_sorted.iloc[i + 1]
+                if pd.notna(t1) and pd.notna(t2) and t1.date() == t2.date():
+                    diff_min = int((t2 - t1).total_seconds() // 60)
+                    if diff_min > 1:
+                        # Only count during market hours
+                        t_open = datetime.strptime("09:15:00", "%H:%M:%S").time()
+                        t_close = datetime.strptime("15:30:00", "%H:%M:%S").time()
+                        if t1.time() >= t_open and t2.time() <= t_close:
+                            missing_gap_count += (diff_min - 1)
+        except Exception as e:
+            notes.append(f"Gap detection calculation limitation: {e}")
+
     candle_count = len(df)
     if candle_count < MIN_BACKTEST_CANDLES:
         notes.append(f"Candle count ({candle_count}) is below minimum backtest threshold ({MIN_BACKTEST_CANDLES}).")
 
-    if invalid_count > 0 or candle_count < MIN_BACKTEST_CANDLES:
+    if missing_gap_count > 0:
+        notes.append(f"Detected {missing_gap_count} missing candle minutes within standard trading sessions.")
+
+    # Assign backward-compatible status and 5-tier classification
+    if invalid_count > 0:
         status = "INCOMPLETE"
+        classification = HistoricalReadinessClassification.INVALID_DATA.value
+    elif candle_count < MIN_BACKTEST_CANDLES:
+        status = "INCOMPLETE"
+        classification = HistoricalReadinessClassification.INCOMPLETE_COVERAGE.value
+    elif missing_gap_count > (candle_count * 0.15):
+        status = "INCOMPLETE"
+        classification = HistoricalReadinessClassification.VERIFICATION_REQUIRED.value
+        notes.append(f"High intraday gap density ({missing_gap_count} gaps vs {candle_count} candles) requires verification.")
     else:
         status = "READY"
+        classification = HistoricalReadinessClassification.PRELIMINARY_BACKTEST_READY.value
 
     return DataQualityReport(
         symbol=norm_symbol,
@@ -299,6 +351,8 @@ def inspect_stock_historical_data(
         missing_candle_count=missing_gap_count,
         invalid_candle_count=invalid_count,
         data_quality_status=status,
+        readiness_classification=classification,
+        gap_count=missing_gap_count,
         notes=notes,
     )
 
@@ -320,7 +374,11 @@ def assess_stock_readiness(
 
     # 1. Historical data inspection
     data_report = inspect_stock_historical_data(symbol, data_dir=data_dir, as_of=now_utc)
-    has_sufficient_data = data_report.total_candles >= MIN_BACKTEST_CANDLES and data_report.invalid_candle_count == 0
+    has_sufficient_data = (
+        data_report.total_candles >= MIN_BACKTEST_CANDLES
+        and data_report.invalid_candle_count == 0
+        and data_report.readiness_classification == HistoricalReadinessClassification.PRELIMINARY_BACKTEST_READY.value
+    )
 
     # 2. Retrieve qualification record
     if registry:
@@ -383,6 +441,14 @@ def assess_stock_readiness(
 
     if not data_report.has_local_data:
         missing_evidence.append("Historical 1-minute OHLCV data missing")
+    elif data_report.invalid_candle_count > 0:
+        missing_evidence.append(
+            f"Historical data contains {data_report.invalid_candle_count} invalid candles"
+        )
+    elif data_report.readiness_classification == HistoricalReadinessClassification.VERIFICATION_REQUIRED.value:
+        missing_evidence.append(
+            f"Historical data requires verification ({data_report.missing_candle_count} missing candles)"
+        )
     elif not has_sufficient_data:
         missing_evidence.append(
             f"Insufficient historical data: {data_report.total_candles}/{MIN_BACKTEST_CANDLES} candles"
@@ -411,6 +477,10 @@ def assess_stock_readiness(
         next_step = f"Correct stock exchange mapping from '{exchange}' to valid NSE/BSE exchange"
     elif not data_report.has_local_data:
         next_step = "Ingest historical 1-minute OHLCV market data"
+    elif data_report.invalid_candle_count > 0:
+        next_step = f"Quarantine {data_report.invalid_candle_count} invalid candles and re-ingest clean historical data"
+    elif data_report.readiness_classification == HistoricalReadinessClassification.VERIFICATION_REQUIRED.value:
+        next_step = f"Verify historical data continuity and resolve missing intraday candles ({data_report.missing_candle_count} missing candles)"
     elif not has_sufficient_data:
         next_step = f"Acquire additional validated candles (current: {data_report.total_candles}, required: {MIN_BACKTEST_CANDLES})"
     elif bt_status != "PASSED":
