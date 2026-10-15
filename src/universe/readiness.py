@@ -324,6 +324,43 @@ def inspect_stock_historical_data(
     if missing_gap_count > 0:
         notes.append(f"Detected {missing_gap_count} missing candle minutes within standard trading sessions.")
 
+    # Corporate action / overnight price jump inspection (demergers, stock splits)
+    corp_action_jumps = []
+    if ts_series is not None and len(ts_series) > 1 and o_col in df.columns and c_col in df.columns:
+        try:
+            temp_df = pd.DataFrame({"ts": ts_series, "open": df[o_col], "close": df[c_col]})
+            temp_df["date"] = temp_df["ts"].dt.date
+            daily_agg = temp_df.groupby("date").agg({"open": "first", "close": "last"}).reset_index()
+            if len(daily_agg) > 1:
+                daily_agg["prev_close"] = daily_agg["close"].shift(1)
+                valid_prev = daily_agg["prev_close"] > 0
+                gaps = (
+                    (daily_agg.loc[valid_prev, "open"] - daily_agg.loc[valid_prev, "prev_close"]).abs()
+                    / daily_agg.loc[valid_prev, "prev_close"]
+                    * 100.0
+                )
+                extreme_indices = gaps[gaps >= 20.0].index
+                for idx in extreme_indices:
+                    row = daily_agg.loc[idx]
+                    gap_pct = (row["open"] - row["prev_close"]) / row["prev_close"] * 100.0
+                    corp_action_jumps.append(
+                        f"Overnight gap of {gap_pct:+.1f}% on {row['date']} (prev close {row['prev_close']:.2f} -> open {row['open']:.2f})"
+                    )
+        except Exception as e:
+            notes.append(f"Corporate action inspection limitation: {e}")
+
+    if corp_action_jumps:
+        notes.append(
+            f"Corporate action risk: Detected {len(corp_action_jumps)} unadjusted price jump(s) >= 20% ({'; '.join(corp_action_jumps[:3])}). Demerger or split verification required before backtesting."
+        )
+
+    # Historical staleness check (older than 1 year)
+    if freshness_hours is not None and freshness_hours > 24 * 365:
+        stale_days = int(freshness_hours / 24)
+        notes.append(
+            f"Historical dataset ends on {end_dt.date()} (stale by {stale_days} days); contemporary data required before forward trading alignment."
+        )
+
     # Assign backward-compatible status and 5-tier classification
     if invalid_count > 0:
         status = "INCOMPLETE"
@@ -335,6 +372,9 @@ def inspect_stock_historical_data(
         status = "INCOMPLETE"
         classification = HistoricalReadinessClassification.VERIFICATION_REQUIRED.value
         notes.append(f"High intraday gap density ({missing_gap_count} gaps vs {candle_count} candles) requires verification.")
+    elif len(corp_action_jumps) > 0:
+        status = "INCOMPLETE"
+        classification = HistoricalReadinessClassification.VERIFICATION_REQUIRED.value
     else:
         status = "READY"
         classification = HistoricalReadinessClassification.PRELIMINARY_BACKTEST_READY.value
@@ -446,9 +486,15 @@ def assess_stock_readiness(
             f"Historical data contains {data_report.invalid_candle_count} invalid candles"
         )
     elif data_report.readiness_classification == HistoricalReadinessClassification.VERIFICATION_REQUIRED.value:
-        missing_evidence.append(
-            f"Historical data requires verification ({data_report.missing_candle_count} missing candles)"
-        )
+        corp_notes = [n for n in data_report.notes if "Corporate action" in n]
+        if corp_notes:
+            missing_evidence.append(
+                "Historical data requires corporate-action verification (unadjusted split/demerger risk)"
+            )
+        else:
+            missing_evidence.append(
+                f"Historical data requires verification ({data_report.missing_candle_count} missing candles)"
+            )
     elif not has_sufficient_data:
         missing_evidence.append(
             f"Insufficient historical data: {data_report.total_candles}/{MIN_BACKTEST_CANDLES} candles"
@@ -480,7 +526,11 @@ def assess_stock_readiness(
     elif data_report.invalid_candle_count > 0:
         next_step = f"Quarantine {data_report.invalid_candle_count} invalid candles and re-ingest clean historical data"
     elif data_report.readiness_classification == HistoricalReadinessClassification.VERIFICATION_REQUIRED.value:
-        next_step = f"Verify historical data continuity and resolve missing intraday candles ({data_report.missing_candle_count} missing candles)"
+        corp_notes = [n for n in data_report.notes if "Corporate action" in n]
+        if corp_notes:
+            next_step = "Verify corporate-action adjustments (splits/demergers) before backtest execution"
+        else:
+            next_step = f"Verify historical data continuity and resolve missing intraday candles ({data_report.missing_candle_count} missing candles)"
     elif not has_sufficient_data:
         next_step = f"Acquire additional validated candles (current: {data_report.total_candles}, required: {MIN_BACKTEST_CANDLES})"
     elif bt_status != "PASSED":
