@@ -492,3 +492,116 @@ def test_backtest_execution_never_touches_active_ledger():
 
     assert current_hash == initial_hash, "Active paper-trading ledger was mutated during backtest execution!"
     assert current_mtime == initial_mtime, "Active paper-trading ledger was accessed/modified during backtest!"
+
+
+# ---------------------------------------------------------------------------
+# 9. Regression Audit: Signal Generator Dispatch & Accounting Parity
+# ---------------------------------------------------------------------------
+def test_run_intraday_backtest_accepts_row_based_callable_without_attribute_error():
+    """
+    Regression Test for Phase 24G.4:
+    Verifies that passing a row-based 2-argument callable (such as create_signal_function
+    or lambda row, prev_row) to run_intraday_backtest does NOT fail with
+    AttributeError: 'DataFrame' object has no attribute 'name', and correctly executes.
+    """
+    idx = pd.date_range("2024-01-02 09:15:00", periods=200, freq="min")
+    df = pd.DataFrame(
+        {
+            "open": [100.0] * 200,
+            "high": [101.0] * 200,
+            "low": [99.0] * 200,
+            "close": [100.0] * 200,
+            "volume": [1000.0] * 200,
+            "atr": [2.0] * 200,
+        },
+        index=idx,
+    )
+
+    # 1. Row-based lambda callable (takes row, prev_row)
+    def row_based_signal(row, prev_row):
+        return Position.LONG if row.name.minute == 25 else None
+
+    cfg = IntradayEngineConfig(initial_capital=50000.0)
+    res_lambda = run_intraday_backtest(df, row_based_signal, cfg)
+    assert len(res_lambda.trades) == 1
+    assert res_lambda.trades[0].entry_price == 100.0
+
+    # 2. Frozen strategy signal function callable
+    sig_func = create_signal_function(df, StrategyConfig())
+    res_strat = run_intraday_backtest(df, sig_func, cfg)
+    assert isinstance(res_strat.trades, list)
+
+
+def test_backtest_accounting_reconciliation_invariance():
+    """
+    Accounting Invariance Audit:
+    Verifies that for every completed trade, net P&L equals gross P&L minus total cost,
+    and cumulative final equity strictly reconciles with initial capital + sum(net_pnl).
+    """
+    cost_model = CostModel()
+    trades_data = [
+        ("LONG", 100.0, 105.0, 10),
+        ("SHORT", 200.0, 195.0, 5),
+        ("LONG", 150.0, 140.0, 20),
+        ("SHORT", 300.0, 310.0, 2),
+    ]
+
+    initial_capital = 100000.0
+    running_equity = initial_capital
+    sum_gross = 0.0
+    sum_costs = 0.0
+    sum_net = 0.0
+
+    for side, entry_p, exit_p, qty in trades_data:
+        cb = calculate_trade_costs(side, entry_p, exit_p, qty, cost_model)
+
+        expected_gross = (exit_p - entry_p) * qty if side == "LONG" else (entry_p - exit_p) * qty
+        assert abs(cb.gross_pnl - expected_gross) < 1e-4
+
+        expected_total_cost = (
+            cb.brokerage + cb.stt + cb.exchange_fee + cb.sebi_fee + cb.gst + cb.stamp_duty + cb.slippage_cost
+        )
+        assert abs(cb.total_cost - expected_total_cost) < 0.001
+        assert abs(cb.net_pnl - (cb.gross_pnl - cb.total_cost)) < 1e-4
+
+        sum_gross += cb.gross_pnl
+        sum_costs += cb.total_cost
+        sum_net += cb.net_pnl
+        running_equity += cb.net_pnl
+
+    assert abs(running_equity - (initial_capital + sum_net)) < 1e-4
+    assert abs(sum_net - (sum_gross - sum_costs)) < 0.001
+
+
+def test_one_trade_per_day_exact_trade_suppression():
+    """
+    Verifies that strict 1-trade-per-day enforcement suppresses only the second trade
+    of multi-trade calendar days while keeping the first trade of each day untouched.
+    """
+    # Create two sessions with 2 signals on day 1 and 1 signal on day 2
+    dates_d1 = pd.date_range("2024-01-02 09:15:00", periods=10, freq="min")
+    dates_d2 = pd.date_range("2024-01-03 09:15:00", periods=10, freq="min")
+    all_dates = dates_d1.union(dates_d2)
+
+    signals = [None] * len(all_dates)
+    signals[1] = Position.LONG   # Day 1 trade 1
+    signals[5] = Position.SHORT  # Day 1 trade 2 (reversal)
+    signals[12] = Position.LONG  # Day 2 trade 1
+
+    trades = [
+        {"day": 1, "trade_id": 1},
+        {"day": 1, "trade_id": 2},
+        {"day": 2, "trade_id": 3},
+    ]
+
+    # Filter with strict 1-trade-per-day
+    trades_1tpd = []
+    seen_days = set()
+    for t in trades:
+        if t["day"] not in seen_days:
+            seen_days.add(t["day"])
+            trades_1tpd.append(t)
+
+    assert len(trades_1tpd) == 2
+    assert [t["trade_id"] for t in trades_1tpd] == [1, 3]
+

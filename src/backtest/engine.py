@@ -486,6 +486,13 @@ def run_intraday_backtest(
     if isinstance(signal_generator, (pd.Series, np.ndarray, list)):
         precomputed_signals = signal_generator
 
+    call_by_rows = False
+    if precomputed_signals is None and callable(signal_generator):
+        try:
+            signal_generator(df, 1)
+        except (TypeError, AttributeError):
+            call_by_rows = True
+
     n_bars = len(df)
 
     for i in range(1, n_bars):
@@ -649,10 +656,12 @@ def run_intraday_backtest(
 
             if precomputed_signals is not None:
                 sig = precomputed_signals[i]
+            elif call_by_rows:
+                sig = signal_generator(df.iloc[i], df.iloc[i - 1])
             else:
                 try:
                     sig = signal_generator(df, i)
-                except TypeError:
+                except (TypeError, AttributeError):
                     sig = signal_generator(df.iloc[i], df.iloc[i - 1])
 
             if sig is None:
