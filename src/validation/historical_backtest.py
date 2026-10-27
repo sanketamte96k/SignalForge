@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from src.backtest.engine import run_backtest
+from src.backtest.simulator import Trade
 from src.strategy.backtest_strategy import (
     StrategyConfig,
     create_signal_function,
@@ -28,6 +29,8 @@ class HistoricalBacktestResult:
     minimum_trades_required: int
     minimum_net_pnl_required: float
     issues: tuple[str, ...]
+    execution_model: str = "same_close"
+    trades: tuple[Trade, ...] = ()
 
     @property
     def has_trade_evidence(self) -> bool:
@@ -66,7 +69,13 @@ class HistoricalBacktestValidator:
         minimum_trades_required: int = 1,
         minimum_net_pnl_required: float = 0.0,
         strategy_config: StrategyConfig | None = None,
+        execution_model: str = "same_close",
     ) -> None:
+        if execution_model not in ("same_close", "next_open"):
+            raise ValueError(
+                f"Unsupported execution_model: {execution_model}. "
+                "Supported models: 'same_close', 'next_open'"
+            )
         self._validate_configuration(
             initial_capital=initial_capital,
             quantity=quantity,
@@ -102,6 +111,7 @@ class HistoricalBacktestValidator:
             minimum_net_pnl_required
         )
         self._strategy_config = strategy_config
+        self._execution_model = execution_model
 
     def check(
         self,
@@ -166,6 +176,7 @@ class HistoricalBacktestValidator:
                 transaction_cost_rate=(
                     self._transaction_cost_rate
                 ),
+                execution_model=self._execution_model,
             )
         except (
             TypeError,
@@ -290,6 +301,8 @@ class HistoricalBacktestValidator:
                 self._minimum_net_pnl_required
             ),
             issues=tuple(issues),
+            execution_model=self._execution_model,
+            trades=tuple(result.trades),
         )
 
     @staticmethod

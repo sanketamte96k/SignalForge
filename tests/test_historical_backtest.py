@@ -381,3 +381,21 @@ def test_configuration_rejects_invalid_strategy_config():
         HistoricalBacktestValidator(
             strategy_config="invalid"
         )
+
+
+def test_configuration_rejects_invalid_execution_model():
+    with pytest.raises(
+        ValueError,
+        match="Unsupported execution_model",
+    ):
+        HistoricalBacktestValidator(
+            execution_model="invalid_model"
+        )
+
+
+def test_historical_backtest_validator_supports_next_open_execution():
+    data = make_market_data(periods=500)
+    validator = HistoricalBacktestValidator(execution_model="next_open")
+    result = validator.check(data)
+    assert result.execution_model == "next_open"
+    assert isinstance(result.trades, tuple)
