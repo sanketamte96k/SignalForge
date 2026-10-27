@@ -168,25 +168,29 @@ def run_backtest(
     initial_capital: float,
     quantity: int = 1,
     transaction_cost_rate: float = 0.0,
+    execution_model: str = "same_close",
 ) -> BacktestResult:
     """
     Run a sequential intraday backtest.
 
     The signal function is called once per row.
 
-    A signal opens a position using the current candle close.
+    Execution models:
+    - "same_close": Legacy backtest contract. A signal opens/closes a position
+      using the current candle close.
+    - "next_open": Causal next-available execution contract. A signal produced at
+      candle t close executes at candle t+1 open (or next available bar), guarding
+      against session rollover and data gaps.
 
-    An open position is closed when:
-
-    1. An opposite signal appears, or
-    2. The next timestamp belongs to a different
-       calendar trading session.
-
-    Therefore positions are never carried overnight.
-
-    Any position still open at the final candle is
-    closed using the final available close.
+    Positions are never carried overnight across session boundaries.
+    Any position still open at the final candle is closed using the final close.
     """
+
+    if execution_model not in ("same_close", "next_open"):
+        raise ValueError(
+            f"Unsupported execution_model: {execution_model}. "
+            "Supported models: 'same_close', 'next_open'"
+        )
 
     _validate_data(data)
 
@@ -212,6 +216,7 @@ def run_backtest(
     current_position: Position | None = None
     entry_time: pd.Timestamp | None = None
     entry_price: float | None = None
+    pending_signal: Position | None = None
 
     for index in range(len(data)):
 
@@ -240,37 +245,87 @@ def run_backtest(
         # ----------------------------------------------------
 
         if (
-            current_position is not None
-            and index > 0
+            index > 0
             and current_time.date()
             != data.index[index - 1].date()
         ):
+            if current_position is not None:
+                previous_time = data.index[index - 1]
+                previous_price = float(
+                    data.iloc[index - 1]["close"]
+                )
 
-            previous_time = data.index[index - 1]
-            previous_price = float(
-                data.iloc[index - 1]["close"]
+                _close_position(
+                    portfolio=portfolio,
+                    trades=trades,
+                    position=current_position,
+                    entry_time=entry_time,
+                    entry_price=entry_price,
+                    exit_time=previous_time,
+                    exit_price=previous_price,
+                    quantity=quantity,
+                    transaction_cost_rate=(
+                        transaction_cost_rate
+                    ),
+                )
+
+                current_position = None
+                entry_time = None
+                entry_price = None
+
+            pending_signal = None
+
+        if execution_model == "next_open":
+            # Execute pending signal from candle t-1 at candle t open
+            if pending_signal is not None:
+                fill_price = (
+                    float(row["open"])
+                    if "open" in data.columns
+                    else current_price
+                )
+                if current_position is None:
+                    current_position = pending_signal
+                    entry_time = current_time
+                    entry_price = fill_price
+                elif pending_signal != current_position:
+                    _close_position(
+                        portfolio=portfolio,
+                        trades=trades,
+                        position=current_position,
+                        entry_time=entry_time,
+                        entry_price=entry_price,
+                        exit_time=current_time,
+                        exit_price=fill_price,
+                        quantity=quantity,
+                        transaction_cost_rate=transaction_cost_rate,
+                    )
+                    current_position = pending_signal
+                    entry_time = current_time
+                    entry_price = fill_price
+                pending_signal = None
+
+            # Generate signal at candle close
+            signal = signal_function(
+                row,
+                previous_row,
             )
 
-            _close_position(
-                portfolio=portfolio,
-                trades=trades,
-                position=current_position,
-                entry_time=entry_time,
-                entry_price=entry_price,
-                exit_time=previous_time,
-                exit_price=previous_price,
-                quantity=quantity,
-                transaction_cost_rate=(
-                    transaction_cost_rate
-                ),
-            )
+            if signal is not None and not isinstance(
+                signal,
+                Position,
+            ):
+                raise TypeError(
+                    "signal_function must return "
+                    "Position or None."
+                )
 
-            current_position = None
-            entry_time = None
-            entry_price = None
+            if signal is not None and signal != current_position:
+                pending_signal = signal
+
+            continue
 
         # ----------------------------------------------------
-        # Generate signal
+        # Generate signal (same_close legacy contract)
         # ----------------------------------------------------
 
         signal = signal_function(
@@ -399,6 +454,7 @@ class IntradayEngineConfig:
     enforce_eod_square_off: bool = True
     gap_execution: bool = True
     conservative_same_candle: bool = True
+    execution_model: str = "next_open"
 
 
 def run_intraday_backtest(

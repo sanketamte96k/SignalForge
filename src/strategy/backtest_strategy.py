@@ -48,6 +48,13 @@ TIMEFRAMES = (
     "30m",
 )
 
+TIMEFRAME_MINUTES: dict[str, int] = {
+    "5m": 5,
+    "10m": 10,
+    "15m": 15,
+    "30m": 30,
+}
+
 
 def _validate_config(config: StrategyConfig) -> None:
     """Validate strategy configuration."""
@@ -260,19 +267,56 @@ def _completed_state(
     frame: pd.DataFrame,
     timestamp: pd.Timestamp,
     use_rvol: bool,
+    timeframe: str | None = None,
 ) -> TimeframeState | None:
     """
-    Return the latest completed candle before timestamp.
+    Return the latest completed candle available at timestamp.
 
-    Uses DatetimeIndex.searchsorted instead of constructing a full
-    boolean mask for every timestamp.
+    A higher-timeframe candle becomes available only after its entire duration
+    has elapsed (candle_start + duration <= timestamp).
+    Stale candles across session boundaries or missing-minute gaps are rejected.
     """
 
-    position = frame.index.searchsorted(timestamp, side="left") - 1
+    if timeframe is not None and timeframe in TIMEFRAME_MINUTES:
+        duration = pd.Timedelta(minutes=TIMEFRAME_MINUTES[timeframe])
+    elif len(frame.index) >= 2:
+        step_minutes = int(
+            round(
+                (frame.index[1] - frame.index[0]).total_seconds() / 60
+            )
+        )
+        duration = pd.Timedelta(minutes=step_minutes)
+    else:
+        duration = pd.Timedelta(minutes=5)
+
+    cutoff = timestamp - duration
+
+    position = (
+        frame.index.searchsorted(
+            cutoff,
+            side="right",
+        )
+        - 1
+    )
+
+    position = int(position)
+
+    if position < 0 or position >= len(frame):
+        return None
+
+    candle_start = frame.index[position]
+
+    # Guard against using features across session boundaries
+    if candle_start.date() != timestamp.date():
+        return None
+
+    # Guard against using stale features across missing-minute gaps
+    if timestamp - (candle_start + duration) >= duration:
+        return None
 
     return _row_to_state(
         frame,
-        int(position),
+        position,
         use_rvol,
     )
 
@@ -358,6 +402,7 @@ def evaluate_timestamp(
             timeframe_data[timeframe],
             timestamp,
             config.use_rvol,
+            timeframe=timeframe,
         )
 
         if state is None:
@@ -399,48 +444,80 @@ class _TimeframeCursor:
     """
     Fast chronological cursor for completed timeframe candles.
 
-    The backtest processes timestamps in increasing order, so each
-    timeframe index only moves forward. This avoids repeated Pandas
-    filtering and repeated binary searches.
+    A higher-timeframe candle is available only after its entire interval
+    has elapsed (causal completion at candle_start + duration).
+    Stale candles across missing-minute gaps or session boundaries are rejected.
     """
 
     __slots__ = (
         "frame",
         "use_rvol",
+        "timeframe",
+        "duration",
         "position",
         "state",
+        "valid",
     )
 
     def __init__(
         self,
         frame: pd.DataFrame,
         use_rvol: bool,
+        timeframe: str,
     ) -> None:
         self.frame = frame
         self.use_rvol = use_rvol
+        self.timeframe = timeframe
+        self.duration = pd.Timedelta(minutes=TIMEFRAME_MINUTES[timeframe])
         self.position = -1
         self.state: TimeframeState | None = None
+        self.valid = False
 
     def update(
         self,
         timestamp: pd.Timestamp,
     ) -> TimeframeState | None:
-        """Advance to the latest candle strictly before timestamp."""
+        """Advance to the latest completed candle available at timestamp."""
+
+        cutoff = timestamp - self.duration
 
         target = (
             self.frame.index.searchsorted(
-                timestamp,
-                side="left",
+                cutoff,
+                side="right",
             )
             - 1
         )
 
         target = int(target)
 
-        if target == self.position:
+        if target < 0 or target >= len(self.frame):
+            self.position = target
+            self.state = None
+            self.valid = False
+            return None
+
+        candle_start = self.frame.index[target]
+
+        # Guard against using features across session boundaries
+        if candle_start.date() != timestamp.date():
+            self.position = target
+            self.state = None
+            self.valid = False
+            return None
+
+        # Guard against using stale features across missing-minute gaps
+        if timestamp - (candle_start + self.duration) >= self.duration:
+            self.position = target
+            self.state = None
+            self.valid = False
+            return None
+
+        if target == self.position and self.valid:
             return self.state
 
         self.position = target
+        self.valid = True
 
         self.state = _row_to_state(
             self.frame,
@@ -461,6 +538,7 @@ def _make_cursors(
         timeframe: _TimeframeCursor(
             timeframe_data[timeframe],
             use_rvol,
+            timeframe=timeframe,
         )
         for timeframe in ("30m", "15m", "10m", "5m")
     }
