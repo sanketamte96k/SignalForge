@@ -1,0 +1,2 @@
+entry_time,exit_time,position,entry_price,exit_price,quantity,gross_pnl,transaction_cost,net_pnl,return_pct
+2021-01-01 13:16:00,2021-01-01 15:29:00,LONG,491.25,505.0,1,13.75,0.099625,13.650375,2.7787022900763363
