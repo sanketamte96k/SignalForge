@@ -1,0 +1,3 @@
+execution_model,total_trades,winning_trades,losing_trades,breakeven_trades,win_rate_pct,gross_pnl,transaction_costs,net_pnl,profit_factor,final_equity,max_drawdown_amount,max_drawdown_pct,signals_generated,runtime_seconds,long_signals,short_signals,cancelled_eod_orders
+same_close (Phase 24G.3 Legacy),754,341,413,0,45.23,-216.2,55.28,-271.48,0.8236,99728.52,292.73,0.29,79703,137.48,,,
+next_open (Phase 24G.7 Causal),754,344,410,0,45.62,-215.65,55.28,-270.93,0.8242,99729.07,291.68,0.29,79703,136.72,26600.0,53103.0,242.0
