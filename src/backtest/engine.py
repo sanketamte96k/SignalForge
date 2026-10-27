@@ -454,7 +454,7 @@ class IntradayEngineConfig:
     enforce_eod_square_off: bool = True
     gap_execution: bool = True
     conservative_same_candle: bool = True
-    execution_model: str = "next_open"
+    execution_model: str = "same_close"
 
 
 def run_intraday_backtest(
@@ -477,6 +477,12 @@ def run_intraday_backtest(
 
     if config is None:
         config = IntradayEngineConfig()
+
+    if config.execution_model not in ("same_close", "next_open"):
+        raise ValueError(
+            f"Unsupported execution_model: {config.execution_model}. "
+            "Supported models: 'same_close', 'next_open'"
+        )
 
     _validate_capital(config.initial_capital)
 
@@ -525,6 +531,7 @@ def run_intraday_backtest(
     portfolio = Portfolio(initial_capital=config.initial_capital)
     trades: list[Trade] = []
     position: dict | None = None
+    pending_entry: dict | None = None
     bankruptcy_reason: str | None = None
 
     session_end_t = pd.Timestamp(config.session_end_time).time()
@@ -569,31 +576,81 @@ def run_intraday_backtest(
         # 1. SESSION BOUNDARY ENFORCEMENT
         # ----------------------------------------------------
         # If date rolled over, force close open position at prev Close
-        if current_date != prev_date and position is not None:
-            exit_price = prev_bar_close
-            trade = simulate_trade(
-                position=Position(position["side"]),
-                entry_time=position["entry_time"],
-                exit_time=prev_time,
-                entry_price=position["entry_price"],
-                exit_price=exit_price,
-                quantity=position["quantity"],
-                brokerage=config.brokerage_per_trade,
-                slippage_rate=config.slippage_rate,
-                statutory_fee_rate=config.statutory_fee_rate,
-                exit_reason="EOD",
-                capital_before=position["capital_before"],
-                capital_after=capital,
-                risk_amount=position["risk_amount"],
-                atr=position["atr"],
-                stop_distance=position["stop_distance"],
-                risk_based_quantity=position["risk_based_quantity"],
-                max_allowed_quantity=position["max_allowed_quantity"],
-            )
-            capital += trade.net_pnl
-            portfolio.apply_trade(trade)
-            trades.append(trade)
-            position = None
+        if current_date != prev_date:
+            if position is not None:
+                exit_price = prev_bar_close
+                trade = simulate_trade(
+                    position=Position(position["side"]),
+                    entry_time=position["entry_time"],
+                    exit_time=prev_time,
+                    entry_price=position["entry_price"],
+                    exit_price=exit_price,
+                    quantity=position["quantity"],
+                    brokerage=config.brokerage_per_trade,
+                    slippage_rate=config.slippage_rate,
+                    statutory_fee_rate=config.statutory_fee_rate,
+                    exit_reason="EOD",
+                    capital_before=position["capital_before"],
+                    capital_after=capital,
+                    risk_amount=position["risk_amount"],
+                    atr=position["atr"],
+                    stop_distance=position["stop_distance"],
+                    risk_based_quantity=position["risk_based_quantity"],
+                    max_allowed_quantity=position["max_allowed_quantity"],
+                )
+                capital += trade.net_pnl
+                portfolio.apply_trade(trade)
+                trades.append(trade)
+                position = None
+            pending_entry = None
+
+        # ----------------------------------------------------
+        # 1B. EXECUTE PENDING NEXT-OPEN ENTRY
+        # ----------------------------------------------------
+        if (
+            config.execution_model == "next_open"
+            and pending_entry is not None
+            and position is None
+            and capital > 0
+        ):
+            if not (
+                config.enforce_eod_square_off
+                and current_time.time() >= session_end_t
+            ):
+                pending_side = pending_entry["side"]
+                pending_atr = pending_entry["atr"]
+                entry_p = bar_open
+                if entry_p > 0 and pending_atr > 0:
+                    risk_amount = capital * config.risk_per_trade
+                    stop_dist = pending_atr * config.stop_atr_multiplier
+                    if stop_dist > 0:
+                        risk_qty = int(risk_amount / stop_dist)
+                        max_notional = capital * config.max_leverage
+                        max_allowed_qty = int(max_notional / entry_p)
+                        final_qty = min(risk_qty, max_allowed_qty)
+                        if final_qty > 0:
+                            if pending_side == "LONG":
+                                stop_p = entry_p - stop_dist
+                                target_p = entry_p + (pending_atr * config.target_atr_multiplier)
+                            else:
+                                stop_p = entry_p + stop_dist
+                                target_p = entry_p - (pending_atr * config.target_atr_multiplier)
+
+                            position = {
+                                "side": pending_side,
+                                "entry_time": current_time,
+                                "entry_price": entry_p,
+                                "stop_price": stop_p,
+                                "target_price": target_p,
+                                "quantity": final_qty,
+                                "capital_before": capital,
+                                "risk_amount": risk_amount,
+                                "atr": pending_atr,
+                                "stop_distance": stop_dist,
+                                "risk_based_quantity": risk_qty,
+                                "max_allowed_quantity": max_allowed_qty,
+                            }
+            pending_entry = None
 
         # ----------------------------------------------------
         # 2. MANAGE EXISTING POSITION
@@ -735,6 +792,10 @@ def run_intraday_backtest(
 
             atr = atrs[i]
             if pd.isna(atr) or atr <= 0:
+                continue
+
+            if config.execution_model == "next_open":
+                pending_entry = {"side": side, "atr": atr}
                 continue
 
             entry_p = bar_close
