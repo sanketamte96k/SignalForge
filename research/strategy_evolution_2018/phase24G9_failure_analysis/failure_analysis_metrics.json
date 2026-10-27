@@ -1,0 +1,444 @@
+{
+  "preflight": {
+    "strategy_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "dataset_sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "dataset": "ADANIPORTS"
+  },
+  "audit_reconciliation": [
+    {
+      "partition": "Training (2017\u20132018)",
+      "trades_recalc": 379,
+      "trades_reported": 379,
+      "win_rate_recalc": 41.42,
+      "win_rate_reported": 41.42,
+      "net_pnl_recalc": -252.52,
+      "net_pnl_reported": -252.52,
+      "profit_factor_recalc": 0.694,
+      "profit_factor_reported": 0.694,
+      "max_dd_recalc": 263.38,
+      "max_dd_reported": 263.38,
+      "discrepancies_detected": 0
+    },
+    {
+      "partition": "Validation (2019)",
+      "trades_recalc": 187,
+      "trades_reported": 187,
+      "win_rate_recalc": 51.87,
+      "win_rate_reported": 51.87,
+      "net_pnl_recalc": 98.29,
+      "net_pnl_reported": 98.29,
+      "profit_factor_recalc": 1.351,
+      "profit_factor_reported": 1.351,
+      "max_dd_recalc": 43.64,
+      "max_dd_reported": 43.64,
+      "discrepancies_detected": 0
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "trades_recalc": 187,
+      "trades_reported": 187,
+      "win_rate_recalc": 47.59,
+      "win_rate_reported": 47.59,
+      "net_pnl_recalc": -130.35,
+      "net_pnl_reported": -130.35,
+      "profit_factor_recalc": 0.7007,
+      "profit_factor_reported": 0.7007,
+      "max_dd_recalc": 159.3,
+      "max_dd_reported": 159.3,
+      "discrepancies_detected": 0
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "trades_recalc": 1,
+      "trades_reported": 1,
+      "win_rate_recalc": 100.0,
+      "win_rate_reported": 100.0,
+      "net_pnl_recalc": 13.65,
+      "net_pnl_reported": 13.65,
+      "profit_factor_recalc": null,
+      "profit_factor_reported": null,
+      "max_dd_recalc": 0.0,
+      "max_dd_reported": 0.0,
+      "discrepancies_detected": 0
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "trades_recalc": 753,
+      "trades_reported": 753,
+      "win_rate_recalc": 45.55,
+      "win_rate_reported": 45.55,
+      "net_pnl_recalc": -284.58,
+      "net_pnl_reported": -284.58,
+      "profit_factor_recalc": 0.8153,
+      "profit_factor_reported": 0.8153,
+      "max_dd_recalc": 291.68,
+      "max_dd_reported": 291.68,
+      "discrepancies_detected": 0
+    }
+  ],
+  "discrepancies": [],
+  "duration_and_eod": [
+    {
+      "partition": "Training (2017\u20132018)",
+      "total_trades": 379,
+      "mean_duration_mins": 254.3,
+      "median_duration_mins": 313.0,
+      "min_duration_mins": 8.0,
+      "max_duration_mins": 343.0,
+      "std_duration_mins": 109.9,
+      "eod_exits_1529": 368,
+      "eod_exit_pct": 97.1,
+      "reversal_exits": 11,
+      "reversal_exit_pct": 2.9
+    },
+    {
+      "partition": "Validation (2019)",
+      "total_trades": 187,
+      "mean_duration_mins": 261.7,
+      "median_duration_mins": 313.0,
+      "min_duration_mins": 13.0,
+      "max_duration_mins": 343.0,
+      "std_duration_mins": 101.1,
+      "eod_exits_1529": 185,
+      "eod_exit_pct": 98.93,
+      "reversal_exits": 2,
+      "reversal_exit_pct": 1.07
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "total_trades": 187,
+      "mean_duration_mins": 262.9,
+      "median_duration_mins": 313.0,
+      "min_duration_mins": 3.0,
+      "max_duration_mins": 343.0,
+      "std_duration_mins": 100.4,
+      "eod_exits_1529": 183,
+      "eod_exit_pct": 97.86,
+      "reversal_exits": 4,
+      "reversal_exit_pct": 2.14
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "total_trades": 1,
+      "mean_duration_mins": 133.0,
+      "median_duration_mins": 133.0,
+      "min_duration_mins": 133.0,
+      "max_duration_mins": 133.0,
+      "std_duration_mins": NaN,
+      "eod_exits_1529": 1,
+      "eod_exit_pct": 100.0,
+      "reversal_exits": 0,
+      "reversal_exit_pct": 0.0
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "total_trades": 753,
+      "mean_duration_mins": 258.3,
+      "median_duration_mins": 313.0,
+      "min_duration_mins": 3.0,
+      "max_duration_mins": 343.0,
+      "std_duration_mins": 105.4,
+      "eod_exits_1529": 736,
+      "eod_exit_pct": 97.74,
+      "reversal_exits": 17,
+      "reversal_exit_pct": 2.26
+    }
+  ],
+  "concentration_and_streaks": [
+    {
+      "partition": "Training (2017\u20132018)",
+      "max_consecutive_wins": 6,
+      "max_consecutive_losses": 10,
+      "total_net_pnl": -252.52,
+      "top_5_wins_sum": 72.78,
+      "net_without_top_5_wins": -325.3,
+      "top_5_losses_sum": -98.66,
+      "largest_win": 17.57,
+      "largest_loss": -26.33
+    },
+    {
+      "partition": "Validation (2019)",
+      "max_consecutive_wins": 8,
+      "max_consecutive_losses": 5,
+      "total_net_pnl": 98.29,
+      "top_5_wins_sum": 76.05,
+      "net_without_top_5_wins": 22.23,
+      "top_5_losses_sum": -53.11,
+      "largest_win": 21.92,
+      "largest_loss": -14.27
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "max_consecutive_wins": 5,
+      "max_consecutive_losses": 8,
+      "total_net_pnl": -130.35,
+      "top_5_wins_sum": 77.99,
+      "net_without_top_5_wins": -208.34,
+      "top_5_losses_sum": -101.76,
+      "largest_win": 22.21,
+      "largest_loss": -30.39
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "max_consecutive_wins": 1,
+      "max_consecutive_losses": 0,
+      "total_net_pnl": 13.65,
+      "top_5_wins_sum": 13.65,
+      "net_without_top_5_wins": 0.0,
+      "top_5_losses_sum": 13.65,
+      "largest_win": 13.65,
+      "largest_loss": 13.65
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "max_consecutive_wins": 8,
+      "max_consecutive_losses": 10,
+      "total_net_pnl": -284.58,
+      "top_5_wins_sum": 93.02,
+      "net_without_top_5_wins": -377.6,
+      "top_5_losses_sum": -122.52,
+      "largest_win": 22.21,
+      "largest_loss": -30.39
+    }
+  ],
+  "stress_test_2019": {
+    "total_net_pnl": 98.29,
+    "top_1_trade": 21.92,
+    "top_2_trades": 37.04,
+    "top_3_trades": 51.12,
+    "top_5_trades": 76.05,
+    "net_without_top_5": 22.23
+  },
+  "monthly_summary": {
+    "total_months": 48,
+    "profitable_months": 16,
+    "losing_months": 32
+  },
+  "cost_sensitivity": [
+    {
+      "partition": "Training (2017\u20132018)",
+      "cost_scenario": "0 bps (Gross)",
+      "rate": 0.0,
+      "total_costs": 0.0,
+      "net_pnl": -224.5,
+      "win_rate_pct": 41.69,
+      "profit_factor": 0.7225
+    },
+    {
+      "partition": "Training (2017\u20132018)",
+      "cost_scenario": "1 bps (Official)",
+      "rate": 0.0001,
+      "total_costs": 28.02,
+      "net_pnl": -252.52,
+      "win_rate_pct": 41.42,
+      "profit_factor": 0.694
+    },
+    {
+      "partition": "Training (2017\u20132018)",
+      "cost_scenario": "2 bps",
+      "rate": 0.0002,
+      "total_costs": 56.04,
+      "net_pnl": -280.54,
+      "win_rate_pct": 40.63,
+      "profit_factor": 0.6667
+    },
+    {
+      "partition": "Training (2017\u20132018)",
+      "cost_scenario": "5 bps",
+      "rate": 0.0005,
+      "total_costs": 140.11,
+      "net_pnl": -364.61,
+      "win_rate_pct": 37.99,
+      "profit_factor": 0.5916
+    },
+    {
+      "partition": "Training (2017\u20132018)",
+      "cost_scenario": "10 bps",
+      "rate": 0.001,
+      "total_costs": 280.22,
+      "net_pnl": -504.72,
+      "win_rate_pct": 34.3,
+      "profit_factor": 0.4861
+    },
+    {
+      "partition": "Validation (2019)",
+      "cost_scenario": "0 bps (Gross)",
+      "rate": 0.0,
+      "total_costs": 0.0,
+      "net_pnl": 112.45,
+      "win_rate_pct": 52.41,
+      "profit_factor": 1.4115
+    },
+    {
+      "partition": "Validation (2019)",
+      "cost_scenario": "1 bps (Official)",
+      "rate": 0.0001,
+      "total_costs": 14.16,
+      "net_pnl": 98.29,
+      "win_rate_pct": 51.87,
+      "profit_factor": 1.351
+    },
+    {
+      "partition": "Validation (2019)",
+      "cost_scenario": "2 bps",
+      "rate": 0.0002,
+      "total_costs": 28.33,
+      "net_pnl": 84.12,
+      "win_rate_pct": 51.34,
+      "profit_factor": 1.2933
+    },
+    {
+      "partition": "Validation (2019)",
+      "cost_scenario": "5 bps",
+      "rate": 0.0005,
+      "total_costs": 70.82,
+      "net_pnl": 41.63,
+      "win_rate_pct": 50.8,
+      "profit_factor": 1.1354
+    },
+    {
+      "partition": "Validation (2019)",
+      "cost_scenario": "10 bps",
+      "rate": 0.001,
+      "total_costs": 141.64,
+      "net_pnl": -29.19,
+      "win_rate_pct": 47.06,
+      "profit_factor": 0.9149
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "cost_scenario": "0 bps (Gross)",
+      "rate": 0.0,
+      "total_costs": 0.0,
+      "net_pnl": -117.35,
+      "win_rate_pct": 47.59,
+      "profit_factor": 0.7262
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "cost_scenario": "1 bps (Official)",
+      "rate": 0.0001,
+      "total_costs": 13.0,
+      "net_pnl": -130.35,
+      "win_rate_pct": 47.59,
+      "profit_factor": 0.7007
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "cost_scenario": "2 bps",
+      "rate": 0.0002,
+      "total_costs": 25.99,
+      "net_pnl": -143.34,
+      "win_rate_pct": 45.99,
+      "profit_factor": 0.676
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "cost_scenario": "5 bps",
+      "rate": 0.0005,
+      "total_costs": 64.99,
+      "net_pnl": -182.34,
+      "win_rate_pct": 43.32,
+      "profit_factor": 0.6072
+    },
+    {
+      "partition": "Holdout Test (2020)",
+      "cost_scenario": "10 bps",
+      "rate": 0.001,
+      "total_costs": 129.97,
+      "net_pnl": -247.32,
+      "win_rate_pct": 40.11,
+      "profit_factor": 0.5079
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "cost_scenario": "0 bps (Gross)",
+      "rate": 0.0,
+      "total_costs": 0.0,
+      "net_pnl": 13.75,
+      "win_rate_pct": 100.0,
+      "profit_factor": null
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "cost_scenario": "1 bps (Official)",
+      "rate": 0.0001,
+      "total_costs": 0.1,
+      "net_pnl": 13.65,
+      "win_rate_pct": 100.0,
+      "profit_factor": null
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "cost_scenario": "2 bps",
+      "rate": 0.0002,
+      "total_costs": 0.2,
+      "net_pnl": 13.55,
+      "win_rate_pct": 100.0,
+      "profit_factor": null
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "cost_scenario": "5 bps",
+      "rate": 0.0005,
+      "total_costs": 0.5,
+      "net_pnl": 13.25,
+      "win_rate_pct": 100.0,
+      "profit_factor": null
+    },
+    {
+      "partition": "Trailing Stub (2021-01-01)",
+      "cost_scenario": "10 bps",
+      "rate": 0.001,
+      "total_costs": 1.0,
+      "net_pnl": 12.75,
+      "win_rate_pct": 100.0,
+      "profit_factor": null
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "cost_scenario": "0 bps (Gross)",
+      "rate": 0.0,
+      "total_costs": 0.0,
+      "net_pnl": -229.4,
+      "win_rate_pct": 45.82,
+      "profit_factor": 0.8482
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "cost_scenario": "1 bps (Official)",
+      "rate": 0.0001,
+      "total_costs": 55.18,
+      "net_pnl": -284.58,
+      "win_rate_pct": 45.55,
+      "profit_factor": 0.8153
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "cost_scenario": "2 bps",
+      "rate": 0.0002,
+      "total_costs": 110.37,
+      "net_pnl": -339.77,
+      "win_rate_pct": 44.62,
+      "profit_factor": 0.7837
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "cost_scenario": "5 bps",
+      "rate": 0.0005,
+      "total_costs": 275.92,
+      "net_pnl": -505.32,
+      "win_rate_pct": 42.5,
+      "profit_factor": 0.6964
+    },
+    {
+      "partition": "Combined (2017\u20132020)",
+      "cost_scenario": "10 bps",
+      "rate": 0.001,
+      "total_costs": 551.83,
+      "net_pnl": -781.23,
+      "win_rate_pct": 38.91,
+      "profit_factor": 0.5726
+    }
+  ]
+}

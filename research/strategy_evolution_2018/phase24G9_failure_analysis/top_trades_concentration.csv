@@ -1,0 +1,6 @@
+partition,max_consecutive_wins,max_consecutive_losses,total_net_pnl,top_5_wins_sum,net_without_top_5_wins,top_5_losses_sum,largest_win,largest_loss
+Training (2017–2018),6,10,-252.52,72.78,-325.3,-98.66,17.57,-26.33
+Validation (2019),8,5,98.29,76.05,22.23,-53.11,21.92,-14.27
+Holdout Test (2020),5,8,-130.35,77.99,-208.34,-101.76,22.21,-30.39
+Trailing Stub (2021-01-01),1,0,13.65,13.65,0.0,13.65,13.65,13.65
+Combined (2017–2020),8,10,-284.58,93.02,-377.6,-122.52,22.21,-30.39

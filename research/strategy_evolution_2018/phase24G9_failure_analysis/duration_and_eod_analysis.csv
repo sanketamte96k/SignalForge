@@ -1,0 +1,6 @@
+partition,total_trades,mean_duration_mins,median_duration_mins,min_duration_mins,max_duration_mins,std_duration_mins,eod_exits_1529,eod_exit_pct,reversal_exits,reversal_exit_pct
+Training (2017–2018),379,254.3,313.0,8.0,343.0,109.9,368,97.1,11,2.9
+Validation (2019),187,261.7,313.0,13.0,343.0,101.1,185,98.93,2,1.07
+Holdout Test (2020),187,262.9,313.0,3.0,343.0,100.4,183,97.86,4,2.14
+Trailing Stub (2021-01-01),1,133.0,133.0,133.0,133.0,,1,100.0,0,0.0
+Combined (2017–2020),753,258.3,313.0,3.0,343.0,105.4,736,97.74,17,2.26

@@ -1,0 +1,6 @@
+partition,trades_recalc,trades_reported,win_rate_recalc,win_rate_reported,net_pnl_recalc,net_pnl_reported,profit_factor_recalc,profit_factor_reported,max_dd_recalc,max_dd_reported,discrepancies_detected
+Training (2017–2018),379,379,41.42,41.42,-252.52,-252.52,0.694,0.694,263.38,263.38,0
+Validation (2019),187,187,51.87,51.87,98.29,98.29,1.351,1.351,43.64,43.64,0
+Holdout Test (2020),187,187,47.59,47.59,-130.35,-130.35,0.7007,0.7007,159.3,159.3,0
+Trailing Stub (2021-01-01),1,1,100.0,100.0,13.65,13.65,,,0.0,0.0,0
+Combined (2017–2020),753,753,45.55,45.55,-284.58,-284.58,0.8153,0.8153,291.68,291.68,0
