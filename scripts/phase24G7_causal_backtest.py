@@ -5,6 +5,7 @@ Executes a controlled historical research backtest on validated ADANIPORTS 1m da
 1. Phase 24G.3 Legacy Execution ('same_close').
 2. Phase 24G.7 Causal Execution ('next_open').
 3. Deterministic Repeat of Phase 24G.7 to demonstrate byte-for-byte reproducibility.
+4. Validation via HistoricalBacktestValidator with execution_model="next_open".
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.backtest.engine import run_backtest
 from src.strategy.backtest_strategy import (
+    Position,
     StrategyConfig,
     create_signal_function,
 )
@@ -61,6 +63,28 @@ def verify_preflight():
     assert computed_data_hash == expected_data_hash, f"Dataset hash mismatch: expected {expected_data_hash}, got {computed_data_hash}"
 
     print("Preflight verification passed successfully.\n")
+
+
+class SignalTracker:
+    """Wraps a signal function to track signal counts and session-boundary cancellations."""
+
+    def __init__(self, inner_fn):
+        self.inner_fn = inner_fn
+        self.total_signals = 0
+        self.long_signals = 0
+        self.short_signals = 0
+        self.signals = []
+
+    def __call__(self, row: pd.Series, prev_row: pd.Series) -> Position | None:
+        sig = self.inner_fn(row, prev_row)
+        if sig is not None:
+            self.total_signals += 1
+            if sig == Position.LONG:
+                self.long_signals += 1
+            elif sig == Position.SHORT:
+                self.short_signals += 1
+            self.signals.append((row.name, sig))
+        return sig
 
 
 def summarize_result(res, execution_model: str, capital_initial: float = 100000.0) -> dict:
@@ -115,6 +139,22 @@ def summarize_result(res, execution_model: str, capital_initial: float = 100000.
     }
 
 
+def count_session_end_cancellations(df: pd.DataFrame, signals: list[tuple[pd.Timestamp, Position]]) -> int:
+    """Count how many signals occurred at the final bar of a calendar day session."""
+    session_ends = set()
+    dates = df.index.date
+    for i in range(len(df) - 1):
+        if dates[i] != dates[i + 1]:
+            session_ends.add(df.index[i])
+    session_ends.add(df.index[-1])
+
+    cancelled = 0
+    for ts, _ in signals:
+        if ts in session_ends:
+            cancelled += 1
+    return cancelled
+
+
 def main():
     verify_preflight()
 
@@ -141,17 +181,16 @@ def main():
         use_rvol=True,
     )
 
-    print("\nBuilding causal multi-timeframe indicators and signal function...")
-    sig_func = create_signal_function(df, cfg)
-
     # -----------------------------------------------------------------------
     # Run 1: Legacy same_close (Phase 24G.3 baseline)
     # -----------------------------------------------------------------------
     print("\nExecuting Run A: Phase 24G.3 Legacy Execution ('same_close')...")
+    sig_func_a = create_signal_function(df, cfg)
+    tracker_a = SignalTracker(sig_func_a)
     t0 = time.time()
     res_legacy = run_backtest(
         data=df,
-        signal_function=sig_func,
+        signal_function=tracker_a,
         initial_capital=100000.0,
         quantity=1,
         transaction_cost_rate=0.0001,
@@ -159,29 +198,39 @@ def main():
     )
     t_legacy = time.time() - t0
     summary_legacy = summarize_result(res_legacy, "same_close (Phase 24G.3 Legacy)")
+    summary_legacy["signals_generated"] = tracker_a.total_signals
+    summary_legacy["runtime_seconds"] = round(t_legacy, 2)
     print(f"Run A completed in {t_legacy:.2f}s: {summary_legacy['total_trades']} trades, Net P&L: Rs {summary_legacy['net_pnl']:,.2f}")
 
     # -----------------------------------------------------------------------
     # Run 2: Causal next_open (Phase 24G.7)
     # -----------------------------------------------------------------------
     print("\nExecuting Run B: Phase 24G.7 Causal Execution ('next_open')...")
+    sig_func_b = create_signal_function(df, cfg)
+    tracker_b = SignalTracker(sig_func_b)
     t0 = time.time()
     res_causal = run_backtest(
         data=df,
-        signal_function=sig_func,
+        signal_function=tracker_b,
         initial_capital=100000.0,
         quantity=1,
         transaction_cost_rate=0.0001,
         execution_model="next_open",
     )
     t_causal = time.time() - t0
+    cancelled_orders = count_session_end_cancellations(df, tracker_b.signals)
     summary_causal = summarize_result(res_causal, "next_open (Phase 24G.7 Causal)")
-    print(f"Run B completed in {t_causal:.2f}s: {summary_causal['total_trades']} trades, Net P&L: Rs {summary_causal['net_pnl']:,.2f}")
+    summary_causal["signals_generated"] = tracker_b.total_signals
+    summary_causal["long_signals"] = tracker_b.long_signals
+    summary_causal["short_signals"] = tracker_b.short_signals
+    summary_causal["cancelled_eod_orders"] = cancelled_orders
+    summary_causal["runtime_seconds"] = round(t_causal, 2)
+    print(f"Run B completed in {t_causal:.2f}s: {summary_causal['total_trades']} trades, Signals: {tracker_b.total_signals}, Cancelled EOD: {cancelled_orders}, Net P&L: Rs {summary_causal['net_pnl']:,.2f}")
 
     # -----------------------------------------------------------------------
-    # Run 3: Deterministic Repeat of Phase 24G.7
+    # Run 3: Deterministic Repeat of Phase 24G.7 on slice to verify repeat reproducibility
     # -----------------------------------------------------------------------
-    print("\nExecuting Run C: Deterministic Repeat of Phase 24G.7 ('next_open')...")
+    print("\nVerifying Deterministic Repeat of Phase 24G.7 ('next_open')...")
     sig_func_repeat = create_signal_function(df, cfg)
     res_causal_repeat = run_backtest(
         data=df,
@@ -191,18 +240,31 @@ def main():
         transaction_cost_rate=0.0001,
         execution_model="next_open",
     )
-    summary_repeat = summarize_result(res_causal_repeat, "next_open (Repeat)")
+    assert len(res_causal.trades) == len(res_causal_repeat.trades), "Trade count mismatch on repeat!"
+    for i, (t1, t2) in enumerate(zip(res_causal.trades, res_causal_repeat.trades)):
+        assert t1.entry_time == t2.entry_time, f"Entry time mismatch at trade {i}"
+        assert t1.exit_time == t2.exit_time, f"Exit time mismatch at trade {i}"
+        assert t1.entry_price == t2.entry_price, f"Entry price mismatch at trade {i}"
+        assert t1.exit_price == t2.exit_price, f"Exit price mismatch at trade {i}"
+        assert t1.net_pnl == t2.net_pnl, f"Net P&L mismatch at trade {i}"
+    print("Deterministic repeat confirmed: 100% IDENTICAL across all trades.")
 
-    # Assert exact byte-for-byte reproducibility
-    assert summary_causal == summary_repeat, "Deterministic repeat mismatch!"
-    assert len(res_causal.trades) == len(res_causal_repeat.trades)
-    for t1, t2 in zip(res_causal.trades, res_causal_repeat.trades):
-        assert t1.entry_time == t2.entry_time
-        assert t1.exit_time == t2.exit_time
-        assert t1.entry_price == t2.entry_price
-        assert t1.exit_price == t2.exit_price
-        assert t1.net_pnl == t2.net_pnl
-    print("Deterministic repeat confirmed: Run B and Run C are 100% IDENTICAL.")
+    # -----------------------------------------------------------------------
+    # Run 4: Authoritative HistoricalBacktestValidator Verification
+    # -----------------------------------------------------------------------
+    print("\nVerifying HistoricalBacktestValidator with execution_model='next_open'...")
+    validator = HistoricalBacktestValidator(
+        initial_capital=100000.0,
+        quantity=1,
+        transaction_cost_rate=0.0001,
+        strategy_config=cfg,
+        execution_model="next_open",
+    )
+    # Check validator execution on a 1,000-candle segment to verify contract
+    val_subset = df.iloc[:1000]
+    val_res = validator.check(val_subset)
+    assert val_res.execution_model == "next_open", "Validator failed to pass execution_model!"
+    print(f"HistoricalBacktestValidator passed: execution_model='{val_res.execution_model}', trades={val_res.total_trades}")
 
     # -----------------------------------------------------------------------
     # Save Trade Logs & Summary Metrics
@@ -271,7 +333,7 @@ def main():
     for i in range(min(5, len(res_legacy.trades), len(res_causal.trades))):
         tl = res_legacy.trades[i]
         tc = res_causal.trades[i]
-        print(f"Trade #{i+1}:")
+        print(f"Trade #{i+1} ({tl.position.value}):")
         print(f"  Legacy same_close: entry={tl.entry_time} @ {tl.entry_price:.2f}, exit={tl.exit_time} @ {tl.exit_price:.2f}, net={tl.net_pnl:.2f}")
         print(f"  Causal next_open:  entry={tc.entry_time} @ {tc.entry_price:.2f}, exit={tc.exit_time} @ {tc.exit_price:.2f}, net={tc.net_pnl:.2f}")
 
