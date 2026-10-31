@@ -209,6 +209,14 @@ def calculate_position_size(
       Q = min(Q_risk, Q_leverage)
       If Q < 1: trade must be rejected.
     """
+    if not (
+        math.isfinite(capital)
+        and math.isfinite(risk_pct)
+        and math.isfinite(entry_price)
+        and math.isfinite(stop_distance)
+        and math.isfinite(max_leverage)
+    ):
+        return 0
     if capital <= 0 or risk_pct <= 0 or entry_price <= 0 or stop_distance <= 0 or max_leverage <= 0:
         return 0
 
@@ -229,6 +237,8 @@ def calculate_clamped_stop_distance(
     Compute stop distance clamped to at least 1 tick or 0.20% of entry price.
     Prevents division-by-zero or oversized allocations on compressed candles.
     """
+    if not (math.isfinite(entry_price) and math.isfinite(atr) and math.isfinite(k_stop)):
+        return 0.0
     if atr <= 0 or k_stop <= 0 or entry_price <= 0:
         return 0.0
     raw_dist = atr * k_stop
@@ -819,54 +829,46 @@ class RiskEngineV2:
                             exit_reason = ExitReason.TAKE_PROFIT.value
                             exit_triggered = True
 
-                # C. Trailing Ratchet Update (Intrabar progression)
-                if not exit_triggered and ratchet is not None:
-                    cur_stop = ratchet.update(candle_high=cur_bar_high, candle_low=cur_bar_low)
-                    active_position["current_stop"] = cur_stop
-
-                # D. Intrabar Stop vs Target Evaluation (after ratchet update)
+                # C. Intrabar Stop Evaluation against Pre-Existing Stop
+                # Under conservative stop-first precedence (DEC-09), if the bar's extreme breaches
+                # the stop active at the start of the bar, it must exit at that stop price.
+                # The trailing ratchet cannot use the bar's favorable extreme to erase a stop hit.
+                stop_before_bar = cur_stop
                 if not exit_triggered:
                     if pos_side == PositionSide.LONG:
-                        # Same-Candle Collision (Conservative Stop-First Precedence)
-                        if cur_bar_low <= cur_stop and (tgt_p is not None and cur_bar_high >= tgt_p):
-                            exit_fill_price = cur_stop - self.config.slippage
-                            exit_reason = ExitReason.STOP_LOSS.value
-                            exit_triggered = True
-                        # Intrabar Stop Hit
-                        elif cur_bar_low <= cur_stop:
-                            exit_fill_price = cur_stop - self.config.slippage
+                        # Same-Candle Collision or Stop Hit against pre-existing stop
+                        if cur_bar_low <= stop_before_bar:
+                            exit_fill_price = stop_before_bar - self.config.slippage
                             exit_reason = (
                                 ExitReason.TRAILING_STOP.value
-                                if cur_stop > active_position["initial_stop"]
+                                if stop_before_bar > active_position["initial_stop"]
                                 else ExitReason.STOP_LOSS.value
                             )
                             exit_triggered = True
-                        # Intrabar Target Hit
                         elif tgt_p is not None and cur_bar_high >= tgt_p:
                             exit_fill_price = tgt_p - self.config.slippage
                             exit_reason = ExitReason.TAKE_PROFIT.value
                             exit_triggered = True
 
                     elif pos_side == PositionSide.SHORT:
-                        # Same-Candle Collision (Conservative Stop-First Precedence)
-                        if cur_bar_high >= cur_stop and (tgt_p is not None and cur_bar_low <= tgt_p):
-                            exit_fill_price = cur_stop + self.config.slippage
-                            exit_reason = ExitReason.STOP_LOSS.value
-                            exit_triggered = True
-                        # Intrabar Stop Hit
-                        elif cur_bar_high >= cur_stop:
-                            exit_fill_price = cur_stop + self.config.slippage
+                        # Same-Candle Collision or Stop Hit against pre-existing stop
+                        if cur_bar_high >= stop_before_bar:
+                            exit_fill_price = stop_before_bar + self.config.slippage
                             exit_reason = (
                                 ExitReason.TRAILING_STOP.value
-                                if cur_stop < active_position["initial_stop"]
+                                if stop_before_bar < active_position["initial_stop"]
                                 else ExitReason.STOP_LOSS.value
                             )
                             exit_triggered = True
-                        # Intrabar Target Hit
                         elif tgt_p is not None and cur_bar_low <= tgt_p:
                             exit_fill_price = tgt_p + self.config.slippage
                             exit_reason = ExitReason.TAKE_PROFIT.value
                             exit_triggered = True
+
+                # D. Trailing Ratchet Update (Intrabar progression if stop/target not hit)
+                if not exit_triggered and ratchet is not None:
+                    cur_stop = ratchet.update(candle_high=cur_bar_high, candle_low=cur_bar_low)
+                    active_position["current_stop"] = cur_stop
 
                 # D. Mandatory EOD Liquidation at Session End (15:29:00 close)
                 if not exit_triggered and cur_time.time() >= self._session_end_time:
@@ -1004,11 +1006,26 @@ class RiskEngineV2:
                                         active_position = None
                                         ratchet = None
 
-                                        # Check circuit breaker before opening reversal
+                                        # Check consecutive loss streak
+                                        if t.net_pnl < 0:
+                                            consecutive_losses += 1
+                                            if consecutive_losses >= self.config.consecutive_loss_limit:
+                                                cooldown_until = cur_time + timedelta(minutes=self.config.cooldown_minutes)
+                                        elif t.net_pnl > 0:
+                                            consecutive_losses = 0
+
+                                        # Check circuit breaker and cooldown before opening reversal
                                         max_allowed_loss = day_start_capital * self.config.daily_loss_limit_pct
+                                        is_cooldown = cooldown_until is not None and cur_time < cooldown_until
                                         if day_realized_pnl <= -max_allowed_loss:
                                             day_halted = True
                                             circuit_breaker_tripped = True
+                                        elif is_cooldown:
+                                            audit_rejections.append({
+                                                "time": cur_time,
+                                                "reason": RejectionReason.CONSECUTIVE_LOSS_COOLDOWN.value,
+                                                "details": f"Consecutive loss cooldown active until {cooldown_until}. Reversal entry rejected."
+                                            })
                                         else:
                                             # Open reversal position
                                             active_position, ratchet = self._open_same_close_position(
@@ -1046,16 +1063,19 @@ class RiskEngineV2:
                                         audit_rejections=audit_rejections,
                                     )
 
-        # --------------------------------------------------------------------
         # Step 7: Final Dataset Purge / Close
-        # --------------------------------------------------------------------
         if active_position is not None:
             last_time = pd.Timestamp(datetimes[-1])
-            last_close = float(closes[-1])
+            pos_side = active_position["side"]
+            exit_p = (
+                float(closes[-1]) - self.config.slippage
+                if pos_side == PositionSide.LONG
+                else float(closes[-1]) + self.config.slippage
+            )
             t = self._execute_exit(
                 trade_id=trade_counter + 1,
                 position=active_position,
-                exit_price=last_close,
+                exit_price=exit_p,
                 exit_time=last_time,
                 exit_reason=ExitReason.EOD.value,
                 capital_before=capital,
@@ -1197,7 +1217,12 @@ class RiskEngineV2:
             slippage_per_share=self.config.slippage,
         )
 
-        net_pnl = gross_pnl - costs.total_costs
+        # Slippage accounting reconciliation:
+        # If execution slippage was already embedded into executed fill prices (self.config.slippage > 0),
+        # deducting costs.slippage again would double-count slippage.
+        # Only non-price friction (brokerage + statutory fees) is deducted from gross P&L.
+        deducted_costs = costs.total_costs - costs.slippage if self.config.slippage > 0 else costs.total_costs
+        net_pnl = gross_pnl - deducted_costs
         notional_entry = entry_p * qty
         ret_pct = (net_pnl / notional_entry * 100.0) if notional_entry > 0 else 0.0
         r_mult = (net_pnl / (qty * stop_dist)) if (qty * stop_dist) > 0 else 0.0
@@ -1214,7 +1239,7 @@ class RiskEngineV2:
             target_price=round(target_p, 4) if target_p is not None else None,
             quantity=qty,
             gross_pnl=round(gross_pnl, 4),
-            transaction_cost=round(costs.total_costs, 4),
+            transaction_cost=round(deducted_costs, 4),
             net_pnl=round(net_pnl, 4),
             return_pct=round(ret_pct, 4),
             exit_reason=exit_reason,
@@ -1263,6 +1288,9 @@ class RiskEngineV2:
         df["Close"] = df[col_map["close"]].astype(float)
 
         # Validate price integrity
+        for p_col in ("Open", "High", "Low", "Close"):
+            if df[p_col].isna().any() or not np.isfinite(df[p_col]).all():
+                raise ValueError(f"Data corruption: Non-finite price found in '{p_col}' column.")
         if (df["High"] < df["Low"]).any():
             raise ValueError("Data corruption: High < Low found in input dataset.")
         if (df["Low"] <= 0).any() or (df["Open"] <= 0).any() or (df["Close"] <= 0).any():
