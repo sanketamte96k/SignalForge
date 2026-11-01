@@ -1,0 +1,9 @@
+partition,scenario,total_trades,winning_trades,losing_trades,win_rate_pct,gross_profit,gross_loss,net_pnl,profit_factor,pct_of_base_profit,delta_pnl_from_base
+Training (2017–2018),Baseline (All Trades),67,49,18,73.13,32372.54,20546.51,11826.03,1.5756,100.0,0.0
+Training (2017–2018),Excluding Top 1 Winner,66,48,18,72.73,30622.79,20546.51,10076.28,1.4904,85.2,-1749.75
+Training (2017–2018),Excluding Top 3 Winners,64,46,18,71.88,27355.55,20546.51,6809.04,1.3314,57.58,-5016.99
+Training (2017–2018),Excluding Top 5 Winners,62,44,18,70.97,24259.84,20546.51,3713.33,1.1807,31.4,-8112.71
+Validation (2019),Baseline (All Trades),14,10,4,71.43,6486.06,4352.81,2133.25,1.4901,100.0,0.0
+Validation (2019),Excluding Top 1 Winner,13,9,4,69.23,5270.1,4352.81,917.29,1.2107,43.0,-1215.96
+Validation (2019),Excluding Top 3 Winners,11,7,4,63.64,3373.76,4352.81,-979.05,0.7751,-45.89,-3112.3
+Validation (2019),Excluding Top 5 Winners,9,5,4,55.56,1821.48,4352.81,-2531.33,0.4185,-118.66,-4664.58

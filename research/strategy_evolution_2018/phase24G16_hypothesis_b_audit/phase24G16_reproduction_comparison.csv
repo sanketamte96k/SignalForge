@@ -1,0 +1,41 @@
+metric,partition,phase24g15_reported,reproduced_value,discrepancy,match_status,notes
+Total Completed Trades,Training (2017–2018),67.0,67.0,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Annualized Trade Velocity,Training (2017–2018),33.9,33.9,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Win Rate (%),Training (2017–2018),73.13,73.13,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Gross P&L (Rs),Training (2017–2018),41081.85,41081.85,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Total Transaction Costs (Rs),Training (2017–2018),29255.82,29255.82,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Net Realized P&L (Rs),Training (2017–2018),11826.03,11826.03,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Profit Factor,Training (2017–2018),1.5756,1.5756,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Average Winning Trade (Rs),Training (2017–2018),660.66,660.66,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Average Losing Trade (Rs),Training (2017–2018),1141.47,1141.47,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Max Drawdown Amount (Rs),Training (2017–2018),2940.1,2841.61,-98.49,DISCREPANCY,Discrepancy detected
+Max Drawdown Pct (%),Training (2017–2018),2.82,2.65,-0.17,DISCREPANCY,Discrepancy detected
+Expectancy Per Trade (Rs),Training (2017–2018),176.51,176.51,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Long Trades Count,Training (2017–2018),43.0,53.0,10.0,DISCREPANCY,Discrepancy detected
+Long Win Rate (%),Training (2017–2018),72.09,75.47,3.38,DISCREPANCY,Discrepancy detected
+Long Net P&L (Rs),Training (2017–2018),7241.68,12420.93,5179.25,DISCREPANCY,Discrepancy detected
+Short Trades Count,Training (2017–2018),24.0,14.0,-10.0,DISCREPANCY,Discrepancy detected
+Short Win Rate (%),Training (2017–2018),75.0,64.29,-10.71,DISCREPANCY,Discrepancy detected
+Short Net P&L (Rs),Training (2017–2018),4584.35,-594.9,-5179.25,DISCREPANCY,Discrepancy detected
+Total Traded Notional Turnover (Rs),Training (2017–2018),68730163.91,68730163.91,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Monthly Consistency (% Profitable Months),Training (2017–2018),72.73,72.73,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Total Completed Trades,Validation (2019),14.0,14.0,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Annualized Trade Velocity,Validation (2019),14.3,14.3,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Win Rate (%),Validation (2019),71.43,71.43,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Gross P&L (Rs),Validation (2019),8019.2,8019.2,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Total Transaction Costs (Rs),Validation (2019),5885.95,5885.95,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Net Realized P&L (Rs),Validation (2019),2133.25,2133.25,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Profit Factor,Validation (2019),1.4901,1.4901,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Average Winning Trade (Rs),Validation (2019),648.61,648.61,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Average Losing Trade (Rs),Validation (2019),1088.2,1088.2,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Max Drawdown Amount (Rs),Validation (2019),1120.4,2456.47,1336.07,DISCREPANCY,Discrepancy detected
+Max Drawdown Pct (%),Validation (2019),1.09,2.46,1.37,DISCREPANCY,Discrepancy detected
+Expectancy Per Trade (Rs),Validation (2019),152.38,152.37,-0.01,DISCREPANCY,Discrepancy detected
+Long Trades Count,Validation (2019),10.0,10.0,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Long Win Rate (%),Validation (2019),70.0,70.0,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Long Net P&L (Rs),Validation (2019),689.49,674.0,-15.49,DISCREPANCY,Discrepancy detected
+Short Trades Count,Validation (2019),4.0,4.0,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Short Win Rate (%),Validation (2019),75.0,75.0,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Short Net P&L (Rs),Validation (2019),1443.76,1459.25,15.49,DISCREPANCY,Discrepancy detected
+Total Traded Notional Turnover (Rs),Validation (2019),13885983.52,13885983.52,0.0,EXACT_MATCH,Verified bit-for-bit replay
+Monthly Consistency (% Profitable Months),Validation (2019),71.43,71.43,0.0,EXACT_MATCH,Verified bit-for-bit replay

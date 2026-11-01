@@ -1,0 +1,13 @@
+{
+  "preflight": {
+    "v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "dataset_sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "target_symbol": "ADANIPORTS",
+    "status": "PREFLIGHT_VERIFIED"
+  },
+  "audit_files": {
+    "phase24G16_reproduction_comparison.csv": "e3b32cf2204e5f57f14e3f86ae5cfb03a806a43b8798278c5d574c7bd9dc984e",
+    "phase24G16_cost_reconciliation.csv": "a111389a990bade63195d27276353e31c62f3bf611e678939d1cbd5cce233f5c",
+    "phase24G16_trade_concentration.csv": "b36bf38fae7280ab987fd2dad4c4c18af38d7a9a5590fdeb050a9f07f75b60da"
+  }
+}
