@@ -1,0 +1,13 @@
+partition,engine,cost_model,total_trades,win_rate_pct,gross_pnl,total_costs,net_pnl,profit_factor,max_drawdown_amount,expectancy_per_trade,stop_exits,target_exits,eod_exits,breaker_activations,insufficient_capital_rejections
+Training (2017–2018),V1 Baseline,1 bps flat,379,41.42,-224.5,28.02,-252.52,0.694,263.38,-0.67,0,0,379,0,0
+Training (2017–2018),V2 Risk Engine,1 bps baseline,1826,33.95,-52643.77,43605.58,-96249.35,0.7187,96297.75,-52.71,1140,598,49,13323,0
+Training (2017–2018),V2 Risk Engine,realistic_intraday,956,28.77,-21672.32,78267.87,-99940.19,0.3718,99940.19,-104.54,529,284,16,18190,8523
+Validation (2019),V1 Baseline,1 bps flat,187,51.87,112.45,14.16,98.29,1.351,43.64,0.53,0,0,187,0,0
+Validation (2019),V2 Risk Engine,1 bps baseline,1087,38.09,-4381.36,61473.38,-65854.74,0.856,69754.63,-60.58,652,397,26,5521,0
+Validation (2019),V2 Risk Engine,realistic_intraday,749,36.58,2083.11,100823.38,-98740.27,0.4773,100531.27,-131.83,388,274,11,11115,0
+Holdout Test (2020),V1 Baseline,1 bps flat,187,47.59,-117.35,13.0,-130.35,0.7007,159.3,-0.7,0,0,187,0,0
+Holdout Test (2020),V2 Risk Engine,1 bps baseline,986,33.87,-30506.03,45403.39,-75909.42,0.8027,89829.73,-76.99,618,321,25,5942,0
+Holdout Test (2020),V2 Risk Engine,realistic_intraday,726,33.06,-5745.74,92741.1,-98486.84,0.4831,98488.92,-135.66,404,235,14,10842,0
+Combined Period (2017–2020),V1 Baseline,1 bps flat,753,45.55,-229.4,55.18,-284.58,0.8153,291.68,-0.38,0,0,753,0,0
+Combined Period (2017–2020),V2 Risk Engine,1 bps baseline,3948,34.9,-53235.43,46451.76,-99687.19,0.726,99741.71,-25.25,2441,1326,100,24225,0
+Combined Period (2017–2020),V2 Risk Engine,realistic_intraday,962,28.59,-21676.93,78270.79,-99947.72,0.3717,99947.72,-103.9,535,284,16,18443,49101

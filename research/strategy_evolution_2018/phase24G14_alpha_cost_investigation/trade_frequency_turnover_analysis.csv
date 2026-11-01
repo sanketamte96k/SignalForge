@@ -1,0 +1,13 @@
+partition,engine,cost_model,trading_days,total_trades,avg_trades_per_day,max_trades_single_day,avg_holding_duration_bars,median_holding_duration_bars,avg_position_size_shares,avg_turnover_per_trade,total_buy_turnover,total_sell_turnover,total_traded_notional,daily_breaker_activations,cooldown_activations,insufficient_capital_rejections,total_rejections,rapid_reentry_count_under_15m,reversal_trade_count
+Training (2017–2018),V1 Baseline,1 bps flat,494,379,0.77,2,254.3,313.0,1.0,739.37,140134.75,140088.25,280223.0,0,0,0,0,0,0
+Training (2017–2018),V2 Risk Engine,1 bps baseline,494,1826,3.7,24,14.4,7.0,344.8,238803.81,218023922.6,218031833.01,436055755.61,13323,2386,0,15720,1342,0
+Training (2017–2018),V2 Risk Engine,realistic_intraday statutory,494,956,1.94,21,13.2,6.0,239.9,153732.95,73481456.9,73487247.4,146968704.3,18190,389,8523,27020,633,0
+Validation (2019),V1 Baseline,1 bps flat,245,187,0.76,2,261.7,313.0,1.0,757.42,70822.7,70815.35,141638.05,0,0,0,0,0,0
+Validation (2019),V2 Risk Engine,1 bps baseline,245,1087,4.44,26,14.6,8.0,751.2,565532.43,307363481.2,307370273.4,614733754.6,5521,1366,0,6896,823,0
+Validation (2019),V2 Risk Engine,realistic_intraday statutory,245,749,3.06,20,14.0,7.0,344.8,254612.06,95347483.15,95356949.34,190704432.49,11115,258,0,11306,538,0
+Holdout Test (2020),V1 Baseline,1 bps flat,252,187,0.74,2,262.9,313.0,1.0,695.04,64974.55,64998.0,129972.55,0,0,0,0,0,0
+Holdout Test (2020),V2 Risk Engine,1 bps baseline,252,986,3.91,23,13.4,8.0,669.3,460480.62,227015270.75,227018619.24,454033889.99,5942,1793,0,7736,720,0
+Holdout Test (2020),V2 Risk Engine,realistic_intraday statutory,252,726,2.88,19,12.6,7.0,345.9,240258.91,87212728.55,87215242.69,174427971.24,10842,460,0,11241,512,0
+Combined Period (2017–2020),V1 Baseline,1 bps flat,991,753,0.76,2,258.3,313.0,1.0,732.85,275932.0,275901.6,551833.6,0,0,0,0,0,0
+Combined Period (2017–2020),V2 Risk Engine,1 bps baseline,991,3948,3.98,26,14.1,7.0,169.2,117658.96,232254670.65,232262920.16,464517590.81,24225,5681,0,29919,2926,0
+Combined Period (2017–2020),V2 Risk Engine,realistic_intraday statutory,991,962,0.97,21,13.1,6.0,238.4,152777.23,73482951.5,73488745.51,146971697.01,18443,389,49101,67969,635,0
