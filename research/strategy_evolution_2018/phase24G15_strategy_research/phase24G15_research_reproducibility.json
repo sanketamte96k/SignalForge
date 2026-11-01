@@ -1,0 +1,13 @@
+{
+  "dataset_sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+  "v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+  "quarantined_holdout_status": "LOCKED_OUT_EXCLUDED",
+  "partitions_evaluated": [
+    "Training (2017\u20132018)",
+    "Validation (2019)"
+  ],
+  "files": {
+    "phase24G15_sensitivity_results.csv": "eabe534a65ce5878005cbc0840a9be963148e823bf140f0bfba993bc87b39221",
+    "phase24G15_hypothesis_assessment.csv": "eabbd61f2a74564211f483e9a57a59fdda5db96ee17d12efeaee5bc69d2e3b33"
+  }
+}
