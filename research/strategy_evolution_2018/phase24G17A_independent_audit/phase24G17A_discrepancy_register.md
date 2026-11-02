@@ -106,6 +106,50 @@ In `phase24G17_directional_analysis.csv` for `INFY` Validation:
 #### Reconciled Balance:
 $$\text{Total Table 6.1 Discrepancy} = ₹0.40 \text{ (Friction transcription)} + ₹0.01 \text{ (INFY rounding)} = \mathbf{₹0.41}$$
 
+---
+
+## 3.1 Resolution of the Pooled Net P&L Rounding Discrepancy (₹19,177.74 vs ₹19,177.75)
+
+### Problem Statement:
+The audit reveals a subtle 1 paisa (₹0.01) difference depending on the rounding aggregation method:
+- **Raw float sum of all 73 trades:** $\sum_{i=1}^{73} t_i.\text{net\_pnl} = \mathbf{₹19,177.7482} \implies \text{round}( \dots , 2) = \mathbf{₹19,177.75}$
+- **Reported pooled net P&L in Table 5.1 & CSVs:** $\mathbf{₹19,177.74}$
+
+### Analysis of the Three Possible Aggregation Conventions:
+
+1. **Convention 1: Hierarchical Stock-Sum (Codebase Standard Implementation):**
+   - In `run_phase24G17_cross_asset.py` line 482:
+     ```python
+     "validation_value": round(float(df_ind[df_ind["partition"].str.contains("Val")]["net_pnl"].sum()), 2)
+     ```
+   - Each stock's net P&L was computed from its own trade pool and rounded to 2 decimal places:
+     - `ADANIPORTS`: Raw ₹2,133.2499 $\implies$ **₹2,133.25**
+     - `RELIANCE`: Raw ₹8,368.7915 $\implies$ **₹8,368.79**
+     - `INFY`: Raw ₹2,965.4943 $\implies$ **₹2,965.49**
+     - `ICICIBANK`: Raw ₹5,710.2125 $\implies$ **₹5,710.21**
+   - Summing these reported stock-level net P&Ls yields:
+     $$₹2,133.25 + ₹8,368.79 + ₹2,965.49 + ₹5,710.21 = \mathbf{₹19,177.74}$$
+   - **Finding:** This is the exact method implemented in the research codebase.
+
+2. **Convention 2: Summing Raw Trade-Level Net P&L and Rounding Once:**
+   - Summing the 64-bit IEEE 754 floats across all 73 trades simultaneously:
+     $$\sum_{i=1}^{73} t_i.\text{net\_pnl} = ₹19,177.74820000$$
+   - Applying standard rounding once at the pooled level:
+     $$\text{round}(19,177.74820000, 2) = \mathbf{₹19,177.75}$$
+   - **Arithmetic Difference:** The residual fractional parts beyond 2 decimal places are:
+     $$-0.0001 \text{ (ADANI)} + 0.0015 \text{ (RELIANCE)} + 0.0043 \text{ (INFY)} + 0.0025 \text{ (ICICI)} = +0.0082$$
+     Because three stocks truncated downwards while only one rounded upwards, the sum of individually rounded stock totals is exactly ₹0.0082 less ($₹19,177.74$) than the raw unrounded float total rounded once ($₹19,177.75$).
+
+3. **Convention 3: Rounding Each Trade to 2 Decimals Before Summing:**
+   - Summing $\text{round}(t_i.\text{net\_pnl}, 2)$ across all 73 trades:
+     $$\sum_{i=1}^{73} \text{round}(t_i.\text{net\_pnl}, 2) = \mathbf{₹19,177.77}$$
+
+### Resolution & Documentation Standard:
+- The historical engine deliverables use **Convention 1 (Hierarchical Stock-Sum)**, which guarantees that the portfolio pooled total equals the exact sum of the individual stock metric rows displayed in `phase24G17_individual_stock_metrics.csv` (₹19,177.74).
+- Neither value represents a calculation defect. The arithmetic relationship is:
+  $$\text{Hierarchical Stock Sum (₹19,177.74)} + ₹0.0082 = \text{Raw Trade Float Sum (₹19,177.7482)} \implies \text{roundOnce} = \mathbf{₹19,177.75}$$
+- Historical simulation results are preserved without artificial alteration.
+
 ### Verdict on DISC-02:
 The underlying simulation engine output is 100% sound and exact (+₹19,177.74). The ₹0.41 difference is an isolated markdown presentation artifact arising from manual column subtraction against an understated friction figure, combined with 1 paisa of float rounding.
 

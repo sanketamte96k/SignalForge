@@ -263,6 +263,21 @@ All governance restrictions were enforced throughout Phase 24G.17A:
 - 2020 Holdout partition remained strictly quarantined.
 - Zero broker connectivity, orders, paper trading, or live execution occurred.
 
+### Table 11.1: Final Repository & Data Integrity Certification Table
+
+| Target Artifact / Invariant | Verified Canonical SHA-256 Digest | Hash Length | Manifest & Source File Reference | Audit Integrity Status |
+| :--- | :--- | :---: | :--- | :---: |
+| **ADANIPORTS Dataset** | `fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9` | 64 | `data/historical/manifests/ADANIPORTS_1m_manifest.json` | **VERIFIED MATCH** |
+| **RELIANCE Dataset** | `a2dd7374b27045cddc2b528065d40007ca24ce131965636b9206a317d7c50260` | 64 | `data/historical/manifests/RELIANCE_1m_manifest.json` | **VERIFIED MATCH** |
+| **INFY Dataset** | `41e1c679baf0dd08dd48a86ddbec9e7a2ea1e548a6fa0c663d12fad5a040fd55` | 64 | `data/historical/manifests/INFY_1m_manifest.json` | **VERIFIED MATCH** |
+| **ICICIBANK Dataset** | `36eab7652ff59040564d91d723b8475a1761c4bfe325ded2758339ae0664196e` | 64 | `data/historical/manifests/ICICIBANK_1m_manifest.json` | **VERIFIED MATCH** |
+| **V1 Strategy Snapshot** | `920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7` | 64 | `research/strategy_evolution_2018/phase22_final_validation/strategy_snapshot.json` | **VERIFIED MATCH** |
+| **Interactive Paper Ledger** | `data/paper_trading/interactive_trades.json` | N/A | Exists, untouched, zero trades written | **UNTOUCHED** |
+| **Universe Registry** | `data/universe_registry.json` | N/A | Exists, untouched, 4 symbols registered | **UNTOUCHED** |
+| **2020 Holdout Partition** | Quarantined / Contaminated | N/A | Zero access enforced; excluded from all scripts | **QUARANTINED** |
+
+*Special Note on ADANIPORTS Hash Length:* Any string occurrence displaying `fb3275527303879c5edd26bc08ba6a9a41c5de85f5acc6ead21b01fce26cf9` is exactly 62 hexadecimal characters (a prompt-side typographical omission of `ff` at byte 13). The actual verified on-disk file `data/historical/stocks/ADANIPORTS_1m.csv` and its immutable manifest `data/historical/manifests/ADANIPORTS_1m_manifest.json` have the full 64-character SHA-256 digest `fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9`.
+
 ---
 
 ## 12. Final Decision Gate Verdict

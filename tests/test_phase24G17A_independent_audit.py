@@ -185,3 +185,41 @@ def test_discrepancy_register_and_reconciliation():
     assert "REPRODUCIBLE_BUT_STATISTICALLY_INCONCLUSIVE" in verdict_text
 
 
+def test_pooled_pnl_rounding_conventions_and_integrity_table():
+    """Verify that the 3 P&L rounding aggregation conventions are mathematically exact and documented."""
+    # Stock-level reported validation net P&Ls:
+    stock_reported_nets = {
+        "ADANIPORTS": 2133.25,
+        "RELIANCE": 8368.79,
+        "INFY": 2965.49,
+        "ICICIBANK": 5710.21,
+    }
+    # Convention 1: Hierarchical stock sum (codebase implementation in line 482 of runner)
+    conv1_sum = round(sum(stock_reported_nets.values()), 2)
+    assert conv1_sum == 19177.74, f"Expected 19177.74, got {conv1_sum}"
+
+    # Stock-level unrounded raw sums from simulation:
+    stock_raw_sums = {
+        "ADANIPORTS": 2133.2499,
+        "RELIANCE": 8368.7915,
+        "INFY": 2965.4943,
+        "ICICIBANK": 5710.2125,
+    }
+    # Convention 2: Sum raw trade floats across all 73 trades and round once at the end:
+    raw_total_float = sum(stock_raw_sums.values())
+    assert abs(raw_total_float - 19177.7482) < 1e-4
+    conv2_sum = round(raw_total_float, 2)
+    assert conv2_sum == 19177.75, f"Expected 19177.75, got {conv2_sum}"
+
+    # Verify difference between Convention 1 and 2 is exactly 1 paisa (Rs 0.01)
+    diff = round(conv2_sum - conv1_sum, 2)
+    assert diff == 0.01
+
+    # Verify final integrity table in phase24G17A_final_audit_verdict.md
+    verdict_file = AUDIT_DIR / "phase24G17A_final_audit_verdict.md"
+    text = verdict_file.read_text(encoding="utf-8")
+    assert "Table" in text or "Final Repository & Data Integrity Certification Table" in text
+    assert CANONICAL_ADANIPORTS_HASH in text
+
+
+

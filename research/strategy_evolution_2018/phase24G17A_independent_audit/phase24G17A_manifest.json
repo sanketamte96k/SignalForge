@@ -1,12 +1,12 @@
 {
-  "phase": "Phase 24G.17A \u2014 Independent Reproducibility & Statistical Audit Completion",
-  "audit_target_commit": "a176a91",
+  "phase": "Phase 24G.17A \u2014 Independent Reproducibility & Statistical Audit Final Integrity Correction",
+  "audit_target_commit": "7cded55d648c6a0b77749f7d26ca09689d04263b",
   "audit_verdict": "REPRODUCIBLE_BUT_STATISTICALLY_INCONCLUSIVE",
-  "timestamp": "2026-11-02T20:37:00Z",
+  "timestamp": "2026-11-02T21:04:00Z",
   "deliverables": {
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_audit_report.md": {
-      "sha256": "5f03b3efda200fddd157e74031f7b49c69313aa67647b7c50bcc90e817950d26",
-      "size_bytes": 22850
+      "sha256": "46578c69608300c6bd172b0ce35bb250118c790cf67b636d9820ff8f47cbacf5",
+      "size_bytes": 24919
     },
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_cluster_bootstrap.md": {
       "sha256": "af1803191a0b6b24f93d8eb6a1e6680ece63959a56e160770861962c548f8a4a",
@@ -25,12 +25,12 @@
       "size_bytes": 1823
     },
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_discrepancy_register.md": {
-      "sha256": "12ca183a9969768f3bc11b2e29489b9ff543cb387b153490827071925315d1ad",
-      "size_bytes": 10132
+      "sha256": "48ae60c5e69d4063f4ed1dd988ba807740d706acc7aa42f51b493e87e215571b",
+      "size_bytes": 13125
     },
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_final_audit_verdict.md": {
-      "sha256": "5358b7bc354ac7376537c23e39eeb344e5744d87491efe1c4f0e4d7591a7f016",
-      "size_bytes": 5987
+      "sha256": "e2a07546a388c32e3e28f9ad33a0f836150ecad7091045ea6a4fdb80a28d990c",
+      "size_bytes": 8183
     },
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_reproduction_comparison.csv": {
       "sha256": "53d80e27476650ab2f1b5d329ac2b133f5955258d734ef5698f971b6031fd961",
@@ -41,8 +41,8 @@
       "size_bytes": 15928
     },
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_test_results.md": {
-      "sha256": "2c7d9f46defc8dd03a9ec7fb40c0175000a155af625f5ec22e54dbeba412c81a",
-      "size_bytes": 13681
+      "sha256": "a8d7fcf976359facf5e7bbd7f5ac28caa6276f027effdb688599997dcc5d1315",
+      "size_bytes": 14224
     },
     "research/strategy_evolution_2018/phase24G17A_independent_audit/phase24G17A_winner_concentration_audit.csv": {
       "sha256": "cbc24faff51562d0e625b101efe5b7cf0bf738e6e7dc88fa860931121e2a2a51",
@@ -53,8 +53,8 @@
       "size_bytes": 28405
     },
     "tests/test_phase24G17A_independent_audit.py": {
-      "sha256": "dbe3a97b2bf75daae2d44fb0f1b13c41d81a898c165261f39013aa30a30ee27a",
-      "size_bytes": 8919
+      "sha256": "320e3d4c6085de75d42d0a8244ffd2825b872f0614376b5252b22b5098914b8f",
+      "size_bytes": 10506
     }
   }
 }
