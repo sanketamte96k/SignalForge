@@ -1,0 +1,33 @@
+symbol,partition,scenario,trades_retained,gross_pnl,total_costs,net_pnl,win_rate_pct,profit_factor,top_winners_gross_pct,flipped_to_loss
+ADANIPORTS,Training (2017–2018),Baseline (All Trades),67,41081.85,29255.82,11826.03,73.13,3.9047,0.0,False
+ADANIPORTS,Training (2017–2018),Excluding Top 1 Winner,66,38906.05,28829.77,10076.28,72.73,3.7509,5.3,False
+ADANIPORTS,Training (2017–2018),Excluding Top 3 Winners,64,34721.73,27912.69,6809.04,71.88,3.455,15.48,False
+ADANIPORTS,Training (2017–2018),Excluding Top 5 Winners,62,30729.11,27015.78,3713.33,70.97,3.1727,25.2,False
+ADANIPORTS,Validation (2019),Baseline (All Trades),14,8019.2,5885.95,2133.25,71.43,3.6889,0.0,False
+ADANIPORTS,Validation (2019),Excluding Top 1 Winner,13,6378.95,5461.66,917.29,69.23,3.1389,20.45,False
+ADANIPORTS,Validation (2019),Excluding Top 3 Winners,11,3648.11,4627.16,-979.05,63.64,2.2233,54.51,True
+ADANIPORTS,Validation (2019),Excluding Top 5 Winners,9,1247.48,3778.81,-2531.33,55.56,1.4183,84.44,True
+RELIANCE,Training (2017–2018),Baseline (All Trades),70,49169.65,30870.09,18299.56,82.86,5.4057,0.0,False
+RELIANCE,Training (2017–2018),Excluding Top 1 Winner,69,46967.17,30212.53,16754.64,82.61,5.2083,4.48,False
+RELIANCE,Training (2017–2018),Excluding Top 3 Winners,67,43323.07,29176.43,14146.64,82.09,4.8818,11.89,False
+RELIANCE,Training (2017–2018),Excluding Top 5 Winners,65,40293.67,28248.81,12044.86,81.54,4.6104,18.05,False
+RELIANCE,Validation (2019),Baseline (All Trades),21,17927.13,9558.34,8368.79,90.48,9.6143,0.0,False
+RELIANCE,Validation (2019),Excluding Top 1 Winner,20,15931.5,9104.67,6826.83,90.0,8.6554,11.13,False
+RELIANCE,Validation (2019),Excluding Top 3 Winners,18,12815.47,8072.77,4742.7,88.89,7.1581,28.51,False
+RELIANCE,Validation (2019),Excluding Top 5 Winners,16,9947.59,7039.61,2907.98,87.5,5.78,44.51,False
+INFY,Training (2017–2018),Baseline (All Trades),52,29813.86,22354.78,7459.08,76.92,3.9665,0.0,False
+INFY,Training (2017–2018),Excluding Top 1 Winner,51,27770.34,21933.62,5836.72,76.47,3.7631,6.85,False
+INFY,Training (2017–2018),Excluding Top 3 Winners,49,24294.81,21049.23,3245.58,75.51,3.4173,18.51,False
+INFY,Training (2017–2018),Excluding Top 5 Winners,47,21401.21,20191.53,1209.68,74.47,3.1294,28.22,False
+INFY,Validation (2019),Baseline (All Trades),26,14132.16,11166.67,2965.49,76.92,3.6032,0.0,False
+INFY,Validation (2019),Excluding Top 1 Winner,25,12494.49,10739.43,1755.06,76.0,3.3015,11.59,False
+INFY,Validation (2019),Excluding Top 3 Winners,23,9672.42,9883.33,-210.91,73.91,2.7817,31.56,True
+INFY,Validation (2019),Excluding Top 5 Winners,21,7280.09,9021.56,-1741.47,71.43,2.341,48.49,True
+ICICIBANK,Training (2017–2018),Baseline (All Trades),53,45207.86,23732.93,21474.93,83.02,6.4506,0.0,False
+ICICIBANK,Training (2017–2018),Excluding Top 1 Winner,52,43055.0,23241.97,19813.03,82.69,6.191,4.76,False
+ICICIBANK,Training (2017–2018),Excluding Top 3 Winners,50,39294.14,22337.27,16956.87,82.0,5.7376,13.08,False
+ICICIBANK,Training (2017–2018),Excluding Top 5 Winners,48,36009.16,21418.86,14590.3,81.25,5.3415,20.35,False
+ICICIBANK,Validation (2019),Baseline (All Trades),12,10879.17,5168.96,5710.21,83.33,6.316,0.0,False
+ICICIBANK,Validation (2019),Excluding Top 1 Winner,11,9156.71,4746.17,4410.54,81.82,5.4743,15.83,False
+ICICIBANK,Validation (2019),Excluding Top 3 Winners,9,6267.27,3871.51,2395.76,77.78,4.0624,42.39,False
+ICICIBANK,Validation (2019),Excluding Top 5 Winners,7,3492.24,3019.0,473.24,71.43,2.7064,67.9,False

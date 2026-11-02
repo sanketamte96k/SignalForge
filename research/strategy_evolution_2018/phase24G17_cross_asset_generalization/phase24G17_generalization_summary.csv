@@ -1,0 +1,11 @@
+metric_group,dimension,training_value,validation_value,notes
+Portfolio Breadth,Tested Symbols Count,4.0,4.0,"ADANIPORTS, RELIANCE, INFY, ICICIBANK"
+Portfolio Breadth,Profitable Symbols Count,4.0,4.0,100% of tested symbols profitable in both partitions
+Portfolio Breadth,Unprofitable Symbols Count,0.0,0.0,Zero stock level net losses
+Aggregate Volume,Total Trades (Pooled),242.0,73.0,Substantial sample size increase
+Aggregate Financials,Gross P&L (Pooled Rs),165273.22,50957.66,Consistent gross alpha generation
+Aggregate Financials,Total Friction (Pooled Rs),106213.62,31779.92,Realistic intraday statutory friction
+Aggregate Financials,Net Realized P&L (Pooled Rs),59059.6,19177.74,Net profitable across all symbols
+Aggregate Quality,Weighted Win Rate (%),78.93,80.82,Highly stable win rates across regimes
+Directional Consistency,Long Net P&L (Pooled Rs),34639.99,10742.8,Long trades profitable in all 4 stocks
+Directional Consistency,Short Net P&L (Pooled Rs),24419.6,8434.95,Short trades net positive in aggregate; symbol-specific friction sensitivity
