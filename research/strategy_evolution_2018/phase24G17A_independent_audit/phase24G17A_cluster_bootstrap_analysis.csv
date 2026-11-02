@@ -1,0 +1,5 @@
+scope,resampling_method,cluster_unit,cluster_count,realized_trades,win_rate_mean_pct,win_rate_95_ci,net_pnl_mean_rs,net_pnl_95_ci,profit_factor_mean,profit_factor_95_ci,prob_negative_net_pct,se_net_pnl,se_inflation_factor
+Pooled Validation (2019),Naive IID Trade Bootstrap,Individual Trade,73,73,80.81,"[71.23%, 89.04%]",19089.25,"[Rs 4572.97, Rs 32536.91]",5.5162,"[2.9, 10.51]",0.67,7196.36,1.0
+Pooled Validation (2019),Trading-Day Cluster Bootstrap,Calendar Trading Day,261,73,80.76,"[71.43%, 89.19%]",19198.22,"[Rs 4365.84, Rs 34240.04]",5.5402,"[2.9, 10.55]",0.6,7632.3,1.06
+Pooled Validation (2019),5-Day Temporal Block Bootstrap,5-Day Weekly Block,53,73,80.81,"[72.06%, 88.89%]",19198.04,"[Rs 4421.52, Rs 34151.26]",5.53,"[2.93, 10.42]",0.57,7582.12,1.05
+Pooled Validation (2019),10-Day Temporal Block Bootstrap,10-Day Fortnightly Block,27,73,80.69,"[71.19%, 88.89%]",19211.79,"[Rs 3575.95, Rs 36245.5]",5.525,"[2.81, 10.75]",0.82,8356.83,1.16
