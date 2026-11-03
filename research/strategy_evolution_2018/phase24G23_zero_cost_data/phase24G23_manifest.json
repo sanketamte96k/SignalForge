@@ -1,0 +1,51 @@
+{
+  "phase": "Phase 24G.23",
+  "title": "Zero-Cost Historical Data Acquisition & Validation Audit",
+  "candidate": "Hypothesis B (HYP_B_BASE)",
+  "specification": "SF-SPEC-ALPHA-2026-V1",
+  "status": "DRAFT",
+  "candidate_classification": "PROMISING_RESEARCH_CANDIDATE",
+  "audit_verdict": "FREE_DATA_INSUFFICIENT",
+  "mode": "STRICTLY_OFFLINE_ZERO_COST_EVALUATION",
+  "budget_expenditure_inr": 0.0,
+  "governance_invariants": {
+    "v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "adaniports_canonical_sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "paper_trading_ledger_status": "UNTOUCHED",
+    "universe_registry_status": "UNTOUCHED",
+    "quarantined_2020_holdout": "QUARANTINED_CONTAMINATED_ZERO_ACCESS",
+    "broker_accounts_created": 0,
+    "api_calls_made": 0,
+    "files_downloaded": 0
+  },
+  "deliverables": {
+    "phase24G23_data_quality_results.md": {
+      "sha256": "2af37f6fa5ded4d4ac56d5ac55a0e51af696eee7e1722b16c691add494012ae5",
+      "size_bytes": 7206
+    },
+    "phase24G23_existing_dataset_audit.md": {
+      "sha256": "a4492056dedda0cad50143f3a8961c8ac62b33055e420d14200baeb22f6ca723",
+      "size_bytes": 10391
+    },
+    "phase24G23_final_verdict.md": {
+      "sha256": "c4e8aff48f061063f747b33edf8f0225d7e2aa1e3138ce728d397b6423230c10",
+      "size_bytes": 8409
+    },
+    "phase24G23_free_source_comparison.md": {
+      "sha256": "ea14d8a93d6076d4099e3035ccf8e75e508be460dfc7f91e87f4433d3f5a1217",
+      "size_bytes": 13084
+    },
+    "phase24G23_license_and_provenance.md": {
+      "sha256": "d66d4b30beae6e9888c55552e62e35b22d63c410e69f88a1c55f8dff3ca6281a",
+      "size_bytes": 7168
+    },
+    "phase24G23_source_coverage.csv": {
+      "sha256": "137b9686d629d8ae64c9b2cd330998ce98f819d5da13ae82bd906ab0c6b487ad",
+      "size_bytes": 3140
+    },
+    "phase24G23_test_results.md": {
+      "sha256": "ac1c0e9ba751b14fc4840c3893f26916e6f3fff87bbff84d7e8a753908870a1d",
+      "size_bytes": 3890
+    }
+  }
+}
