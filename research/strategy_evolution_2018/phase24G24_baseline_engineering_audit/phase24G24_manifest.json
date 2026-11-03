@@ -1,0 +1,51 @@
+{
+  "phase": "Phase 24G.24",
+  "title": "Baseline Research & Engineering Validation",
+  "verdict": "ENGINEERING_CORRECTIONS_VALIDATED_HYPOTHESIS_B_INVALIDATED_BY_LOOKAHEAD",
+  "timestamp": "2026-11-03T19:30:00Z",
+  "files": {
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_backtesting_engine_audit.md": {
+      "sha256": "4d2d56d294ff02b4004e06135bc9d9fd17df774625776d26dd3bec26d6a4c2bf",
+      "size_bytes": 10776
+    },
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_data_pipeline_reliability.md": {
+      "sha256": "faf99beaee77b7776ae00dfb5363e029e247859d1e72d9aa1d02d14194a60e64",
+      "size_bytes": 7041
+    },
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_risk_and_cost_modelling.md": {
+      "sha256": "19727347fcd6675a3fe76f61b4f1942affb5feda88290a04f7926cf3ce51c1ac",
+      "size_bytes": 7799
+    },
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_engineering_improvements.md": {
+      "sha256": "d560e1561830b4227fd7f96aa4dca56819b6ed372c139244bc44f91ed300578e",
+      "size_bytes": 4835
+    },
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_test_results.md": {
+      "sha256": "4b3fd67ae0cd1c081add380d97e54ba3e47e353095769d4e02e6e5528a2934cd",
+      "size_bytes": 4888
+    },
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_final_verdict.md": {
+      "sha256": "dc718d3b1c57711dd24e9c7e758a1421859e5104e9b11e026ae7d2ec10daa204",
+      "size_bytes": 4813
+    },
+    "research/strategy_evolution_2018/phase24G24_baseline_engineering_audit/phase24G24_multi_asset_baseline_results.csv": {
+      "sha256": "e552e30d7855225d24d68ba930e96511c2579968fea16ea003fa943e10103586",
+      "size_bytes": 1874
+    },
+    "src/backtest/risk_engine_v2.py": {
+      "sha256": "d1d62a472e34cc9eb2f75cb1d0264cb15a437541ad8f99d41d3a30ac2a0314e5",
+      "size_bytes": 61372
+    },
+    "tests/test_phase24G24_baseline_engineering_audit.py": {
+      "sha256": "7ea56d2ef9cb8447a478d6d96c85a388a9a3b4129bea134f6e5f1645bbbdb239",
+      "size_bytes": 7142
+    }
+  },
+  "invariants": {
+    "frozen_v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "paper_ledger_untouched": true,
+    "universe_registry_untouched": true,
+    "holdout_2020_quarantined": true
+  }
+}

@@ -536,7 +536,9 @@ class RiskEngineV2:
 
         # Helper to extract signal for bar i
         def get_signal_at_bar(bar_idx: int) -> Optional[PositionSide]:
-            if isinstance(signals, (pd.Series, np.ndarray, list)):
+            if isinstance(signals, pd.Series):
+                sig_val = signals.iloc[bar_idx]
+            elif isinstance(signals, (np.ndarray, list)):
                 sig_val = signals[bar_idx]
             else:
                 prev_row = df.iloc[bar_idx - 1] if bar_idx > 0 else df.iloc[0]
