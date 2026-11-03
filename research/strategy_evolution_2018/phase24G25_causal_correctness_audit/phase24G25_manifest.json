@@ -1,0 +1,63 @@
+{
+  "phase": "Phase 24G.25",
+  "title": "Independent Causal-Correctness & Reproducibility Audit",
+  "verdict": "CAUSAL_CORRECTNESS_CONFIRMED",
+  "timestamp": "2026-11-03T20:20:00Z",
+  "files": {
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_lookahead_reproduction.md": {
+      "sha256": "ea1c8b3e8ab56cc90b4562debf11e9da65946e595364c92570788c71fbc54a1c",
+      "size_bytes": 7591
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_causal_alignment_proof.md": {
+      "sha256": "6616eda6d8fb17c10420c25f0f3768a0626a35aadabe7807a44010f302435166",
+      "size_bytes": 9006
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_pnl_reconciliation.md": {
+      "sha256": "2d7846c31278ddfe77a117ffb1dbb76f6bdc60fc7b34a6cefd735fb4b6581f53",
+      "size_bytes": 6582
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_numpy_equivalence_benchmark.md": {
+      "sha256": "71a4aa5f74ae53944def78fa97db09699e55a99ef406f049412bbf002febcc54",
+      "size_bytes": 5250
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_cross_project_lookahead_scan.md": {
+      "sha256": "26f9c0bba3f57504374f4c68f5ee6b490e72a8bd500fdac0175ad0b45678ecf8",
+      "size_bytes": 7614
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_v1_causality_regression.md": {
+      "sha256": "6fcfd9b3fe6b6afdfd27c11621f4fd3bed7a98f9a1eee19fafe06846c750c818",
+      "size_bytes": 7798
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_test_results.md": {
+      "sha256": "157a004c7086a58e333dc53cbefbb4c8abe338424f192258a60d77293f274ac7",
+      "size_bytes": 4488
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_final_report.md": {
+      "sha256": "3a56d1be1e07eb3e637f8fa91c6b6b73581e70d8b70a18b7b89bc0006b0a3600",
+      "size_bytes": 5857
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/phase24G25_pnl_reconciliation.csv": {
+      "sha256": "a49e44348feae08747906e3003db9f39df4a56d8e4bc600411be3d5219aad9d7",
+      "size_bytes": 4724
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/numpy_benchmark_phase24G25.json": {
+      "sha256": "c07c199b6e8eca767a853787569705b6e7a7db3b5d3c6a4ac205e36e6cd51f48",
+      "size_bytes": 827
+    },
+    "research/strategy_evolution_2018/phase24G25_causal_correctness_audit/scan_findings.json": {
+      "sha256": "af73a007a91bc4fe5fa16c03c70bd91da9f1c6a64da5e93d1ee43288841f48bf",
+      "size_bytes": 86313
+    },
+    "tests/test_phase24G25_causal_correctness_audit.py": {
+      "sha256": "773ca9d6625450ccdcbfebcac74a37a2480fd003966287c70369e690d19529ca",
+      "size_bytes": 9044
+    }
+  },
+  "invariants": {
+    "frozen_v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "paper_ledger_untouched": true,
+    "universe_registry_untouched": true,
+    "holdout_2020_quarantined": true
+  }
+}

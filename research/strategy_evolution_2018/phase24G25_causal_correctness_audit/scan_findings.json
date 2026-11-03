@@ -1,0 +1,1276 @@
+[
+  {
+    "file": "src/backtest/engine.py",
+    "line": 523,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "        df[\"ATR\"] = df[col_map[\"atr\"]].astype(float)\n    elif \"ATR\" not in df.columns:\n        prev_close = df[\"Close\"].shift(1)\n        tr1 = df[\"High\"] - df[\"Low\"]\n        tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/backtest/risk_engine_v2.py",
+    "line": 1309,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "            df[\"ATR\"] = df[col_map[\"atr14\"]].astype(float)\n        else:\n            prev_close = df[\"Close\"].shift(1)\n            tr1 = df[\"High\"] - df[\"Low\"]\n            tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/data/resampler.py",
+    "line": 49,
+    "pattern": "resample_ohlcv",
+    "line_content": "def resample_ohlcv(",
+    "context": "\n\ndef resample_ohlcv(\n    data: pd.DataFrame,\n    timeframe: str,"
+  },
+  {
+    "file": "src/data/resampler.py",
+    "line": 129,
+    "pattern": "resample_ohlcv",
+    "line_content": "timeframe: resample_ohlcv(data, timeframe)",
+    "context": "\n    return {\n        timeframe: resample_ohlcv(data, timeframe)\n        for timeframe in SUPPORTED_TIMEFRAMES\n    }"
+  },
+  {
+    "file": "src/indicators/indicators.py",
+    "line": 182,
+    "pattern": "shift_positive",
+    "line_content": "previous_close = close.shift(1)",
+    "context": "        )\n\n    previous_close = close.shift(1)\n\n    true_range = pd.concat("
+  },
+  {
+    "file": "src/intelligence/volatility_engine.py",
+    "line": 47,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = close.shift(1).bfill()",
+    "context": "\n    # 1. Causal True Range and ATR(14)\n    prev_close = close.shift(1).bfill()\n    tr1 = high - low\n    tr2 = (high - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/backtest_strategy.py",
+    "line": 192,
+    "pattern": "resample_ohlcv",
+    "line_content": "frame = resample_ohlcv(data, timeframe).copy()",
+    "context": "\n    for timeframe in TIMEFRAMES:\n        frame = resample_ohlcv(data, timeframe).copy()\n\n        frame[\"ema20\"] = calculate_ema("
+  },
+  {
+    "file": "src/strategy/context_engine_v10.py",
+    "line": 66,
+    "pattern": "shift_positive",
+    "line_content": "tr2 = (high - close.shift(1)).abs()",
+    "context": "    # ATR 14\n    tr1 = high - low\n    tr2 = (high - close.shift(1)).abs()\n    tr3 = (low - close.shift(1)).abs()\n    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)"
+  },
+  {
+    "file": "src/strategy/context_engine_v10.py",
+    "line": 67,
+    "pattern": "shift_positive",
+    "line_content": "tr3 = (low - close.shift(1)).abs()",
+    "context": "    tr1 = high - low\n    tr2 = (high - close.shift(1)).abs()\n    tr3 = (low - close.shift(1)).abs()\n    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)\n    df[\"bm_atr_14\"] = tr.rolling(14).mean().bfill()"
+  },
+  {
+    "file": "src/strategy/context_engine_v10.py",
+    "line": 116,
+    "pattern": "shift_positive",
+    "line_content": "tr2 = (high - close.shift(1)).abs()",
+    "context": "    # ATR 14\n    tr1 = high - low\n    tr2 = (high - close.shift(1)).abs()\n    tr3 = (low - close.shift(1)).abs()\n    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)"
+  },
+  {
+    "file": "src/strategy/context_engine_v10.py",
+    "line": 117,
+    "pattern": "shift_positive",
+    "line_content": "tr3 = (low - close.shift(1)).abs()",
+    "context": "    tr1 = high - low\n    tr2 = (high - close.shift(1)).abs()\n    tr3 = (low - close.shift(1)).abs()\n    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)\n    df[\"stock_atr_14\"] = tr.rolling(14).mean().bfill()"
+  },
+  {
+    "file": "src/strategy/horizon_engine.py",
+    "line": 123,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = close.shift(1).bfill()",
+    "context": "\n    # 2. True Range and ATR(14)\n    prev_close = close.shift(1).bfill()\n    tr1 = high - low\n    tr2 = (high - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/horizon_engine.py",
+    "line": 140,
+    "pattern": "shift_positive",
+    "line_content": "up_move = high - high.shift(1)",
+    "context": "\n    # 3. Directional Movement (ADX 14)\n    up_move = high - high.shift(1)\n    down_move = low.shift(1) - low\n    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)"
+  },
+  {
+    "file": "src/strategy/horizon_engine.py",
+    "line": 141,
+    "pattern": "shift_positive",
+    "line_content": "down_move = low.shift(1) - low",
+    "context": "    # 3. Directional Movement (ADX 14)\n    up_move = high - high.shift(1)\n    down_move = low.shift(1) - low\n    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)\n    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)"
+  },
+  {
+    "file": "src/strategy/horizon_engine.py",
+    "line": 155,
+    "pattern": "shift_positive",
+    "line_content": "out[\"rolling_high_20\"] = high.shift(1).rolling(20, min_periods=5).max().bfill()",
+    "context": "\n    # 4. Rolling Range (20 candles)\n    out[\"rolling_high_20\"] = high.shift(1).rolling(20, min_periods=5).max().bfill()\n    out[\"rolling_low_20\"] = low.shift(1).rolling(20, min_periods=5).min().bfill()\n    out[\"rolling_range_20\"] = out[\"rolling_high_20\"] - out[\"rolling_low_20\"]"
+  },
+  {
+    "file": "src/strategy/horizon_engine.py",
+    "line": 156,
+    "pattern": "shift_positive",
+    "line_content": "out[\"rolling_low_20\"] = low.shift(1).rolling(20, min_periods=5).min().bfill()",
+    "context": "    # 4. Rolling Range (20 candles)\n    out[\"rolling_high_20\"] = high.shift(1).rolling(20, min_periods=5).max().bfill()\n    out[\"rolling_low_20\"] = low.shift(1).rolling(20, min_periods=5).min().bfill()\n    out[\"rolling_range_20\"] = out[\"rolling_high_20\"] - out[\"rolling_low_20\"]\n    out[\"range_compression\"] = (out[\"rolling_range_20\"] / (out[\"atr14\"] * np.sqrt(20.0))).replace(0, np.nan).bfill().fillna(1.0)"
+  },
+  {
+    "file": "src/strategy/market_state.py",
+    "line": 47,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = out[\"Close\"].shift(1).bfill()",
+    "context": "\n    # 2. True Range & ATR(14)\n    prev_close = out[\"Close\"].shift(1).bfill()\n    tr1 = out[\"High\"] - out[\"Low\"]\n    tr2 = (out[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/market_state.py",
+    "line": 67,
+    "pattern": "shift_positive",
+    "line_content": "up_move = out[\"High\"] - out[\"High\"].shift(1)",
+    "context": "\n    # 3. Directional Movement Index (ADX 14)\n    up_move = out[\"High\"] - out[\"High\"].shift(1)\n    down_move = out[\"Low\"].shift(1) - out[\"Low\"]\n    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)"
+  },
+  {
+    "file": "src/strategy/market_state.py",
+    "line": 68,
+    "pattern": "shift_positive",
+    "line_content": "down_move = out[\"Low\"].shift(1) - out[\"Low\"]",
+    "context": "    # 3. Directional Movement Index (ADX 14)\n    up_move = out[\"High\"] - out[\"High\"].shift(1)\n    down_move = out[\"Low\"].shift(1) - out[\"Low\"]\n    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)\n    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)"
+  },
+  {
+    "file": "src/strategy/market_state.py",
+    "line": 128,
+    "pattern": "shift_positive",
+    "line_content": "(df_feat[\"atr_ratio\"] > 1.2) & (df_feat[\"atr14\"] > df_feat[\"atr14\"].shift(1)),",
+    "context": "        (df_feat[\"atr_pctile\"] >= 70.0),\n        (df_feat[\"atr_pctile\"] <= 30.0),\n        (df_feat[\"atr_ratio\"] > 1.2) & (df_feat[\"atr14\"] > df_feat[\"atr14\"].shift(1)),\n        (df_feat[\"atr_ratio\"] < 0.8) & (df_feat[\"atr14\"] < df_feat[\"atr14\"].shift(1)),\n    ]"
+  },
+  {
+    "file": "src/strategy/market_state.py",
+    "line": 129,
+    "pattern": "shift_positive",
+    "line_content": "(df_feat[\"atr_ratio\"] < 0.8) & (df_feat[\"atr14\"] < df_feat[\"atr14\"].shift(1)),",
+    "context": "        (df_feat[\"atr_pctile\"] <= 30.0),\n        (df_feat[\"atr_ratio\"] > 1.2) & (df_feat[\"atr14\"] > df_feat[\"atr14\"].shift(1)),\n        (df_feat[\"atr_ratio\"] < 0.8) & (df_feat[\"atr14\"] < df_feat[\"atr14\"].shift(1)),\n    ]\n"
+  },
+  {
+    "file": "src/strategy/phase4_signal_quality.py",
+    "line": 94,
+    "pattern": "shift_positive",
+    "line_content": "df[\"EMA_SLOPE\"] = (df[\"EMA9\"] - df[\"EMA9\"].shift(1)) / closes * 100.0",
+    "context": "    # 2. EMA Separation % & Slope\n    df[\"EMA_SEP_PCT\"] = (df[\"EMA9\"] - df[\"EMA21\"]).abs() / closes * 100.0\n    df[\"EMA_SLOPE\"] = (df[\"EMA9\"] - df[\"EMA9\"].shift(1)) / closes * 100.0\n\n    # 3. RSI(14)"
+  },
+  {
+    "file": "src/strategy/phase4_signal_quality.py",
+    "line": 104,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = closes.shift(1)",
+    "context": "\n    # 4. True Range & ATR(14)\n    prev_close = closes.shift(1)\n    tr1 = highs - lows\n    tr2 = (highs - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/phase4_signal_quality.py",
+    "line": 114,
+    "pattern": "shift_positive",
+    "line_content": "up_move = highs - highs.shift(1)",
+    "context": "\n    # 5. Wilder's ADX(14), +DI, -DI\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy/phase4_signal_quality.py",
+    "line": 115,
+    "pattern": "shift_positive",
+    "line_content": "down_move = lows.shift(1) - lows",
+    "context": "    # 5. Wilder's ADX(14), +DI, -DI\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy/phase4_signal_quality.py",
+    "line": 130,
+    "pattern": "shift_positive",
+    "line_content": "df[\"RET_5\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0",
+    "context": "\n    # 6. Recent momentum (5-bar return)\n    df[\"RET_5\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n\n    # 7. Volume relative to 20-bar rolling average"
+  },
+  {
+    "file": "src/strategy/phase4_signal_quality.py",
+    "line": 156,
+    "pattern": "shift_positive",
+    "line_content": "log_ret = np.log(closes / closes.shift(1))",
+    "context": "\n    # 12. Realized Volatility (20-bar return std dev)\n    log_ret = np.log(closes / closes.shift(1))\n    df[\"REALIZED_VOL\"] = log_ret.rolling(20).std() * np.sqrt(252 * 375) * 100.0\n"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 75,
+    "pattern": "shift_positive",
+    "line_content": "out[\"ema21_slope\"] = ((out[\"ema21\"] - out[\"ema21\"].shift(5)) / (5.0 * out[\"ema21\"])).fillna(0.0)",
+    "context": "    out[\"ema21\"] = close.ewm(span=21, adjust=False).mean()\n    out[\"ema50\"] = close.ewm(span=50, adjust=False).mean()\n    out[\"ema21_slope\"] = ((out[\"ema21\"] - out[\"ema21\"].shift(5)) / (5.0 * out[\"ema21\"])).fillna(0.0)\n\n    # 2. Causal True Range and ATR(14)"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 78,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = close.shift(1).bfill()",
+    "context": "\n    # 2. Causal True Range and ATR(14)\n    prev_close = close.shift(1).bfill()\n    tr1 = high - low\n    tr2 = (high - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 89,
+    "pattern": "shift_positive",
+    "line_content": "up_move = high - high.shift(1)",
+    "context": "\n    # 3. Causal Wilder's ADX(14)\n    up_move = high - high.shift(1)\n    down_move = low.shift(1) - low\n    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 90,
+    "pattern": "shift_positive",
+    "line_content": "down_move = low.shift(1) - low",
+    "context": "    # 3. Causal Wilder's ADX(14)\n    up_move = high - high.shift(1)\n    down_move = low.shift(1) - low\n    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)\n    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 104,
+    "pattern": "shift_positive",
+    "line_content": "out[\"hh_20\"] = high.shift(1).rolling(20, min_periods=5).max().bfill()",
+    "context": "\n    # 4. Rolling ranges (shifted by 1 so current candle's own extreme is not counted as prior support/resistance)\n    out[\"hh_20\"] = high.shift(1).rolling(20, min_periods=5).max().bfill()\n    out[\"ll_20\"] = low.shift(1).rolling(20, min_periods=5).min().bfill()\n    span_20 = (out[\"hh_20\"] - out[\"ll_20\"]).replace(0, np.nan)"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 105,
+    "pattern": "shift_positive",
+    "line_content": "out[\"ll_20\"] = low.shift(1).rolling(20, min_periods=5).min().bfill()",
+    "context": "    # 4. Rolling ranges (shifted by 1 so current candle's own extreme is not counted as prior support/resistance)\n    out[\"hh_20\"] = high.shift(1).rolling(20, min_periods=5).max().bfill()\n    out[\"ll_20\"] = low.shift(1).rolling(20, min_periods=5).min().bfill()\n    span_20 = (out[\"hh_20\"] - out[\"ll_20\"]).replace(0, np.nan)\n    out[\"span_20\"] = span_20"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 111,
+    "pattern": "shift_positive",
+    "line_content": "out[\"hh_10\"] = high.shift(1).rolling(10, min_periods=3).max().bfill()",
+    "context": "    out[\"range_comp\"] = (span_20 / (out[\"atr14\"] * np.sqrt(20))).fillna(1.0)\n\n    out[\"hh_10\"] = high.shift(1).rolling(10, min_periods=3).max().bfill()\n    out[\"ll_10\"] = low.shift(1).rolling(10, min_periods=3).min().bfill()\n"
+  },
+  {
+    "file": "src/strategy/selective_engine_v9.py",
+    "line": 112,
+    "pattern": "shift_positive",
+    "line_content": "out[\"ll_10\"] = low.shift(1).rolling(10, min_periods=3).min().bfill()",
+    "context": "\n    out[\"hh_10\"] = high.shift(1).rolling(10, min_periods=3).max().bfill()\n    out[\"ll_10\"] = low.shift(1).rolling(10, min_periods=3).min().bfill()\n\n    # 5. Multi-horizon returns & RSI"
+  },
+  {
+    "file": "src/strategy/setup_engine.py",
+    "line": 56,
+    "pattern": "shift_positive",
+    "line_content": "roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()",
+    "context": "    open_p = df[\"Open\"].to_numpy()\n    atr = df[\"atr14\"].to_numpy()\n    roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()\n    roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()\n    compression = df[\"range_compression\"].shift(1).to_numpy()"
+  },
+  {
+    "file": "src/strategy/setup_engine.py",
+    "line": 57,
+    "pattern": "shift_positive",
+    "line_content": "roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()",
+    "context": "    atr = df[\"atr14\"].to_numpy()\n    roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()\n    roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()\n    compression = df[\"range_compression\"].shift(1).to_numpy()\n    atr_ratio = df[\"atr_ratio\"].to_numpy()"
+  },
+  {
+    "file": "src/strategy/setup_engine.py",
+    "line": 58,
+    "pattern": "shift_positive",
+    "line_content": "compression = df[\"range_compression\"].shift(1).to_numpy()",
+    "context": "    roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()\n    roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()\n    compression = df[\"range_compression\"].shift(1).to_numpy()\n    atr_ratio = df[\"atr_ratio\"].to_numpy()\n    state = df[\"market_state\"].to_numpy()"
+  },
+  {
+    "file": "src/strategy/setup_engine.py",
+    "line": 221,
+    "pattern": "shift_positive",
+    "line_content": "roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()",
+    "context": "    open_p = df[\"Open\"].to_numpy()\n    atr = df[\"atr14\"].to_numpy()\n    roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()\n    roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()\n    adx = df[\"adx14\"].to_numpy()"
+  },
+  {
+    "file": "src/strategy/setup_engine.py",
+    "line": 222,
+    "pattern": "shift_positive",
+    "line_content": "roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()",
+    "context": "    atr = df[\"atr14\"].to_numpy()\n    roll_high = df[\"rolling_high_20\"].shift(1).to_numpy()\n    roll_low = df[\"rolling_low_20\"].shift(1).to_numpy()\n    adx = df[\"adx14\"].to_numpy()\n    state = df[\"market_state\"].to_numpy()"
+  },
+  {
+    "file": "src/strategy/setup_engine.py",
+    "line": 307,
+    "pattern": "shift_positive",
+    "line_content": "compression = df[\"range_compression\"].shift(1).to_numpy()",
+    "context": "    open_p = df[\"Open\"].to_numpy()\n    atr = df[\"atr14\"].to_numpy()\n    compression = df[\"range_compression\"].shift(1).to_numpy()\n    atr_ratio = df[\"atr_ratio\"].to_numpy()\n    state = df[\"market_state\"].to_numpy()"
+  },
+  {
+    "file": "src/strategy/strategy_v2.py",
+    "line": 109,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/strategy_v2.py",
+    "line": 118,
+    "pattern": "shift_positive",
+    "line_content": "up_move = df[\"High\"] - df[\"High\"].shift(1)",
+    "context": "\n    # 4. 1-minute ADX(14) (Wilder's formulation)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy/strategy_v2.py",
+    "line": 119,
+    "pattern": "shift_positive",
+    "line_content": "down_move = df[\"Low\"].shift(1) - df[\"Low\"]",
+    "context": "    # 4. 1-minute ADX(14) (Wilder's formulation)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy/strategy_v2.py",
+    "line": 135,
+    "pattern": "shift_positive",
+    "line_content": "((df[\"EMA9\"].shift(1) <= df[\"EMA21\"].shift(1)) & (df[\"EMA9\"] > df[\"EMA21\"]))",
+    "context": "    # 5. Crossover count in the last 20 bars (consolidation / chop protection)\n    crossover = (\n        ((df[\"EMA9\"].shift(1) <= df[\"EMA21\"].shift(1)) & (df[\"EMA9\"] > df[\"EMA21\"]))\n        | ((df[\"EMA9\"].shift(1) >= df[\"EMA21\"].shift(1)) & (df[\"EMA9\"] < df[\"EMA21\"]))\n    )"
+  },
+  {
+    "file": "src/strategy/strategy_v2.py",
+    "line": 136,
+    "pattern": "shift_positive",
+    "line_content": "| ((df[\"EMA9\"].shift(1) >= df[\"EMA21\"].shift(1)) & (df[\"EMA9\"] < df[\"EMA21\"]))",
+    "context": "    crossover = (\n        ((df[\"EMA9\"].shift(1) <= df[\"EMA21\"].shift(1)) & (df[\"EMA9\"] > df[\"EMA21\"]))\n        | ((df[\"EMA9\"].shift(1) >= df[\"EMA21\"].shift(1)) & (df[\"EMA9\"] < df[\"EMA21\"]))\n    )\n    df[\"crossover_count_20\"] = crossover.astype(int).rolling(20).sum()"
+  },
+  {
+    "file": "src/strategy/strategy_v2.py",
+    "line": 151,
+    "pattern": "merge_asof",
+    "line_content": "merged = pd.merge_asof(",
+    "context": "    df_15m[\"available_at\"] = df_15m.index + pd.Timedelta(minutes=15)\n\n    merged = pd.merge_asof(\n        df.sort_values(\"dt\"),\n        df_15m[[\"available_at\", \"EMA9_15\", \"EMA21_15\"]],"
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 16,
+    "pattern": "shift_positive",
+    "line_content": "- 20-bar breakout levels strictly exclude the current bar via shift(1).",
+    "context": "Strict Look-Ahead Bias Guarantees:\n- VWAP resets causally at the beginning of each trading day (09:15 IST) using intraday bars up to current bar.\n- 20-bar breakout levels strictly exclude the current bar via shift(1).\n- Rolling medians (Volume, ATR ratio) use strictly causal historical windows.\n\"\"\""
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 133,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 142,
+    "pattern": "shift_positive",
+    "line_content": "up_move = df[\"High\"] - df[\"High\"].shift(1)",
+    "context": "\n    # 4. 1-minute ADX(14) (Wilder's formulation)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 143,
+    "pattern": "shift_positive",
+    "line_content": "down_move = df[\"Low\"].shift(1) - df[\"Low\"]",
+    "context": "    # 4. 1-minute ADX(14) (Wilder's formulation)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 167,
+    "pattern": "shift_positive",
+    "line_content": "# 7. Breakout Levels: Previous 20-bar High and Low (strictly excluding current bar via shift(1))",
+    "context": "    df[\"vwap\"] = df[\"cum_tpv\"] / df[\"cum_vol\"].replace(0, np.nan)\n\n    # 7. Breakout Levels: Previous 20-bar High and Low (strictly excluding current bar via shift(1))\n    df[\"high_20\"] = df[\"High\"].shift(1).rolling(20).max()\n    df[\"low_20\"] = df[\"Low\"].shift(1).rolling(20).min()"
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 168,
+    "pattern": "shift_positive",
+    "line_content": "df[\"high_20\"] = df[\"High\"].shift(1).rolling(20).max()",
+    "context": "\n    # 7. Breakout Levels: Previous 20-bar High and Low (strictly excluding current bar via shift(1))\n    df[\"high_20\"] = df[\"High\"].shift(1).rolling(20).max()\n    df[\"low_20\"] = df[\"Low\"].shift(1).rolling(20).min()\n"
+  },
+  {
+    "file": "src/strategy/strategy_v3.py",
+    "line": 169,
+    "pattern": "shift_positive",
+    "line_content": "df[\"low_20\"] = df[\"Low\"].shift(1).rolling(20).min()",
+    "context": "    # 7. Breakout Levels: Previous 20-bar High and Low (strictly excluding current bar via shift(1))\n    df[\"high_20\"] = df[\"High\"].shift(1).rolling(20).max()\n    df[\"low_20\"] = df[\"Low\"].shift(1).rolling(20).min()\n\n    # 8. ATR Volatility Ratio: ATR(14) / Close and its 20-period rolling median"
+  },
+  {
+    "file": "src/strategy/structure_engine.py",
+    "line": 72,
+    "pattern": "shift_positive",
+    "line_content": "prev_c_1m = close_1m.shift(1).bfill()",
+    "context": "    out[\"ema9_slope_1m\"] = out[\"ema9_1m\"].diff(5) / 5.0\n\n    prev_c_1m = close_1m.shift(1).bfill()\n    tr1 = high_1m - low_1m\n    tr2 = (high_1m - prev_c_1m).abs()"
+  },
+  {
+    "file": "src/strategy/structure_engine.py",
+    "line": 109,
+    "pattern": "shift_positive",
+    "line_content": "res_prev_c = res_close.shift(1).bfill()",
+    "context": "        res_slope = res_fast.diff(3) / 3.0\n\n        res_prev_c = res_close.shift(1).bfill()\n        res_tr1 = resampled[\"High\"] - resampled[\"Low\"]\n        res_tr2 = (resampled[\"High\"] - res_prev_c).abs()"
+  },
+  {
+    "file": "src/strategy/structure_engine.py",
+    "line": 130,
+    "pattern": "merge_asof",
+    "line_content": "out = pd.merge_asof(",
+    "context": "\n        # Merge causally via merge_asof: only past completed higher timeframe candle is visible\n        out = pd.merge_asof(\n            out,\n            res_df,"
+  },
+  {
+    "file": "src/strategy_evolution/phase2_regime.py",
+    "line": 88,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy_evolution/phase2_regime.py",
+    "line": 97,
+    "pattern": "shift_positive",
+    "line_content": "up_move = df[\"High\"] - df[\"High\"].shift(1)",
+    "context": "\n    # 4. 1-minute Wilder's ADX(14)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy_evolution/phase2_regime.py",
+    "line": 98,
+    "pattern": "shift_positive",
+    "line_content": "down_move = df[\"Low\"].shift(1) - df[\"Low\"]",
+    "context": "    # 4. 1-minute Wilder's ADX(14)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_entry_quality.py",
+    "line": 116,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_entry_quality.py",
+    "line": 125,
+    "pattern": "shift_positive",
+    "line_content": "up_move = df[\"High\"] - df[\"High\"].shift(1)",
+    "context": "\n    # 4. 1-minute Wilder's ADX(14)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_entry_quality.py",
+    "line": 126,
+    "pattern": "shift_positive",
+    "line_content": "down_move = df[\"Low\"].shift(1) - df[\"Low\"]",
+    "context": "    # 4. 1-minute Wilder's ADX(14)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 77,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = closes.shift(1)",
+    "context": "\n    # 3. True Range & ATR(14)\n    prev_close = closes.shift(1)\n    tr1 = highs - lows\n    tr2 = (highs - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 86,
+    "pattern": "shift_positive",
+    "line_content": "up_move = highs - highs.shift(1)",
+    "context": "\n    # 4. Wilder's ADX(14)\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 87,
+    "pattern": "shift_positive",
+    "line_content": "down_move = lows.shift(1) - lows",
+    "context": "    # 4. Wilder's ADX(14)\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 102,
+    "pattern": "shift_positive",
+    "line_content": "df[\"EMA9_SLOPE\"] = (df[\"EMA9\"] - df[\"EMA9\"].shift(1)) / closes * 100.0",
+    "context": "    df[\"EMA_SPREAD\"] = df[\"EMA9\"] - df[\"EMA21\"]\n    df[\"EMA_SPREAD_PCT\"] = (df[\"EMA_SPREAD\"] / closes) * 100.0\n    df[\"EMA9_SLOPE\"] = (df[\"EMA9\"] - df[\"EMA9\"].shift(1)) / closes * 100.0\n    df[\"EMA21_SLOPE\"] = (df[\"EMA21\"] - df[\"EMA21\"].shift(1)) / closes * 100.0\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 103,
+    "pattern": "shift_positive",
+    "line_content": "df[\"EMA21_SLOPE\"] = (df[\"EMA21\"] - df[\"EMA21\"].shift(1)) / closes * 100.0",
+    "context": "    df[\"EMA_SPREAD_PCT\"] = (df[\"EMA_SPREAD\"] / closes) * 100.0\n    df[\"EMA9_SLOPE\"] = (df[\"EMA9\"] - df[\"EMA9\"].shift(1)) / closes * 100.0\n    df[\"EMA21_SLOPE\"] = (df[\"EMA21\"] - df[\"EMA21\"].shift(1)) / closes * 100.0\n\n    # 6. ATR Percentage"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 129,
+    "pattern": "shift_positive",
+    "line_content": "df[\"RET_3BAR\"] = (closes - closes.shift(3)) / closes.shift(3) * 100.0",
+    "context": "\n    # 10. Previous Returns: 3, 5, 10, 15 bars\n    df[\"RET_3BAR\"] = (closes - closes.shift(3)) / closes.shift(3) * 100.0\n    df[\"RET_5BAR\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"RET_10BAR\"] = (closes - closes.shift(10)) / closes.shift(10) * 100.0"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 130,
+    "pattern": "shift_positive",
+    "line_content": "df[\"RET_5BAR\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0",
+    "context": "    # 10. Previous Returns: 3, 5, 10, 15 bars\n    df[\"RET_3BAR\"] = (closes - closes.shift(3)) / closes.shift(3) * 100.0\n    df[\"RET_5BAR\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"RET_10BAR\"] = (closes - closes.shift(10)) / closes.shift(10) * 100.0\n    df[\"RET_15BAR\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 131,
+    "pattern": "shift_positive",
+    "line_content": "df[\"RET_10BAR\"] = (closes - closes.shift(10)) / closes.shift(10) * 100.0",
+    "context": "    df[\"RET_3BAR\"] = (closes - closes.shift(3)) / closes.shift(3) * 100.0\n    df[\"RET_5BAR\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"RET_10BAR\"] = (closes - closes.shift(10)) / closes.shift(10) * 100.0\n    df[\"RET_15BAR\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 132,
+    "pattern": "shift_positive",
+    "line_content": "df[\"RET_15BAR\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0",
+    "context": "    df[\"RET_5BAR\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"RET_10BAR\"] = (closes - closes.shift(10)) / closes.shift(10) * 100.0\n    df[\"RET_15BAR\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0\n\n    # 11. Rolling Volume Ratio"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 139,
+    "pattern": "shift_positive",
+    "line_content": "crossover_event = (df[\"EMA9\"] > df[\"EMA21\"]) != (df[\"EMA9\"].shift(1) > df[\"EMA21\"].shift(1))",
+    "context": "\n    # 12. Chop Score Components\n    crossover_event = (df[\"EMA9\"] > df[\"EMA21\"]) != (df[\"EMA9\"].shift(1) > df[\"EMA21\"].shift(1))\n    df[\"CROSSOVER_COUNT_20\"] = crossover_event.rolling(20).sum()\n    path_len_20 = (closes.diff().abs()).rolling(20).sum()"
+  },
+  {
+    "file": "src/strategy_evolution/phase3_forensics.py",
+    "line": 142,
+    "pattern": "shift_positive",
+    "line_content": "displacement_20 = (closes - closes.shift(20)).abs()",
+    "context": "    df[\"CROSSOVER_COUNT_20\"] = crossover_event.rolling(20).sum()\n    path_len_20 = (closes.diff().abs()).rolling(20).sum()\n    displacement_20 = (closes - closes.shift(20)).abs()\n    df[\"EFFICIENCY_RATIO_20\"] = displacement_20 / path_len_20.replace(0, np.nan)\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_exit_risk.py",
+    "line": 123,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 66,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = closes.shift(1)",
+    "context": "\n    # True Range & ATR(14)\n    prev_close = closes.shift(1)\n    tr1 = highs - lows\n    tr2 = (highs - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 214,
+    "pattern": "shift_positive",
+    "line_content": "df[\"BOS_LONG\"] = (df[\"Close\"] > df[\"LAST_SWING_HIGH\"]) & (df[\"Close\"].shift(1) <= df[\"LAST_SWING_HIGH\"])",
+    "context": "\n    # 6. Break of Structure (BOS)\n    df[\"BOS_LONG\"] = (df[\"Close\"] > df[\"LAST_SWING_HIGH\"]) & (df[\"Close\"].shift(1) <= df[\"LAST_SWING_HIGH\"])\n    df[\"BOS_SHORT\"] = (df[\"Close\"] < df[\"LAST_SWING_LOW\"]) & (df[\"Close\"].shift(1) >= df[\"LAST_SWING_LOW\"])\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 215,
+    "pattern": "shift_positive",
+    "line_content": "df[\"BOS_SHORT\"] = (df[\"Close\"] < df[\"LAST_SWING_LOW\"]) & (df[\"Close\"].shift(1) >= df[\"LAST_SWING_LOW\"])",
+    "context": "    # 6. Break of Structure (BOS)\n    df[\"BOS_LONG\"] = (df[\"Close\"] > df[\"LAST_SWING_HIGH\"]) & (df[\"Close\"].shift(1) <= df[\"LAST_SWING_HIGH\"])\n    df[\"BOS_SHORT\"] = (df[\"Close\"] < df[\"LAST_SWING_LOW\"]) & (df[\"Close\"].shift(1) >= df[\"LAST_SWING_LOW\"])\n\n    return {"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 407,
+    "pattern": "shift_positive",
+    "line_content": "roll_prev_h = pd.Series(highs).shift(1).rolling(5).max().to_numpy()",
+    "context": "    last_trade_date = None\n\n    roll_prev_h = pd.Series(highs).shift(1).rolling(5).max().to_numpy()\n    roll_prev_l = pd.Series(lows).shift(1).rolling(5).min().to_numpy()\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 408,
+    "pattern": "shift_positive",
+    "line_content": "roll_prev_l = pd.Series(lows).shift(1).rolling(5).min().to_numpy()",
+    "context": "\n    roll_prev_h = pd.Series(highs).shift(1).rolling(5).max().to_numpy()\n    roll_prev_l = pd.Series(lows).shift(1).rolling(5).min().to_numpy()\n\n    for i in range(1, n):"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 603,
+    "pattern": "shift_positive",
+    "line_content": "roll_prev_h = pd.Series(highs).shift(1).rolling(5).max().to_numpy()",
+    "context": "    trades = []\n\n    roll_prev_h = pd.Series(highs).shift(1).rolling(5).max().to_numpy()\n    roll_prev_l = pd.Series(lows).shift(1).rolling(5).min().to_numpy()\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 604,
+    "pattern": "shift_positive",
+    "line_content": "roll_prev_l = pd.Series(lows).shift(1).rolling(5).min().to_numpy()",
+    "context": "\n    roll_prev_h = pd.Series(highs).shift(1).rolling(5).max().to_numpy()\n    roll_prev_l = pd.Series(lows).shift(1).rolling(5).min().to_numpy()\n\n    for i in range(10, n):"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 770,
+    "pattern": "shift_positive",
+    "line_content": "roll_ref_min = pd.Series(lows).shift(2).rolling(lookback_window).min().to_numpy()",
+    "context": "    trades = []\n\n    roll_ref_min = pd.Series(lows).shift(2).rolling(lookback_window).min().to_numpy()\n    roll_ref_max = pd.Series(highs).shift(2).rolling(lookback_window).max().to_numpy()\n"
+  },
+  {
+    "file": "src/strategy_evolution/phase4_market_structure.py",
+    "line": 771,
+    "pattern": "shift_positive",
+    "line_content": "roll_ref_max = pd.Series(highs).shift(2).rolling(lookback_window).max().to_numpy()",
+    "context": "\n    roll_ref_min = pd.Series(lows).shift(2).rolling(lookback_window).min().to_numpy()\n    roll_ref_max = pd.Series(highs).shift(2).rolling(lookback_window).max().to_numpy()\n\n    for i in range(lookback_window + 1, n):"
+  },
+  {
+    "file": "src/strategy_evolution/strategy.py",
+    "line": 71,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy_evolution/strategy.py",
+    "line": 101,
+    "pattern": "merge_asof",
+    "line_content": "m15 = pd.merge_asof(",
+    "context": "\n    # Backward as-of merge: candle at [T, T+TF) only available at T + TF\n    m15 = pd.merge_asof(\n        df.sort_values(\"dt\"),\n        df_15m[[\"available_at\", \"EMA9_15m\", \"EMA21_15m\"]],"
+  },
+  {
+    "file": "src/strategy_evolution/strategy.py",
+    "line": 108,
+    "pattern": "merge_asof",
+    "line_content": "m30 = pd.merge_asof(",
+    "context": "        direction=\"backward\",\n    )\n    m30 = pd.merge_asof(\n        df.sort_values(\"dt\"),\n        df_30m[[\"available_at\", \"EMA9_30m\", \"EMA21_30m\"]],"
+  },
+  {
+    "file": "src/universe/readiness.py",
+    "line": 335,
+    "pattern": "shift_positive",
+    "line_content": "daily_agg[\"prev_close\"] = daily_agg[\"close\"].shift(1)",
+    "context": "            daily_agg = temp_df.groupby(\"date\").agg({\"open\": \"first\", \"close\": \"last\"}).reset_index()\n            if len(daily_agg) > 1:\n                daily_agg[\"prev_close\"] = daily_agg[\"close\"].shift(1)\n                valid_prev = daily_agg[\"prev_close\"] > 0\n                gaps = ("
+  },
+  {
+    "file": "src/validation/data_availability.py",
+    "line": 203,
+    "pattern": "resample_ohlcv",
+    "line_content": "resample_ohlcv(",
+    "context": "            else:\n                count = len(\n                    resample_ohlcv(\n                        session_data,\n                        timeframe,"
+  },
+  {
+    "file": "src/validation/regime_oos.py",
+    "line": 549,
+    "pattern": "shift_positive",
+    "line_content": "features[\"session_return_pct\"].shift(1)",
+    "context": "        # session. Shift all features forward by one session.\n        features[\"prior_session_return_pct\"] = (\n            features[\"session_return_pct\"].shift(1)\n        )\n"
+  },
+  {
+    "file": "src/validation/regime_oos.py",
+    "line": 553,
+    "pattern": "shift_positive",
+    "line_content": "features[\"realized_vol_pct\"].shift(1)",
+    "context": "\n        features[\"prior_session_realized_vol_pct\"] = (\n            features[\"realized_vol_pct\"].shift(1)\n        )\n"
+  },
+  {
+    "file": "src/validation/regime_oos.py",
+    "line": 557,
+    "pattern": "shift_positive",
+    "line_content": "features[\"vol_median\"].shift(1)",
+    "context": "\n        features[\"prior_vol_median\"] = (\n            features[\"vol_median\"].shift(1)\n        )\n"
+  },
+  {
+    "file": "src/strategy/experimental/trend_filtered_strategy.py",
+    "line": 100,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR(14)\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "src/strategy/experimental/trend_filtered_strategy.py",
+    "line": 121,
+    "pattern": "merge_asof",
+    "line_content": "merged = pd.merge_asof(",
+    "context": "    df_htf[\"available_at\"] = df_htf.index + pd.Timedelta(minutes=15)\n\n    merged = pd.merge_asof(\n        df.sort_values(\"dt\"),\n        df_htf[[\"available_at\", \"EMA_FAST_HTF\", \"EMA_SLOW_HTF\"]],"
+  },
+  {
+    "file": "src/api/routes/nifty.py",
+    "line": 165,
+    "pattern": "resample_ohlcv",
+    "line_content": "chart_data = resample_ohlcv(data, timeframe)",
+    "context": "    else:\n        try:\n            chart_data = resample_ohlcv(data, timeframe)\n        except ValueError as exc:\n            raise HTTPException("
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 54,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"close\"].shift(1)",
+    "context": "    high = df[\"high\"]\n    low = df[\"low\"]\n    prev_close = df[\"close\"].shift(1)\n    tr1 = high - low\n    tr2 = (high - prev_close).abs()"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 75,
+    "pattern": "shift_positive",
+    "line_content": "prev_high = high.shift(1)",
+    "context": "    low = df[\"low\"]\n    close = df[\"close\"]\n    prev_high = high.shift(1)\n    prev_low = low.shift(1)\n    prev_close = close.shift(1)"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 76,
+    "pattern": "shift_positive",
+    "line_content": "prev_low = low.shift(1)",
+    "context": "    close = df[\"close\"]\n    prev_high = high.shift(1)\n    prev_low = low.shift(1)\n    prev_close = close.shift(1)\n"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 77,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = close.shift(1)",
+    "context": "    prev_high = high.shift(1)\n    prev_low = low.shift(1)\n    prev_close = close.shift(1)\n\n    plus_dm = high - prev_high"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 118,
+    "pattern": "resample_ohlcv",
+    "line_content": "tf_5m = resample_ohlcv(df_raw, \"5m\")",
+    "context": "\n    # Resample to 5m, 15m, 30m\n    tf_5m = resample_ohlcv(df_raw, \"5m\")\n    tf_15m = resample_ohlcv(df_raw, \"15m\")\n    tf_30m = resample_ohlcv(df_raw, \"30m\")"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 119,
+    "pattern": "resample_ohlcv",
+    "line_content": "tf_15m = resample_ohlcv(df_raw, \"15m\")",
+    "context": "    # Resample to 5m, 15m, 30m\n    tf_5m = resample_ohlcv(df_raw, \"5m\")\n    tf_15m = resample_ohlcv(df_raw, \"15m\")\n    tf_30m = resample_ohlcv(df_raw, \"30m\")\n"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 120,
+    "pattern": "resample_ohlcv",
+    "line_content": "tf_30m = resample_ohlcv(df_raw, \"30m\")",
+    "context": "    tf_5m = resample_ohlcv(df_raw, \"5m\")\n    tf_15m = resample_ohlcv(df_raw, \"15m\")\n    tf_30m = resample_ohlcv(df_raw, \"30m\")\n\n    # 1. 5m Features"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 230,
+    "pattern": "reindex_ffill",
+    "line_content": "s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")",
+    "context": "\n    # Pre-index for causal lookup\n    s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")\n    s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")\n    s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 231,
+    "pattern": "reindex_ffill",
+    "line_content": "s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")",
+    "context": "    # Pre-index for causal lookup\n    s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")\n    s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")\n    s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")\n"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/research_hypotheses.py",
+    "line": 232,
+    "pattern": "reindex_ffill",
+    "line_content": "s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")",
+    "context": "    s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")\n    s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")\n    s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")\n\n    signals: list[Optional[PositionSide]] = []"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/run_training_validation_research.py",
+    "line": 90,
+    "pattern": "reindex_ffill",
+    "line_content": "s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")",
+    "context": "    tf_30m = features[\"30m\"]\n\n    s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")\n    s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")\n    s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/run_training_validation_research.py",
+    "line": 91,
+    "pattern": "reindex_ffill",
+    "line_content": "s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")",
+    "context": "\n    s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")\n    s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")\n    s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")\n"
+  },
+  {
+    "file": "research/strategy_evolution_2018/phase24G15_strategy_research/run_training_validation_research.py",
+    "line": 92,
+    "pattern": "reindex_ffill",
+    "line_content": "s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")",
+    "context": "    s5_df = tf_5m.reindex(df_1m.index, method=\"ffill\")\n    s15_df = tf_15m.reindex(df_1m.index, method=\"ffill\")\n    s30_df = tf_30m.reindex(df_1m.index, method=\"ffill\")\n\n    idx = df_1m.index"
+  },
+  {
+    "file": "scripts/analyze_diagnostics_2018.py",
+    "line": 134,
+    "pattern": "shift_positive",
+    "line_content": "time_between = (s_df[\"entry_dt\"] - s_df[\"exit_dt\"].shift(1)).dt.total_seconds() / 60.0",
+    "context": "        for sym, s_df in df_trades.groupby(\"symbol\"):\n            s_df = s_df.sort_values(\"entry_dt\")\n            time_between = (s_df[\"entry_dt\"] - s_df[\"exit_dt\"].shift(1)).dt.total_seconds() / 60.0\n            quick_reentries += (time_between <= 2.0).sum()\n"
+  },
+  {
+    "file": "scripts/analyze_market_regimes.py",
+    "line": 317,
+    "pattern": "shift_positive",
+    "line_content": ".shift(1)",
+    "context": "    historical_vol = (\n        features[\"realized_vol_pct\"]\n        .shift(1)\n    )\n"
+  },
+  {
+    "file": "scripts/analyze_market_regimes.py",
+    "line": 374,
+    "pattern": "shift_positive",
+    "line_content": "].shift(1)",
+    "context": "            \"volatility\",\n        ]\n    ].shift(1)\n\n    causal[\"feature_date\"] = ("
+  },
+  {
+    "file": "scripts/analyze_market_regimes.py",
+    "line": 378,
+    "pattern": "shift_positive",
+    "line_content": ".shift(1)",
+    "context": "    causal[\"feature_date\"] = (\n        features.index.to_series()\n        .shift(1)\n    )\n"
+  },
+  {
+    "file": "scripts/forensic_manual_trace.py",
+    "line": 49,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "    df[\"RSI\"] = 100 - (100 / (1 + rs))\n\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "scripts/forensic_small_backtest_infy.py",
+    "line": 51,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "    df[\"RSI\"] = 100 - (100 / (1 + rs))\n\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "scripts/manual_test_data_pipeline_2018.py",
+    "line": 520,
+    "pattern": "shift_positive",
+    "line_content": "# precompute_signals uses shift(1) for cross check, evaluated at close of bar i",
+    "context": "            # RSI uses diff() and ewm -> purely causal\n            # ATR uses TR.rolling(14) -> causal\n            # precompute_signals uses shift(1) for cross check, evaluated at close of bar i\n            # engine enters at bar_close of bar i, exits on bar i+1 or later\n            print(\"  Inspecting causal signal definition:\")"
+  },
+  {
+    "file": "scripts/manual_test_strategy_2018.py",
+    "line": 50,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "    df[\"RSI\"] = 100 - (100 / (1 + rs))\n\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase16_edge_discovery.py",
+    "line": 13,
+    "pattern": "shift_positive",
+    "line_content": "8. Causal feature engineering verified in runner code (shift(1), expanding VWAP)",
+    "context": "6. Real datasets only (no synthetic data generated)\n7. Real datasets detected (NIFTY + 10 liquid equities)\n8. Causal feature engineering verified in runner code (shift(1), expanding VWAP)\n9. Chronological split & OOS isolation verified (Train, Validation, OOS)\n10. Transaction costs included and stressed (0.0x to 2.0x)"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase16_edge_discovery.py",
+    "line": 106,
+    "pattern": "shift_positive",
+    "line_content": "# Check 8: Causal feature rules verified in runner code (shift(1), expanding VWAP)",
+    "context": "    checks.append((\"7. Real datasets detected (NIFTY + all 10 equities)\", c7))\n\n    # Check 8: Causal feature rules verified in runner code (shift(1), expanding VWAP)\n    c8 = (\"shift(1)\" in runner_content and \"cumsum\" in runner_content)\n    checks.append((\"8. Causal feature rules verified in runner code\", c8))"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase16_edge_discovery.py",
+    "line": 107,
+    "pattern": "shift_positive",
+    "line_content": "c8 = (\"shift(1)\" in runner_content and \"cumsum\" in runner_content)",
+    "context": "\n    # Check 8: Causal feature rules verified in runner code (shift(1), expanding VWAP)\n    c8 = (\"shift(1)\" in runner_content and \"cumsum\" in runner_content)\n    checks.append((\"8. Causal feature rules verified in runner code\", c8))\n"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase4b_2018.py",
+    "line": 139,
+    "pattern": "shift_positive",
+    "line_content": "overlaps = (sorted_g[\"entry_datetime\"] < sorted_g[\"exit_datetime\"].shift(1)).sum()",
+    "context": "    for sym, g in df_base.groupby(\"symbol\"):\n        sorted_g = g.sort_values(\"entry_datetime\")\n        overlaps = (sorted_g[\"entry_datetime\"] < sorted_g[\"exit_datetime\"].shift(1)).sum()\n        if overlaps > 0:\n            print(f\"  Overlap in {sym}: {overlaps}\")"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase5.py",
+    "line": 148,
+    "pattern": "shift_positive",
+    "line_content": "prev_exit = sorted_g[\"exit_datetime\"].shift(1)",
+    "context": "    for (sym, yr), g in df_trades.groupby([\"symbol\", \"year\"]):\n        sorted_g = g.sort_values(\"entry_datetime\")\n        prev_exit = sorted_g[\"exit_datetime\"].shift(1)\n        overlaps = (sorted_g[\"entry_datetime\"] < prev_exit).sum()\n        if overlaps > 0:"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase5_2018.py",
+    "line": 124,
+    "pattern": "shift_positive",
+    "line_content": "overlaps += (sorted_g[\"entry_datetime\"] < sorted_g[\"exit_datetime\"].shift(1)).sum()",
+    "context": "    for sym, g in df_cand.groupby(\"symbol\"):\n        sorted_g = g.sort_values(\"entry_datetime\")\n        overlaps += (sorted_g[\"entry_datetime\"] < sorted_g[\"exit_datetime\"].shift(1)).sum()\n    print(f\"  Overlapping positions found: {overlaps}\")\n    if overlaps == 0:"
+  },
+  {
+    "file": "scripts/manual_test_strategy_evolution_phase5_opening_rush_2018.py",
+    "line": 109,
+    "pattern": "shift_positive",
+    "line_content": "shift_exit = sorted_g['exit_time'].shift(1)",
+    "context": "        sorted_g = group.sort_values('entry_time')\n        # Check if entry of current trade is earlier than exit of previous trade\n        shift_exit = sorted_g['exit_time'].shift(1)\n        overlaps = (sorted_g['entry_time'] < shift_exit).sum()\n        if overlaps > 0:"
+  },
+  {
+    "file": "scripts/manual_test_strategy_v3.py",
+    "line": 104,
+    "pattern": "shift_positive",
+    "line_content": "# Check breakout levels exclude current bar via shift(1)",
+    "context": "    )\n\n    # Check breakout levels exclude current bar via shift(1)\n    # At index 20, high_20 must equal max of High[0:20] (excluding High[20])\n    high_20_val = df_ind.loc[20, \"high_20\"]"
+  },
+  {
+    "file": "scripts/manual_test_strategy_v3.py",
+    "line": 113,
+    "pattern": "shift_positive",
+    "line_content": "\"VWAP resets daily at 09:15; breakout levels strictly exclude current bar via shift(1)\",",
+    "context": "        \"1. No look-ahead bias\",\n        vwap_causal and breakout_causal,\n        \"VWAP resets daily at 09:15; breakout levels strictly exclude current bar via shift(1)\",\n    )\n"
+  },
+  {
+    "file": "scripts/phase24G14_investigation.py",
+    "line": 534,
+    "pattern": "shift_positive",
+    "line_content": "time_since_last_exit = (v2_b_entry_dt - v2_b_exit_dt.shift(1)).dt.total_seconds() / 60.0",
+    "context": "\n        # Rapid re-entry: time between previous exit and current entry < 15 minutes\n        time_since_last_exit = (v2_b_entry_dt - v2_b_exit_dt.shift(1)).dt.total_seconds() / 60.0\n        rapid_b = int(((time_since_last_exit >= 0) & (time_since_last_exit <= 15)).sum())\n"
+  },
+  {
+    "file": "scripts/phase24G14_investigation.py",
+    "line": 570,
+    "pattern": "shift_positive",
+    "line_content": "time_since_last_exit_r = (v2_r_entry_dt - v2_r_exit_dt.shift(1)).dt.total_seconds() / 60.0",
+    "context": "        v2_r_sell_turn = (df_v2_r[\"exit_price\"] * df_v2_r[\"quantity\"]).sum()\n\n        time_since_last_exit_r = (v2_r_entry_dt - v2_r_exit_dt.shift(1)).dt.total_seconds() / 60.0\n        rapid_r = int(((time_since_last_exit_r >= 0) & (time_since_last_exit_r <= 15)).sum())\n"
+  },
+  {
+    "file": "scripts/run_backtest_2018.py",
+    "line": 72,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # True Range & ATR\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase13_conditioned_orb.py",
+    "line": 120,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"prev_close\"] = daily[\"Close\"].shift(1)",
+    "context": "    # 4. Causal Daily ATR & Volatility Terciles (prior 50-day rolling terciles shifted by 1)\n    daily = df.groupby(\"Date_Only\").agg({\"High\": \"max\", \"Low\": \"min\", \"Close\": \"last\"})\n    daily[\"prev_close\"] = daily[\"Close\"].shift(1)\n    daily[\"tr\"] = (daily[\"High\"] - daily[\"Low\"]).combine(\n        abs(daily[\"High\"] - daily[\"prev_close\"]), max"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase13_conditioned_orb.py",
+    "line": 124,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"daily_atr\"] = daily[\"tr\"].rolling(14).mean().shift(1)  # strictly yesterday's ATR",
+    "context": "        abs(daily[\"High\"] - daily[\"prev_close\"]), max\n    ).combine(abs(daily[\"Low\"] - daily[\"prev_close\"]), max)\n    daily[\"daily_atr\"] = daily[\"tr\"].rolling(14).mean().shift(1)  # strictly yesterday's ATR\n\n    daily[\"low_vol_thr\"] = daily[\"daily_atr\"].rolling(50, min_periods=10).quantile(0.33)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase14_multi_symbol.py",
+    "line": 242,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"prev_close\"] = daily[\"close\"].shift(1)",
+    "context": "\n    # Prior day close for True Range\n    daily[\"prev_close\"] = daily[\"close\"].shift(1)\n    tr1 = daily[\"high\"] - daily[\"low\"]\n    tr2 = (daily[\"high\"] - daily[\"prev_close\"]).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase14_multi_symbol.py",
+    "line": 260,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)",
+    "context": "\n    # CAUSAL SHIFT: For intraday trading on day t, we use ATR from day t-1\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)\n    daily[\"causal_prev_close\"] = daily[\"close\"].shift(1)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase14_multi_symbol.py",
+    "line": 261,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)",
+    "context": "    # CAUSAL SHIFT: For intraday trading on day t, we use ATR from day t-1\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)\n    daily[\"causal_prev_close\"] = daily[\"close\"].shift(1)\n"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase14_multi_symbol.py",
+    "line": 262,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_prev_close\"] = daily[\"close\"].shift(1)",
+    "context": "    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)\n    daily[\"causal_prev_close\"] = daily[\"close\"].shift(1)\n\n    return daily"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase14_multi_symbol.py",
+    "line": 905,
+    "pattern": "shift_positive",
+    "line_content": "{\"check_id\": \"CHK_03\", \"description\": \"Daily ATR calculated causally using prior completed daily bars\", \"status\": \"PASS\", \"evidence\": \"Daily ATR shifted by 1 day (causal_daily_atr = daily_atr.shift(1))\"},",
+    "context": "        {\"check_id\": \"CHK_01\", \"description\": \"OR window restricted exclusively to 09:15-09:30 candles\", \"status\": \"PASS\", \"evidence\": \"Bars strictly filtered with time >= 09:15 and time < 09:30\"},\n        {\"check_id\": \"CHK_02\", \"description\": \"Entry occurs strictly after the 09:15-09:30 OR has closed\", \"status\": \"PASS\", \"evidence\": \"Entry bars evaluated strictly with time >= 09:30\"},\n        {\"check_id\": \"CHK_03\", \"description\": \"Daily ATR calculated causally using prior completed daily bars\", \"status\": \"PASS\", \"evidence\": \"Daily ATR shifted by 1 day (causal_daily_atr = daily_atr.shift(1))\"},\n        {\"check_id\": \"CHK_04\", \"description\": \"Conditioning threshold calibrated exclusively on TRAIN (<= 2019)\", \"status\": \"PASS\", \"evidence\": \"33rd percentile computed on train_daily (year <= 2019) only\"},\n        {\"check_id\": \"CHK_05\", \"description\": \"Validation (2020-2021) cannot modify or re-calibrate threshold\", \"status\": \"PASS\", \"evidence\": \"Threshold frozen before testing validation data\"},"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase15_index_equity.py",
+    "line": 168,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"prev_close\"] = daily[\"close\"].shift(1)",
+    "context": "    }).reset_index().sort_values(\"date\").reset_index(drop=True)\n\n    daily[\"prev_close\"] = daily[\"close\"].shift(1)\n    tr1 = daily[\"high\"] - daily[\"low\"]\n    tr2 = (daily[\"high\"] - daily[\"prev_close\"]).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase15_index_equity.py",
+    "line": 183,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)",
+    "context": "\n    # Causal shifts: prior day values available before day t open\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)\n    daily[\"causal_prev_close\"] = daily[\"prev_close\"]"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase15_index_equity.py",
+    "line": 184,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)",
+    "context": "    # Causal shifts: prior day values available before day t open\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_atr_pct\"] = daily[\"daily_atr_pct\"].shift(1)\n    daily[\"causal_prev_close\"] = daily[\"prev_close\"]\n"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase15_index_equity.py",
+    "line": 1165,
+    "pattern": "shift_positive",
+    "line_content": "{\"item\": 3, \"check\": \"ATR uses prior completed daily information\", \"status\": \"PASS\", \"evidence\": \"Daily ATR causally shifted: causal_daily_atr = daily_atr.shift(1).\"},",
+    "context": "        {\"item\": 1, \"check\": \"OR uses only 09:15-09:30 candles\", \"status\": \"PASS\", \"evidence\": \"Bars filtered strictly with time >= 09:15 and time < 09:30.\"},\n        {\"item\": 2, \"check\": \"Entry occurs after OR closes\", \"status\": \"PASS\", \"evidence\": \"Entry bars evaluated strictly with time >= 09:30.\"},\n        {\"item\": 3, \"check\": \"ATR uses prior completed daily information\", \"status\": \"PASS\", \"evidence\": \"Daily ATR causally shifted: causal_daily_atr = daily_atr.shift(1).\"},\n        {\"item\": 4, \"check\": \"ATR threshold is TRAIN-only\", \"status\": \"PASS\", \"evidence\": \"33rd percentile computed on train_daily (year <= 2019) only.\"},\n        {\"item\": 5, \"check\": \"Gap uses previous trading day only\", \"status\": \"PASS\", \"evidence\": \"Gap uses 09:15 open vs causal_prev_close (prior day close).\"},"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase15_index_equity.py",
+    "line": 1362,
+    "pattern": "shift_positive",
+    "line_content": "| 3 | ATR uses prior completed daily bars | PASS | Causal shift: causal_daily_atr = daily_atr.shift(1) |",
+    "context": "| 1 | OR uses only 09:15-09:30 | PASS | Strict filter: time >= 09:15 and time < 09:30 |\n| 2 | Entry occurs strictly after OR | PASS | Strict filter: time >= 09:30 |\n| 3 | ATR uses prior completed daily bars | PASS | Causal shift: causal_daily_atr = daily_atr.shift(1) |\n| 4 | ATR threshold TRAIN-only | PASS | 33rd percentile calibrated on year <= 2019 only |\n| 5 | Gap uses prior trading day only | PASS | 09:15 open compared strictly to causal_prev_close |"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 27,
+    "pattern": "shift_positive",
+    "line_content": "- 100% causal feature engineering: strictly shifted daily metrics (shift(1)), expanding VWAP.",
+    "context": "\nMethodological Standards:\n  - 100% causal feature engineering: strictly shifted daily metrics (shift(1)), expanding VWAP.\n  - Chronological partitions: TRAIN (<=2018), VALIDATION (2019), OOS (2020+).\n  - Realistic transaction costs (brokerage, STT, turnover, stamp duty, GST, 2 bps slippage per side)."
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 176,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"prev_close\"] = daily[\"close\"].shift(1)",
+    "context": "\n    daily[\"daily_range\"] = daily[\"high\"] - daily[\"low\"]\n    daily[\"prev_close\"] = daily[\"close\"].shift(1)\n\n    tr1 = daily[\"high\"] - daily[\"low\"]"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 196,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)",
+    "context": "    # Strictly causal shifts: Yesterday's values available before Today's open\n    daily[\"causal_prev_close\"] = daily[\"prev_close\"]\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 197,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)",
+    "context": "    daily[\"causal_prev_close\"] = daily[\"prev_close\"]\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)\n"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 198,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)",
+    "context": "    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)\n\n    # Opening Gap (Today open vs Yesterday close)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 1012,
+    "pattern": "shift_positive",
+    "line_content": "(\"Daily ATR Shift\", \"causal_daily_atr is derived from daily_atr.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),",
+    "context": "    print(\"Conducting 10-Point Look-Ahead Audit...\")\n    lookahead_items = [\n        (\"Daily ATR Shift\", \"causal_daily_atr is derived from daily_atr.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),\n        (\"Daily Range Shift\", \"causal_daily_range is derived from daily_range.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),\n        (\"Daily NR7 Indicator\", \"causal_is_nr7 uses shift(1) prior 7 sessions\", \"PASS\", \"Verified no current day range included\"),"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 1013,
+    "pattern": "shift_positive",
+    "line_content": "(\"Daily Range Shift\", \"causal_daily_range is derived from daily_range.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),",
+    "context": "    lookahead_items = [\n        (\"Daily ATR Shift\", \"causal_daily_atr is derived from daily_atr.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),\n        (\"Daily Range Shift\", \"causal_daily_range is derived from daily_range.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),\n        (\"Daily NR7 Indicator\", \"causal_is_nr7 uses shift(1) prior 7 sessions\", \"PASS\", \"Verified no current day range included\"),\n        (\"Opening Gap Baseline\", \"Gap computed against causal_prev_close (yesterday close)\", \"PASS\", \"Verified yesterday close known at 09:15\"),"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_edge_discovery.py",
+    "line": 1014,
+    "pattern": "shift_positive",
+    "line_content": "(\"Daily NR7 Indicator\", \"causal_is_nr7 uses shift(1) prior 7 sessions\", \"PASS\", \"Verified no current day range included\"),",
+    "context": "        (\"Daily ATR Shift\", \"causal_daily_atr is derived from daily_atr.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),\n        (\"Daily Range Shift\", \"causal_daily_range is derived from daily_range.shift(1)\", \"PASS\", \"Verified strictly prior completed sessions\"),\n        (\"Daily NR7 Indicator\", \"causal_is_nr7 uses shift(1) prior 7 sessions\", \"PASS\", \"Verified no current day range included\"),\n        (\"Opening Gap Baseline\", \"Gap computed against causal_prev_close (yesterday close)\", \"PASS\", \"Verified yesterday close known at 09:15\"),\n        (\"Expanding Intraday VWAP\", \"VWAP calculated on cumulative expanding window bar-by-bar\", \"PASS\", \"Verified no future volume or price incorporated\"),"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 185,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"prev_close\"] = daily[\"close\"].shift(1)",
+    "context": "    daily[\"daily_return_pct\"] = (daily[\"close\"] - daily[\"open\"]) / daily[\"open\"] * 100.0\n\n    daily[\"prev_close\"] = daily[\"close\"].shift(1)\n    tr1 = daily[\"high\"] - daily[\"low\"]\n    tr2 = (daily[\"high\"] - daily[\"prev_close\"]).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 204,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)",
+    "context": "    # Strictly causal shifts: Yesterday's values available before Today's open\n    daily[\"causal_prev_close\"] = daily[\"prev_close\"]\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_daily_return_pct\"] = daily[\"daily_return_pct\"].shift(1)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 205,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)",
+    "context": "    daily[\"causal_prev_close\"] = daily[\"prev_close\"]\n    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_daily_return_pct\"] = daily[\"daily_return_pct\"].shift(1)\n    daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 206,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_daily_return_pct\"] = daily[\"daily_return_pct\"].shift(1)",
+    "context": "    daily[\"causal_daily_atr\"] = daily[\"daily_atr\"].shift(1)\n    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_daily_return_pct\"] = daily[\"daily_return_pct\"].shift(1)\n    daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)\n"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 207,
+    "pattern": "shift_positive",
+    "line_content": "daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)",
+    "context": "    daily[\"causal_daily_range\"] = daily[\"daily_range\"].shift(1)\n    daily[\"causal_daily_return_pct\"] = daily[\"daily_return_pct\"].shift(1)\n    daily[\"causal_is_nr7\"] = daily[\"is_nr7\"].shift(1).fillna(False)\n\n    # Opening Gap (Today 09:15 open vs Yesterday close)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 1061,
+    "pattern": "shift_positive",
+    "line_content": "(3, \"Daily ATR uses strictly prior completed sessions (shift=1)\", \"PASS\", \"Causal daily ATR defined as daily_atr.shift(1).\"),",
+    "context": "        (1, \"Opening range strictly restricted to 09:15-09:30\", \"PASS\", \"Code explicitly slices time >= 09:15 and time < 09:30.\"),\n        (2, \"Intraday signals strictly evaluate bar closes at or after 09:30\", \"PASS\", \"Signals evaluated strictly on completed candles >= 09:30.\"),\n        (3, \"Daily ATR uses strictly prior completed sessions (shift=1)\", \"PASS\", \"Causal daily ATR defined as daily_atr.shift(1).\"),\n        (4, \"Opening gap uses strictly 09:15 open vs causal prev close\", \"PASS\", \"Gap = open - causal_prev_close.\"),\n        (5, \"VWAP computed causally via expanding intraday cumulative sums\", \"PASS\", \"Intraday expanding cum_pv / cum_vol reset every morning at 09:15.\"),"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase16_structural_edge.py",
+    "line": 1240,
+    "pattern": "shift_positive",
+    "line_content": "| 3 | Daily ATR shifted causally | PASS | Strictly defined as `daily_atr.shift(1)` |",
+    "context": "| 1 | OR strictly 09:15-09:30 | PASS | Filtered strictly on `time >= 09:15` and `time < 09:30` |\n| 2 | Entry strictly >= 09:30 | PASS | Evaluated strictly on completed bars at or after 09:30 |\n| 3 | Daily ATR shifted causally | PASS | Strictly defined as `daily_atr.shift(1)` |\n| 4 | Gap uses prior close | PASS | Strict formula `open - causal_prev_close` |\n| 5 | VWAP expanding causally | PASS | Expanding cumulative sums reset at 09:15 each day |"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 69,
+    "pattern": "shift_positive",
+    "line_content": "df[\"ema_slope\"] = (ema9 - ema9.shift(5)) / ema9.shift(5) * 100.0",
+    "context": "    df[\"ema21\"] = ema21\n    df[\"trend_dir\"] = np.where(ema9 > ema21, \"BULLISH\", \"BEARISH\")\n    df[\"ema_slope\"] = (ema9 - ema9.shift(5)) / ema9.shift(5) * 100.0\n\n    # 2. Volatility & ATR indicators"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 72,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = closes.shift(1)",
+    "context": "\n    # 2. Volatility & ATR indicators\n    prev_close = closes.shift(1)\n    tr1 = highs - lows\n    tr2 = (highs - prev_close).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 90,
+    "pattern": "shift_positive",
+    "line_content": "log_ret = np.log(closes / closes.shift(1))",
+    "context": "\n    # Rolling realized volatility (20 bars) and expanding rank\n    log_ret = np.log(closes / closes.shift(1))\n    rolling_vol_20 = log_ret.rolling(20).std() * np.sqrt(252 * 375) * 100.0\n    df[\"rolling_vol_20\"] = rolling_vol_20"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 96,
+    "pattern": "shift_positive",
+    "line_content": "up_move = highs - highs.shift(1)",
+    "context": "\n    # Wilder's ADX(14), +DI, -DI\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 97,
+    "pattern": "shift_positive",
+    "line_content": "down_move = lows.shift(1) - lows",
+    "context": "    # Wilder's ADX(14), +DI, -DI\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 118,
+    "pattern": "shift_positive",
+    "line_content": "df[\"ret_5\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0",
+    "context": "    rsi14 = 100.0 - (100.0 / (1.0 + rs))\n    df[\"rsi14\"] = rsi14\n    df[\"ret_5\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"ret_15\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0\n    df[\"ret_30\"] = (closes - closes.shift(30)) / closes.shift(30) * 100.0"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 119,
+    "pattern": "shift_positive",
+    "line_content": "df[\"ret_15\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0",
+    "context": "    df[\"rsi14\"] = rsi14\n    df[\"ret_5\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"ret_15\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0\n    df[\"ret_30\"] = (closes - closes.shift(30)) / closes.shift(30) * 100.0\n    df[\"mom_acceleration\"] = df[\"ret_5\"] - df[\"ret_5\"].shift(5)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 120,
+    "pattern": "shift_positive",
+    "line_content": "df[\"ret_30\"] = (closes - closes.shift(30)) / closes.shift(30) * 100.0",
+    "context": "    df[\"ret_5\"] = (closes - closes.shift(5)) / closes.shift(5) * 100.0\n    df[\"ret_15\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0\n    df[\"ret_30\"] = (closes - closes.shift(30)) / closes.shift(30) * 100.0\n    df[\"mom_acceleration\"] = df[\"ret_5\"] - df[\"ret_5\"].shift(5)\n"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 121,
+    "pattern": "shift_positive",
+    "line_content": "df[\"mom_acceleration\"] = df[\"ret_5\"] - df[\"ret_5\"].shift(5)",
+    "context": "    df[\"ret_15\"] = (closes - closes.shift(15)) / closes.shift(15) * 100.0\n    df[\"ret_30\"] = (closes - closes.shift(30)) / closes.shift(30) * 100.0\n    df[\"mom_acceleration\"] = df[\"ret_5\"] - df[\"ret_5\"].shift(5)\n\n    # 4. Market structure indicators"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 129,
+    "pattern": "shift_positive",
+    "line_content": "prev_high_20 = roll_high_20.shift(1)",
+    "context": "    df[\"dist_low_20\"] = (closes - roll_low_20) / closes * 100.0\n\n    prev_high_20 = roll_high_20.shift(1)\n    prev_low_20 = roll_low_20.shift(1)\n    is_breakout_high = closes >= prev_high_20 * 0.9998"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 130,
+    "pattern": "shift_positive",
+    "line_content": "prev_low_20 = roll_low_20.shift(1)",
+    "context": "\n    prev_high_20 = roll_high_20.shift(1)\n    prev_low_20 = roll_low_20.shift(1)\n    is_breakout_high = closes >= prev_high_20 * 0.9998\n    is_breakout_low = closes <= prev_low_20 * 1.0002"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 155,
+    "pattern": "shift_positive",
+    "line_content": ").shift(1)  # Prior session shift",
+    "context": "        day_low=(\"Low\", \"min\"),\n        day_close=(\"Close\", \"last\"),\n    ).shift(1)  # Prior session shift\n\n    df[\"prev_day_close\"] = df[\"date_only\"].map(daily_summary[\"day_close\"])"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 175,
+    "pattern": "shift_positive",
+    "line_content": "long_cross = (ema9.shift(1) <= ema21.shift(1)) & (ema9 > ema21)",
+    "context": "\n    # 6. Setup context: Bars since crossover\n    long_cross = (ema9.shift(1) <= ema21.shift(1)) & (ema9 > ema21)\n    short_cross = (ema9.shift(1) >= ema21.shift(1)) & (ema9 < ema21)\n    any_cross = long_cross | short_cross"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase4_2018.py",
+    "line": 176,
+    "pattern": "shift_positive",
+    "line_content": "short_cross = (ema9.shift(1) >= ema21.shift(1)) & (ema9 < ema21)",
+    "context": "    # 6. Setup context: Bars since crossover\n    long_cross = (ema9.shift(1) <= ema21.shift(1)) & (ema9 > ema21)\n    short_cross = (ema9.shift(1) >= ema21.shift(1)) & (ema9 < ema21)\n    any_cross = long_cross | short_cross\n    cross_id = any_cross.cumsum()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase5.py",
+    "line": 118,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = closes.shift(1)",
+    "context": "\n    # 3. True Range, ATR 14, ATR 50\n    prev_close = closes.shift(1)\n    tr1 = highs - lows\n    tr2 = (highs - prev_close).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase5.py",
+    "line": 128,
+    "pattern": "shift_positive",
+    "line_content": "up_move = highs - highs.shift(1)",
+    "context": "\n    # 4. ADX 14\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase5.py",
+    "line": 129,
+    "pattern": "shift_positive",
+    "line_content": "down_move = lows.shift(1) - lows",
+    "context": "    # 4. ADX 14\n    up_move = highs - highs.shift(1)\n    down_move = lows.shift(1) - lows\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "scripts/run_strategy_evolution_phase7_2018.py",
+    "line": 591,
+    "pattern": "shift_positive",
+    "line_content": "\"details\": \"Range High/Low and Swing High/Low levels computed with shift(1) or confirmed lag.\"",
+    "context": "        \"description\": \"Trailing range and confirmed swings strictly use past-only candles [0: i-1]\",\n        \"passed\": True,\n        \"details\": \"Range High/Low and Swing High/Low levels computed with shift(1) or confirmed lag.\"\n    })\n"
+  },
+  {
+    "file": "scripts/run_strategy_filter_2018.py",
+    "line": 86,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 1-minute True Range & ATR\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_filter_2018.py",
+    "line": 125,
+    "pattern": "merge_asof",
+    "line_content": "merged = pd.merge_asof(",
+    "context": "\n    # Merge causally with backward direction (at or before 1m timestamp)\n    merged = pd.merge_asof(\n        df.sort_values(\"dt\"),\n        df_15m_avail,"
+  },
+  {
+    "file": "scripts/run_strategy_v2_2018.py",
+    "line": 90,
+    "pattern": "shift_positive",
+    "line_content": "prev_close = df[\"Close\"].shift(1)",
+    "context": "\n    # 3. 1-minute True Range & ATR\n    prev_close = df[\"Close\"].shift(1)\n    tr1 = df[\"High\"] - df[\"Low\"]\n    tr2 = (df[\"High\"] - prev_close).abs()"
+  },
+  {
+    "file": "scripts/run_strategy_v2_2018.py",
+    "line": 99,
+    "pattern": "shift_positive",
+    "line_content": "up_move = df[\"High\"] - df[\"High\"].shift(1)",
+    "context": "\n    # 4. 1-minute ADX (Wilder's calculation)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "scripts/run_strategy_v2_2018.py",
+    "line": 100,
+    "pattern": "shift_positive",
+    "line_content": "down_move = df[\"Low\"].shift(1) - df[\"Low\"]",
+    "context": "    # 4. 1-minute ADX (Wilder's calculation)\n    up_move = df[\"High\"] - df[\"High\"].shift(1)\n    down_move = df[\"Low\"].shift(1) - df[\"Low\"]\n    pos_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=df.index)\n    neg_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=df.index)"
+  },
+  {
+    "file": "scripts/run_strategy_v2_2018.py",
+    "line": 126,
+    "pattern": "merge_asof",
+    "line_content": "merged = pd.merge_asof(",
+    "context": "        df_htf[\"available_at\"] = df_htf.index + pd.Timedelta(minutes=tf)\n\n        merged = pd.merge_asof(\n            df.sort_values(\"dt\"),\n            df_htf[[\"available_at\", f\"EMA9_{tf}\", f\"EMA21_{tf}\"]],"
+  },
+  {
+    "file": "scripts/run_strategy_v3.py",
+    "line": 309,
+    "pattern": "shift_positive",
+    "line_content": "3. **V3-C (20-bar Breakout Confirmation)**: Requires price to close above the previous 20-bar high for LONG, below the previous 20-bar low for SHORT (`shift(1).rolling(20)`).",
+    "context": "1. **V3-A (Volume Confirmation)**: Requires current 1-minute volume $\\ge$ 20-period rolling median.\n2. **V3-B (Intraday VWAP Confirmation)**: Requires price to close above VWAP for LONG, below VWAP for SHORT (session-resetting daily at 09:15).\n3. **V3-C (20-bar Breakout Confirmation)**: Requires price to close above the previous 20-bar high for LONG, below the previous 20-bar low for SHORT (`shift(1).rolling(20)`).\n4. **V3-D (ATR Volatility Filter)**: Requires $ATR(14)/Close \\ge$ its 20-period rolling median to filter out low-volatility chop.\n"
+  },
+  {
+    "file": "scripts/sanity_check_strategy_2018.py",
+    "line": 149,
+    "pattern": "shift_positive",
+    "line_content": "overlaps = (s_df[\"entry_dt\"] < s_df[\"exit_dt\"].shift(1)).sum()",
+    "context": "    for sym, s_df in df.groupby(\"symbol\"):\n        s_df = s_df.sort_values(\"entry_dt\")\n        overlaps = (s_df[\"entry_dt\"] < s_df[\"exit_dt\"].shift(1)).sum()\n        overlapping_count += overlaps\n    log_check(13, \"Overlapping Positions (Same Symbol)\", overlapping_count == 0, f\"{overlapping_count} overlapping positions detected\")"
+  },
+  {
+    "file": "scripts/sanity_check_strategy_2018.py",
+    "line": 172,
+    "pattern": "shift_positive",
+    "line_content": "# All indicators use strictly causal shift(1) or adjust=False ewm",
+    "context": "\n    # Check 17: Look-ahead indicators & suspiciously repeated patterns\n    # All indicators use strictly causal shift(1) or adjust=False ewm\n    log_check(17, \"Look-Ahead Bias & Artifacts\", True, \"Strictly causal formulas verified across EMA, RSI, and ATR calculations\")\n"
+  }
+]
