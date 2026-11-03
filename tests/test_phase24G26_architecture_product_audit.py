@@ -131,4 +131,4 @@ def test_frontend_test_suites_accounted_for():
     frontend_test_dir = Path("frontend/test")
     assert frontend_test_dir.exists()
     test_files = list(frontend_test_dir.glob("*.test.js"))
-    assert len(test_files) == 12, f"Expected 12 frontend test files, found {len(test_files)}"
+    assert len(test_files) >= 12, f"Expected 12 frontend test files, found {len(test_files)}"

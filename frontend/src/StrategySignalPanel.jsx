@@ -5,6 +5,9 @@ import {
   createPaperTrade,
   closePaperTrade,
   updatePaperTrade,
+  runBacktest,
+  fetchBacktestJobStatus,
+  fetchBacktestJobResult,
 } from './api'
 
 function formatPrice(value) {
@@ -202,6 +205,98 @@ export function StrategySignalPanel({
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState(null)
   const [actionSuccess, setActionSuccess] = useState(null)
+
+  // -------------------------------------------------------------------------
+  // Phase 24G.28: Asynchronous Backtest Job Bridge State
+  // -------------------------------------------------------------------------
+  const [backtestStartDate, setBacktestStartDate] = useState('2023-01-01')
+  const [backtestEndDate, setBacktestEndDate] = useState('2023-03-31')
+  const [backtestExecutionModel, setBacktestExecutionModel] = useState('next_open')
+  const [backtestInitialCapital, setBacktestInitialCapital] = useState(100000)
+  const [backtestJobId, setBacktestJobId] = useState(null)
+  const [backtestStatus, setBacktestStatus] = useState('IDLE')
+  const [backtestProgress, setBacktestProgress] = useState(0)
+  const [backtestError, setBacktestError] = useState(null)
+  const [backtestResult, setBacktestResult] = useState(null)
+  const [backtestSubmitting, setBacktestSubmitting] = useState(false)
+
+  const handleTriggerBacktest = async () => {
+    if (backtestSubmitting || backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING') {
+      return
+    }
+
+    if (backtestInitialCapital <= 0) {
+      setBacktestError('Initial capital must be greater than zero.')
+      return
+    }
+
+    setBacktestSubmitting(true)
+    setBacktestError(null)
+    setBacktestResult(null)
+    setBacktestStatus('QUEUED')
+    setBacktestProgress(0)
+
+    try {
+      const created = await runBacktest({
+        symbol,
+        start_date: backtestStartDate || undefined,
+        end_date: backtestEndDate || undefined,
+        initial_capital: Number(backtestInitialCapital),
+        execution_model: backtestExecutionModel,
+      })
+      setBacktestJobId(created.job_id)
+      setBacktestStatus(created.status || 'QUEUED')
+    } catch (err) {
+      setBacktestError(err.message || 'Failed to submit backtest job.')
+      setBacktestStatus('FAILED')
+    } finally {
+      setBacktestSubmitting(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!backtestJobId || (backtestStatus !== 'QUEUED' && backtestStatus !== 'RUNNING')) {
+      return
+    }
+
+    let isMounted = true
+    const interval = setInterval(async () => {
+      try {
+        const statusRes = await fetchBacktestJobStatus(backtestJobId)
+        if (!isMounted) return
+
+        setBacktestStatus(statusRes.status)
+        setBacktestProgress(statusRes.progress || 0)
+
+        if (statusRes.status === 'COMPLETED') {
+          clearInterval(interval)
+          try {
+            const resultRes = await fetchBacktestJobResult(backtestJobId)
+            if (isMounted) {
+              setBacktestResult(resultRes)
+            }
+          } catch (resErr) {
+            if (isMounted) {
+              setBacktestError(`Failed to fetch completed results: ${resErr.message}`)
+            }
+          }
+        } else if (statusRes.status === 'FAILED') {
+          clearInterval(interval)
+          setBacktestError(statusRes.error || 'Backtest job execution failed.')
+        } else if (statusRes.status === 'CANCELLED') {
+          clearInterval(interval)
+          setBacktestError('Backtest job was cancelled.')
+        }
+      } catch (pollErr) {
+        // Transient network error
+      }
+    }, 1000)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [backtestJobId, backtestStatus])
 
   // Query active open paper trades for this symbol + timeframe
   const refreshActiveTrade = useCallback(async () => {
@@ -754,7 +849,182 @@ export function StrategySignalPanel({
               )}
             </div>
 
-            {/* 5. View Full Analysis Action */}
+            {/* 5. Historical Backtest Engine Bridge */}
+            <div className="backtest-engine-section" style={{ marginTop: '16px', borderTop: '1px solid #1a3a54', paddingTop: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span className="detail-muted-title">HISTORICAL BACKTEST ENGINE</span>
+                <span
+                  className={`status-pill ${backtestStatus.toLowerCase()}`}
+                  style={{
+                    fontSize: '10px',
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    background:
+                      backtestStatus === 'COMPLETED'
+                        ? 'rgba(0, 234, 175, 0.15)'
+                        : backtestStatus === 'RUNNING' || backtestStatus === 'QUEUED'
+                          ? 'rgba(255, 170, 0, 0.15)'
+                          : backtestStatus === 'FAILED'
+                            ? 'rgba(255, 79, 94, 0.15)'
+                            : '#0d2238',
+                    color:
+                      backtestStatus === 'COMPLETED'
+                        ? '#00eaaf'
+                        : backtestStatus === 'RUNNING' || backtestStatus === 'QUEUED'
+                          ? '#ffaa00'
+                          : backtestStatus === 'FAILED'
+                            ? '#ff6876'
+                            : '#88a3b8',
+                  }}
+                >
+                  {backtestStatus}
+                </span>
+              </div>
+
+              {/* Parameters Form */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
+                <div>
+                  <label htmlFor="bt-start-date" style={{ color: '#88a3b8', display: 'block', marginBottom: '2px' }}>Start Date:</label>
+                  <input
+                    id="bt-start-date"
+                    type="date"
+                    value={backtestStartDate}
+                    onChange={(e) => setBacktestStartDate(e.target.value)}
+                    disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                    style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="bt-end-date" style={{ color: '#88a3b8', display: 'block', marginBottom: '2px' }}>End Date:</label>
+                  <input
+                    id="bt-end-date"
+                    type="date"
+                    value={backtestEndDate}
+                    onChange={(e) => setBacktestEndDate(e.target.value)}
+                    disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                    style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="bt-exec-model" style={{ color: '#88a3b8', display: 'block', marginBottom: '2px' }}>Execution Model:</label>
+                  <select
+                    id="bt-exec-model"
+                    value={backtestExecutionModel}
+                    onChange={(e) => setBacktestExecutionModel(e.target.value)}
+                    disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                    style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
+                  >
+                    <option value="next_open">next_open (Causal)</option>
+                    <option value="same_close">same_close (Legacy)</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="bt-capital" style={{ color: '#88a3b8', display: 'block', marginBottom: '2px' }}>Capital (₹):</label>
+                  <input
+                    id="bt-capital"
+                    type="number"
+                    value={backtestInitialCapital}
+                    onChange={(e) => setBacktestInitialCapital(Number(e.target.value))}
+                    disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                    style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
+                  />
+                </div>
+              </div>
+
+              {/* Active Job Progress */}
+              {(backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING') && (
+                <div style={{ marginBottom: '8px', padding: '8px', background: 'rgba(255, 170, 0, 0.08)', borderRadius: '4px', border: '1px solid rgba(255, 170, 0, 0.25)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', marginBottom: '4px' }}>
+                    <span style={{ color: '#ffaa00' }}>Job ID: <code>{backtestJobId}</code></span>
+                    <span style={{ color: '#fff', fontWeight: 'bold' }}>{backtestProgress}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ width: `${backtestProgress}%`, height: '100%', background: '#ffaa00', transition: 'width 300ms ease' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {backtestError && (
+                <div style={{ padding: '6px 8px', marginBottom: '8px', background: 'rgba(255, 79, 94, 0.1)', border: '1px solid rgba(255, 79, 94, 0.3)', borderRadius: '4px', color: '#ff6876', fontSize: '11px' }}>
+                  <strong>Error:</strong> {backtestError}
+                </div>
+              )}
+
+              {/* Completed Results Grid */}
+              {backtestResult && (
+                <div className="backtest-results-box" style={{ marginBottom: '8px', padding: '8px', background: 'rgba(0, 234, 175, 0.05)', borderRadius: '4px', border: '1px solid rgba(0, 234, 175, 0.2)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#00eaaf', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>SIMULATION RESULTS ({backtestResult.symbol})</span>
+                    <span style={{ color: '#88a3b8', fontSize: '10px' }}>{backtestResult.date_range?.total_candles} candles</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', fontSize: '11px' }}>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Net Return: </span>
+                      <strong style={{ color: backtestResult.metrics.total_return_pct >= 0 ? '#00eaaf' : '#ff6876' }}>
+                        {backtestResult.metrics.total_return_pct >= 0 ? '+' : ''}{backtestResult.metrics.total_return_pct}%
+                      </strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Total P&L: </span>
+                      <strong style={{ color: backtestResult.metrics.total_pnl >= 0 ? '#00eaaf' : '#ff6876' }}>
+                        ₹{formatPrice(backtestResult.metrics.total_pnl)}
+                      </strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Trades: </span>
+                      <strong>{backtestResult.metrics.total_trades}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Win Rate: </span>
+                      <strong>{backtestResult.metrics.win_rate_pct}%</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Profit Factor: </span>
+                      <strong>{backtestResult.metrics.profit_factor}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#88a3b8' }}>Max DD: </span>
+                      <strong style={{ color: '#ff6876' }}>-{backtestResult.metrics.max_drawdown_pct}%</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Run Button */}
+              <button
+                type="button"
+                onClick={handleTriggerBacktest}
+                disabled={backtestSubmitting || backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                style={{
+                  width: '100%',
+                  padding: '8px 0',
+                  borderRadius: '4px',
+                  border: '1px solid #1a3a54',
+                  background:
+                    backtestStatus === 'RUNNING' || backtestStatus === 'QUEUED'
+                      ? '#13283c'
+                      : 'linear-gradient(180deg, #123456 0%, #0a2036 100%)',
+                  color: backtestStatus === 'RUNNING' || backtestStatus === 'QUEUED' ? '#88a3b8' : '#7cb5ec',
+                  fontWeight: 'bold',
+                  fontSize: '11.5px',
+                  letterSpacing: '0.04em',
+                  cursor: backtestStatus === 'RUNNING' || backtestStatus === 'QUEUED' ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                {backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'
+                  ? `SIMULATING BACKTEST (${backtestProgress}%)...`
+                  : 'RUN HISTORICAL BACKTEST'}
+              </button>
+            </div>
+
+            {/* 6. View Full Analysis Action */}
             {onNavigateFullAnalysis && (
               <button
                 type="button"

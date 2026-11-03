@@ -763,3 +763,145 @@ class PipelineBatchIngestRequest(BaseModel):
     confirm_large_batch: bool = False
 
 
+class BacktestRunRequest(BaseModel):
+    """Request payload to initiate an asynchronous backtest."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    symbol: str = "NIFTY 50"
+    start_date: str | None = None
+    end_date: str | None = None
+    initial_capital: float = 100_000.0
+    quantity: int = 1
+    transaction_cost_rate: float = 0.0001
+    execution_model: str = "next_open"
+
+    # Optional strategy parameter overrides (frozen defaults)
+    ema_fast_period: int = 20
+    ema_slow_period: int = 50
+    rsi_period: int = 14
+    atr_period: int = 14
+    rvol_period: int = 20
+    minimum_rvol: float = 1.5
+    minimum_atr: float = 0.0
+    minimum_long_rsi: float = 60.0
+    use_rvol: bool = False
+
+    @field_validator("symbol")
+    @classmethod
+    def validate_symbol_field(cls, v: str) -> str:
+        s = v.strip().upper()
+        if not s:
+            raise ValueError("symbol cannot be empty.")
+        return s
+
+    @field_validator("initial_capital")
+    @classmethod
+    def validate_capital_field(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("initial_capital must be greater than zero.")
+        return v
+
+    @field_validator("quantity")
+    @classmethod
+    def validate_quantity_field(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("quantity must be at least 1.")
+        return v
+
+    @field_validator("transaction_cost_rate")
+    @classmethod
+    def validate_cost_field(cls, v: float) -> float:
+        if v < 0:
+            raise ValueError("transaction_cost_rate cannot be negative.")
+        return v
+
+    @field_validator("execution_model")
+    @classmethod
+    def validate_execution_model_field(cls, v: str) -> str:
+        if v not in {"next_open", "same_close"}:
+            raise ValueError("execution_model must be 'next_open' or 'same_close'.")
+        return v
+
+
+class BacktestJobCreatedResponse(BaseModel):
+    """Response returned upon successfully creating a backtest job."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: str
+    status: str
+    symbol: str
+    created_at: str
+    message: str
+
+
+class BacktestJobStatusResponse(BaseModel):
+    """Response returned when querying backtest job status."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: str
+    status: str
+    symbol: str
+    created_at: str
+    started_at: str | None = None
+    completed_at: str | None = None
+    progress: float = 0.0
+    error: str | None = None
+
+
+class BacktestTradeItem(BaseModel):
+    """A simulated trade item within a completed backtest."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    trade_id: int
+    entry_time: str
+    exit_time: str
+    side: str
+    entry_price: float
+    exit_price: float
+    quantity: int
+    gross_pnl: float
+    costs: float
+    net_pnl: float
+    return_pct: float
+    exit_reason: str
+
+
+class BacktestMetricsItem(BaseModel):
+    """Performance summary metrics for a backtest."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    total_trades: int
+    winning_trades: int
+    losing_trades: int
+    breakeven_trades: int
+    total_pnl: float
+    total_return_pct: float
+    win_rate_pct: float
+    average_win: float
+    average_loss: float
+    profit_factor: float | str
+    expectancy: float
+    max_drawdown_pct: float
+
+
+class BacktestJobResultResponse(BaseModel):
+    """Detailed response returned for a completed backtest job."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    job_id: str
+    status: str
+    symbol: str
+    date_range: dict[str, Any]
+    execution_model: str
+    metrics: BacktestMetricsItem
+    portfolio: dict[str, Any]
+    trades: list[BacktestTradeItem]
+
+
+

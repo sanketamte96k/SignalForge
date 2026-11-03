@@ -412,4 +412,33 @@ export function fetchUniverseReadinessSummary(strategyId = 'SignalForge_V1') {
   )
 }
 
+export function runBacktest(params = {}) {
+  return fetchJson('/api/strategy/backtest/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params),
+  })
+}
+
+export function fetchBacktestJobStatus(jobId) {
+  return fetchJson(`/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}`)
+}
+
+export function fetchBacktestJobResult(jobId) {
+  return fetchJson(`/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}/result`)
+}
+
+export function cancelBacktestJob(jobId) {
+  return fetchJson(`/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}/cancel`, {
+    method: 'POST',
+  })
+}
+
+export function listBacktestJobs() {
+  return fetchJson('/api/strategy/backtest/jobs')
+}
+
+
 

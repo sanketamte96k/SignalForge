@@ -1,11 +1,17 @@
-"""Strategy state API routes."""
+"""Strategy state and asynchronous backtesting API routes."""
 
 from __future__ import annotations
 
-import pandas as pd
-from fastapi import APIRouter, HTTPException, Query
+from typing import List
+from fastapi import APIRouter, HTTPException, Query, status
 
-from src.api.models import StrategySignalResponse
+from src.api.models import (
+    BacktestJobCreatedResponse,
+    BacktestJobResultResponse,
+    BacktestJobStatusResponse,
+    BacktestRunRequest,
+    StrategySignalResponse,
+)
 from src.api.routes.nifty import (
     SUPPORTED_STRATEGY_TIMEFRAMES,
     _build_strategy_signal,
@@ -13,6 +19,7 @@ from src.api.routes.nifty import (
 )
 from src.data.downloader import load_market_data
 from src.data.stock_provider import StockDataProvider
+from src.strategy.job_manager import JobStatus, get_job_manager
 
 
 router = APIRouter(
@@ -76,3 +83,136 @@ def get_strategy_signal(
         )
 
     return _build_strategy_signal(data, normalized_symbol, timeframe)
+
+
+# ----------------------------------------------------------------------------
+# Backtest Job Interface Endpoints
+# ----------------------------------------------------------------------------
+
+@router.post(
+    "/backtest/run",
+    response_model=BacktestJobCreatedResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def create_backtest_job(
+    request: BacktestRunRequest,
+) -> BacktestJobCreatedResponse:
+    """
+    Validate and queue an asynchronous backtest simulation.
+    """
+    manager = get_job_manager()
+    job = manager.submit_job(request.model_dump())
+
+    return BacktestJobCreatedResponse(
+        job_id=job.job_id,
+        status=job.status.value,
+        symbol=job.symbol,
+        created_at=job.created_at.isoformat(),
+        message="Backtest job successfully queued for execution.",
+    )
+
+
+@router.get(
+    "/backtest/jobs/{job_id}",
+    response_model=BacktestJobStatusResponse,
+)
+def get_backtest_job_status(
+    job_id: str,
+) -> BacktestJobStatusResponse:
+    """
+    Query the status and execution progress of a backtest job.
+    """
+    manager = get_job_manager()
+    job = manager.get_job(job_id)
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Backtest job '{job_id}' not found.",
+        )
+
+    return BacktestJobStatusResponse(**job.to_status_dict())
+
+
+@router.get(
+    "/backtest/jobs/{job_id}/result",
+    response_model=BacktestJobResultResponse,
+)
+def get_backtest_job_result(
+    job_id: str,
+) -> BacktestJobResultResponse:
+    """
+    Retrieve the completed quantitative results of a backtest job.
+    """
+    manager = get_job_manager()
+    job = manager.get_job(job_id)
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Backtest job '{job_id}' not found.",
+        )
+
+    if job.status in {JobStatus.QUEUED, JobStatus.RUNNING}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Backtest job '{job_id}' is still in progress (status: {job.status.value}). Results are not yet ready.",
+        )
+
+    if job.status == JobStatus.FAILED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' failed: {job.error}",
+        )
+
+    if job.status == JobStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' was cancelled.",
+        )
+
+    if not job.result:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Backtest job '{job_id}' completed without result payload.",
+        )
+
+    return BacktestJobResultResponse(**job.result)
+
+
+@router.get(
+    "/backtest/jobs",
+    response_model=List[BacktestJobStatusResponse],
+)
+def list_backtest_jobs() -> List[BacktestJobStatusResponse]:
+    """
+    List recently submitted backtest jobs.
+    """
+    manager = get_job_manager()
+    jobs = manager.list_jobs()
+    return [BacktestJobStatusResponse(**j) for j in jobs]
+
+
+@router.post(
+    "/backtest/jobs/{job_id}/cancel",
+)
+def cancel_backtest_job(
+    job_id: str,
+) -> dict[str, Any]:
+    """
+    Cancel a queued or running backtest job.
+    """
+    manager = get_job_manager()
+    cancelled = manager.cancel_job(job_id)
+    if not cancelled:
+        job = manager.get_job(job_id)
+        if not job:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Backtest job '{job_id}' not found.",
+            )
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel job '{job_id}' with status '{job.status.value}'.",
+        )
+    return {"job_id": job_id, "status": "CANCELLED", "message": "Job cancellation initiated."}
