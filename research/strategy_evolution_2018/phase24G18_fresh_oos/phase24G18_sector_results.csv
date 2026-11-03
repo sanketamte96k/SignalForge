@@ -1,0 +1,25 @@
+sector,symbol_count,partition,status,data_availability,trade_count,win_rate_pct,gross_pnl,net_pnl,profit_factor,cost_pct_of_gross,explanation
+Automobiles,3,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Automobiles,3,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Automobiles,3,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Banking & Financial Services,5,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Banking & Financial Services,5,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Banking & Financial Services,5,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Energy,3,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Energy,3,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Energy,3,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+FMCG,2,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+FMCG,2,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+FMCG,2,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Information Technology,3,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Information Technology,3,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Information Technology,3,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Metals & Mining,3,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Metals & Mining,3,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Metals & Mining,3,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Pharmaceuticals,2,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Pharmaceuticals,2,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Pharmaceuticals,2,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Services,1,PART_01_DEV (2021–2022),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Services,1,PART_02_VAL (2023),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.
+Services,1,PART_03_HOLDOUT (2024–2025),NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,No post-2020 minute bars on disk for sector constituents. Zero trades fabricated.

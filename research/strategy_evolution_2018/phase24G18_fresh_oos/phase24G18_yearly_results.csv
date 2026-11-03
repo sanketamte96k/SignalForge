@@ -1,0 +1,6 @@
+calendar_year,partition_mapping,status,data_availability,trade_count,win_rate_pct,gross_pnl,net_pnl,profit_factor,cost_pct_of_gross,market_regime_description,explanation
+2021,PART_01_DEV,NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,Post-COVID Liquidity Expansion & Bull Trend,Year 2021 minute bars not present on disk in local repository. Zero trades fabricated.
+2022,PART_01_DEV,NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,Global Central Bank Tightening & Consolidation,Year 2022 minute bars not present on disk in local repository. Zero trades fabricated.
+2023,PART_02_VAL,NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,Broad Market Equity Rally & Growth Rotation,Year 2023 minute bars not present on disk in local repository. Zero trades fabricated.
+2024,PART_03_HOLDOUT,NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,Election Year Volatility & Index Highs,Year 2024 minute bars not present on disk in local repository. Zero trades fabricated.
+2025,PART_03_HOLDOUT,NOT_TESTED,DATA_UNAVAILABLE_ON_DISK,0,0.0,0.0,0.0,0.0,0.0,Late Cycle Structural Volatility,Year 2025 minute bars not present on disk in local repository. Zero trades fabricated.

@@ -1,0 +1,71 @@
+{
+  "phase": "Phase 24G.18",
+  "title": "Pre-Registered Fresh Out-of-Sample Generalization Research",
+  "specification": "SF-SPEC-ALPHA-2026-V1",
+  "candidate": "Hypothesis B (HYP_B_BASE)",
+  "created_at": "2026-11-03T15:20:00+05:30",
+  "governance_invariants": {
+    "v1_frozen_baseline_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "quarantined_2020_holdout": "EXPLORATORY / CONTAMINATED (ZERO_ACCESS)",
+    "registry_and_paper_ledger": "UNTOUCHED"
+  },
+  "deliverables": {
+    "phase24G18_preregistration.md": {
+      "sha256": "272ee5f1c8df21d299bfc0b6970882f666499b9620c397b4f9fee0ce05460771",
+      "size_bytes": 8799
+    },
+    "phase24G18_candidate_snapshot.json": {
+      "sha256": "9cc891f8c96b5ad3058e179d5696231ff17be46813ac9f3b66c7f7d1503fce40",
+      "size_bytes": 1727
+    },
+    "phase24G18_dataset_manifest.csv": {
+      "sha256": "46c092f48a62af1173d70b3e1819641c8dc468448eb1fd505b5e16a3a9e86642",
+      "size_bytes": 12174
+    },
+    "phase24G18_data_quality_report.md": {
+      "sha256": "b26129916004c70c1f6c451ef7c358b0acacfb351cd694ed6e0d69edbf3b7051",
+      "size_bytes": 7654
+    },
+    "phase24G18_partition_manifest.json": {
+      "sha256": "cddc97fe12dff12f2acd96a9091d1d8ea0aea2e330de29b60661ac79c5f12774",
+      "size_bytes": 1919
+    },
+    "phase24G18_execution_integrity_report.md": {
+      "sha256": "22981fad55a6464967d64aacc0cef0d30a1fce89d51e159e10a0fa044c1521a2",
+      "size_bytes": 4683
+    },
+    "phase24G18_individual_asset_results.csv": {
+      "sha256": "832224087b9f319658e014d2fcb98256c1bee6d18223977e8d7c4dfdd7bc93f1",
+      "size_bytes": 16394
+    },
+    "phase24G18_sector_results.csv": {
+      "sha256": "adc9415c829cc1d6dad0817dd7a1254a7b38fd6ff7192bf2642cf657030bdb10",
+      "size_bytes": 4526
+    },
+    "phase24G18_yearly_results.csv": {
+      "sha256": "ac8f4e5734a0bec576f4b5ba81afd6b13b75f8fbcdd517dab078b98cb88df690",
+      "size_bytes": 1201
+    },
+    "phase24G18_statistical_analysis.md": {
+      "sha256": "b40af912b29450c2b89ae2b07d78104e50495019739964c1c56238602e91cf6d",
+      "size_bytes": 5375
+    },
+    "phase24G18_final_holdout_report.md": {
+      "sha256": "c6ef923990dd06fcab4acd4d8ca5794cd31141648ccebb62dc94bbd2064bbefa",
+      "size_bytes": 2809
+    },
+    "phase24G18_final_verdict.md": {
+      "sha256": "ca8eef76e0e35537a81204ff9e1d720430e9d85983f1a3f5650439862b5c16ef",
+      "size_bytes": 6035
+    },
+    "tests/test_phase24G18_fresh_oos.py": {
+      "sha256": "f96542901de4b1af5a9b8e1e69b5d991f9ce427ee2b4bac84c861c0b0f1fcaf8",
+      "size_bytes": 7513
+    },
+    "phase24G18_test_results.md": {
+      "sha256": "fc01cf07aa18f39668a94ce2a372ed4c80c78bed22c5a6cb238ca19abb9ca1b3",
+      "size_bytes": 3505
+    }
+  }
+}
