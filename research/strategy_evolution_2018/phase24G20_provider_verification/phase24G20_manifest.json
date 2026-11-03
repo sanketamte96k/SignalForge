@@ -1,0 +1,50 @@
+{
+  "phase": "Phase 24G.20",
+  "title": "TrueData vs Zerodha Pre-Purchase Verification",
+  "specification": "SF-SPEC-ALPHA-2026-V1",
+  "candidate": "Hypothesis B (HYP_B_BASE)",
+  "created_at": "2026-11-03T15:47:00+05:30",
+  "outcome_verdict": "ZERODHA_RECOMMENDED",
+  "governance_invariants": {
+    "v1_frozen_baseline_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "quarantined_2020_holdout": "EXPLORATORY / CONTAMINATED (ZERO_ACCESS)",
+    "registry_and_paper_ledger": "UNTOUCHED",
+    "purchase_status": "NO_PURCHASE_MADE",
+    "download_status": "NO_HISTORICAL_DOWNLOADS_INITIATED"
+  },
+  "deliverables": {
+    "phase24G20_truedata_verification.md": {
+      "sha256": "791e6b6ce332f412b6d5f39c6663731c54f635e0371ae4aeb548395ead93144d",
+      "size_bytes": 6207
+    },
+    "phase24G20_zerodha_verification.md": {
+      "sha256": "b7f9c95bb2e78f27a4b4fe4826a8ecd8e0ea21c5bad07716d5a341dfcb73050b",
+      "size_bytes": 7833
+    },
+    "phase24G20_22_symbol_coverage.csv": {
+      "sha256": "02a2816fa6cfdeb8b2cdf0462f184e8ecdfe19f40d97ee693bb1050467b57dea",
+      "size_bytes": 6488
+    },
+    "phase24G20_pricing_comparison.md": {
+      "sha256": "bda288b132618412c31a8febba8ffd44468dc949cdb424de549e0903acc4e477",
+      "size_bytes": 3803
+    },
+    "phase24G20_licensing_review.md": {
+      "sha256": "7b1f6825f1109fb49642867432c571794e2293eda1e145e40d3d47c46c016a4a",
+      "size_bytes": 4474
+    },
+    "phase24G20_final_recommendation.md": {
+      "sha256": "2e5337a2f94c1112660dbace7e2bc6f26c03d6200c152833fe5c698cb0db164a",
+      "size_bytes": 6042
+    },
+    "tests/test_phase24G20_provider_verification.py": {
+      "sha256": "3c754d3095510348bd9a33977ff65557c1b60a4d3cccc54c6dab6c398a8a14c6",
+      "size_bytes": 5933
+    },
+    "phase24G20_test_results.md": {
+      "sha256": "aab47b9e2af31a3ad9a16c9748b1f073992d4c910a3f9d0b4332bc9677cadbc2",
+      "size_bytes": 2972
+    }
+  }
+}
