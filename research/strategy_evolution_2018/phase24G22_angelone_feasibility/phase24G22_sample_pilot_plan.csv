@@ -1,0 +1,16 @@
+pilot_id,symbol,sector,smartapi_token,sample_period_label,start_date,end_date,trading_days,planned_api_requests,max_bars_per_request,estimated_runtime_seconds,validation_and_integrity_checks,execution_status
+PILOT-01,HDFCBANK,Banking & Financials,1333,2021 Post-COVID Sample,2021-01-04,2021-01-29,20,20,375,10.0,Bhavcopy High/Low match; 375 bars/session check; 0 nulls,PLANNED_OFFLINE_PROPOSED
+PILOT-02,HDFCBANK,Banking & Financials,1333,2023 Mid-Horizon Sample,2023-01-02,2023-01-31,21,21,375,10.5,Bhavcopy High/Low match; HDFC merger pre-baseline check,PLANNED_OFFLINE_PROPOSED
+PILOT-03,HDFCBANK,Banking & Financials,1333,2025 Recent OOS Sample,2025-01-01,2025-01-31,22,22,375,11.0,Bhavcopy High/Low match; volume spread verification,PLANNED_OFFLINE_PROPOSED
+PILOT-04,INFY,Information Technology,1594,2021 Post-COVID Sample,2021-01-04,2021-01-29,20,20,375,10.0,Bhavcopy Volume match; IT sector liquidity verification,PLANNED_OFFLINE_PROPOSED
+PILOT-05,INFY,Information Technology,1594,2023 Mid-Horizon Sample,2023-01-02,2023-01-31,21,21,375,10.5,Bhavcopy High/Low match; buyback ex-date pricing check,PLANNED_OFFLINE_PROPOSED
+PILOT-06,INFY,Information Technology,1594,2025 Recent OOS Sample,2025-01-01,2025-01-31,22,22,375,11.0,Bhavcopy High/Low match; ascending timestamp order check,PLANNED_OFFLINE_PROPOSED
+PILOT-07,RELIANCE,Energy & Petrochemicals,2885,2021 Post-COVID Sample,2021-01-04,2021-01-29,20,20,375,10.0,Bhavcopy High/Low match; tight spread check,PLANNED_OFFLINE_PROPOSED
+PILOT-08,RELIANCE,Energy & Petrochemicals,2885,2023 Mid-Horizon Sample,2023-01-02,2023-01-31,21,21,375,10.5,Jio Financial demerger raw price gap detection,PLANNED_OFFLINE_PROPOSED
+PILOT-09,RELIANCE,Energy & Petrochemicals,2885,2025 Recent OOS Sample,2025-01-01,2025-01-31,22,22,375,11.0,Bonus 1:1 raw price gap verification vs adjusted series,PLANNED_OFFLINE_PROPOSED
+PILOT-10,MARUTI,Automobiles,10999,2021 Post-COVID Sample,2021-01-04,2021-01-29,20,20,375,10.0,Bhavcopy High/Low match; auto sector liquidity audit,PLANNED_OFFLINE_PROPOSED
+PILOT-11,MARUTI,Automobiles,10999,2023 Mid-Horizon Sample,2023-01-02,2023-01-31,21,21,375,10.5,Zero-volume bar frequency audit; spread validation,PLANNED_OFFLINE_PROPOSED
+PILOT-12,MARUTI,Automobiles,10999,2025 Recent OOS Sample,2025-01-01,2025-01-31,22,22,375,11.0,Bhavcopy High/Low match; bar boundary check,PLANNED_OFFLINE_PROPOSED
+PILOT-13,SUNPHARMA,Pharmaceuticals,3351,2021 Post-COVID Sample,2021-01-04,2021-01-29,20,20,375,10.0,Pharma sector benchmark; continuous trading check,PLANNED_OFFLINE_PROPOSED
+PILOT-14,SUNPHARMA,Pharmaceuticals,3351,2023 Mid-Horizon Sample,2023-01-02,2023-01-31,21,21,375,10.5,Bhavcopy High/Low match; gap distribution audit,PLANNED_OFFLINE_PROPOSED
+PILOT-15,SUNPHARMA,Pharmaceuticals,3351,2025 Recent OOS Sample,2025-01-01,2025-01-31,22,22,375,11.0,Bhavcopy High/Low match; SHA-256 test manifest generation,PLANNED_OFFLINE_PROPOSED

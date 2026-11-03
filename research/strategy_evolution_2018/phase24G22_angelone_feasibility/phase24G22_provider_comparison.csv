@@ -1,0 +1,12 @@
+criterion,angel_one_smartapi,zerodha_kite_connect,groww_trading_api,truedata_india_vendor
+Historical 1-Minute Coverage (2021–2025),100% Full Coverage (2016 to Present),100% Full Coverage (2015 to Present),Insufficient (Rolling <18 Months Only),Restricted via REST API (Last 6 Months Only)
+Earliest Available Date (NSE Equities),"January 1, 2016",Early 2015,Trailing ~12-18 Months Rolling,2014 (Bulk Archives) / 6 Mo (REST API)
+Maximum Request Window (1-Minute Data),30 Calendar Days (Effectively 1-2 Days due to 500-bar cap),"60 Calendar Days (~15,000 bars per call)",30 Calendar Days,"Dynamic (High Throughput, max 6-month lookback)"
+Rate Limits (Requests per Second / Minute / Hour),"3 req/s | 120-180 req/min | 5,000 req/hr",3 req/s | No strict hourly cap enforced,3-5 req/s (Standard retail rate limit),10 req/s | 600 req/min
+Historical API Pricing (1-Month Acquisition),₹0.00 Flat (100% Free),₹590.00 Flat (₹500 + 18% GST; ₹0 add-on fee),₹0.00 Flat (Free),"₹8,495 to ₹14,395+ (Base API + IEOD Archive)"
+Account Prerequisites,Mandatory Active Trading/Demat Account + Static IP,Mandatory Active Trading Account with Zerodha,Mandatory Active Groww Trading Account,Independent Commercial Data Subscription (No Broker Account)
+22-Stock Universe Coverage,100% (22/22 Equities in NSE Scrip Master),100% (22/22 Equities in Kite Master),Partial (<18 Months coverage only),100% (22/22 Equities in NSEEQ Master)
+Corporate-Action Adjustment Handling,Raw and Unadjusted (Requires External Adjustment Engine),Split- and Bonus-Adjusted by Default,Adjusted by Default,Both Available (Adjusted & Unadjusted in Bulk)
+Personal Research & Local Backtesting Rights,Fully Permitted (Private Local Disk Storage Only),Fully Permitted (Private Local Disk Storage Only),Permitted for Personal Analysis,Fully Permitted for Licensed Single Workstation
+Estimated Full 5-Year Acquisition Runtime,"~5.5 to 6.0 Hours (27,280 calls at hourly quota limit)",~5.7 to 6.0 Minutes (682 calls at 2 req/s),Infeasible for 2021–2023 history,Varies (Instant FTP or Days for Custom Delivery)
+Overall Feasibility Classification,"VIABLE FREE BROKER (High call volume, raw prices)","VIABLE PAID BROKER (Fastest runtime, pre-adjusted)",INSUFFICIENT HISTORICAL DEPTH (<18 months),PROHIBITIVE COST & REST LOOKBACK BOUNDS

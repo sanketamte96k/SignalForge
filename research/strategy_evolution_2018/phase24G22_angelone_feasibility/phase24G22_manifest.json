@@ -1,0 +1,54 @@
+{
+  "phase": "Phase 24G.22",
+  "title": "Angel One SmartAPI Historical Data Feasibility Audit",
+  "candidate": "Hypothesis B (HYP_B_BASE)",
+  "specification": "SF-SPEC-ALPHA-2026-V1",
+  "status": "DRAFT",
+  "candidate_classification": "PROMISING_RESEARCH_CANDIDATE",
+  "audit_verdict": "READY_FOR_AUTHORIZED_PILOT",
+  "mode": "STRICTLY_OFFLINE_FORENSIC_AUDIT",
+  "governance_invariants": {
+    "v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "adaniports_canonical_sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "paper_trading_ledger_status": "UNTOUCHED",
+    "universe_registry_status": "UNTOUCHED",
+    "quarantined_2020_holdout": "QUARANTINED_CONTAMINATED_ZERO_ACCESS",
+    "smartapi_account_created": false,
+    "smartapi_api_calls_made": 0,
+    "data_files_downloaded": 0
+  },
+  "deliverables": {
+    "phase24G22_api_limits_and_coverage.md": {
+      "sha256": "a9791fd88984c76f3a2b100cfe306864934e29298420ce76f7ea55239500c84f",
+      "size_bytes": 6535
+    },
+    "phase24G22_final_verdict.md": {
+      "sha256": "07d19ce36d5384d4a58af70ecd162b6289ffbae179e9c971b8fee9a72b5fe7fe",
+      "size_bytes": 7060
+    },
+    "phase24G22_official_documentation_audit.md": {
+      "sha256": "dbfc8fb0ffbf74d153384e42ce6da95b1afbf61c93cde9128b183b575adf80cc",
+      "size_bytes": 8018
+    },
+    "phase24G22_provider_comparison.csv": {
+      "sha256": "44b7ac8c965b6c050d4841382b966f09fe7a22b18d9602badec736e4756c089c",
+      "size_bytes": 2306
+    },
+    "phase24G22_sample_pilot_plan.csv": {
+      "sha256": "85a202d4250dd61e4d0ca7ba359522ebf33aa8f8486f6e24fa9e62f1f7d1f84c",
+      "size_bytes": 2909
+    },
+    "phase24G22_security_audit.md": {
+      "sha256": "0f8bea839052a2549be8a1b71710278cd537992a1271ec11830cc215e2370686",
+      "size_bytes": 9603
+    },
+    "phase24G22_signalforge_compatibility.md": {
+      "sha256": "daebaeb53eafc53326e5e4bb841912020f311a1a409c5ddf4214825492805374",
+      "size_bytes": 6115
+    },
+    "phase24G22_test_results.md": {
+      "sha256": "c196f6cb1c3f550dde75efb72884ee50ca30ee50268d2cd515aeedc371221ab1",
+      "size_bytes": 3780
+    }
+  }
+}
