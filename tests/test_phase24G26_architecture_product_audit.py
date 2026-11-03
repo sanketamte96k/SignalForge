@@ -102,7 +102,8 @@ def test_manifest_sha256_integrity():
         expected_hash = item["sha256"]
         fpath = AUDIT_DIR / fname
         assert fpath.exists(), f"File in manifest missing from disk: {fname}"
-        actual_hash = hashlib.sha256(fpath.read_bytes()).hexdigest()
+        # Normalize CRLF to LF so git autocrlf does not break hash verification across platforms
+        actual_hash = hashlib.sha256(fpath.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
         assert actual_hash == expected_hash, (
             f"Hash mismatch for {fname}: expected {expected_hash}, got {actual_hash}"
         )

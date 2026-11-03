@@ -25,6 +25,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from src.core.io_utils import atomic_write_json
+
 from src.paper_trading.cost_model import (
     CostModel,
     calculate_trade_costs,
@@ -325,8 +327,7 @@ class InteractivePaperTradingService:
                 "trades": [trade.to_dict() for trade in self._trades.values()],
                 "equity_curve": self._equity_curve,
             }
-            with self.persistence_file.open("w", encoding="utf-8") as f:
-                json.dump(payload, f, indent=2)
+            atomic_write_json(self.persistence_file, payload, indent=2)
         except Exception:
             pass
 

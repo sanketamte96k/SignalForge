@@ -1,0 +1,52 @@
+{
+  "phase": "Phase 24G.27",
+  "phase_name": "Core Reliability & Security Hardening",
+  "audit_date": "2026-11-03T21:46:00+05:30",
+  "verdict": "RELIABILITY_HARDENING_COMPLETED",
+  "budget_consumed_inr": 0.0,
+  "preflight_invariants": {
+    "v1_frozen_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "adaniports_canonical_sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "holdout_2020_status": "QUARANTINED_EXPLORATORY_CONTAMINATED",
+    "active_paper_ledger": "data/paper_trading/interactive_trades.json",
+    "universe_registry": "data/universe_registry.json"
+  },
+  "deliverables": [
+    {
+      "filename": "phase24G27_atomic_write_report.md",
+      "sha256": "9d821043ab87d07a291f9fe819c7da09253280b48a5444537eaf02d7d34e6999",
+      "bytes": 6681,
+      "description": "Technical report on atomic replacement mechanics, failure modes, and call site migration."
+    },
+    {
+      "filename": "phase24G27_configuration_report.md",
+      "sha256": "26db589e1c5cad798191d33d59eb542968be09b7010bf5da175aa96612b121e7",
+      "bytes": 5539,
+      "description": "Centralized Pydantic v2 configuration schema, development defaults, and secrets masking report."
+    },
+    {
+      "filename": "phase24G27_final_report.md",
+      "sha256": "8fb0df9dc6a13b1737029bc2691e57eed7785e867bd5762209106204839e79c6",
+      "bytes": 7779,
+      "description": "Formal executive phase completion report and sign-off."
+    },
+    {
+      "filename": "phase24G27_path_validation_report.md",
+      "sha256": "813e0975851f80885838402ba5425a1a80dea38d2ab0f5b6fad6f58dca755f84",
+      "bytes": 7064,
+      "description": "Path traversal defense report, containment checks, and symbol whitelist specification."
+    },
+    {
+      "filename": "phase24G27_regression_test_results.md",
+      "sha256": "9fb2dda47767c1b1d66b7fa6a67d45dbeed8a727f90d9b39c6b16c781e0bb293",
+      "bytes": 5387,
+      "description": "Regression test execution results and invariants verification table across all subsystems."
+    },
+    {
+      "filename": "phase24G27_security_test_results.md",
+      "sha256": "68d06e73bad1e5db7224651b2eb7bc064a9d699ab6cf6958e8049e786175a134",
+      "bytes": 3881,
+      "description": "Detailed execution log of all security attack vectors, test assertions, and observed results."
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-﻿"""Stock-specific market data provider for SignalForge."""
+"""Stock-specific market data provider for SignalForge."""
 
 from __future__ import annotations
 
@@ -47,11 +47,12 @@ class StockDataProvider:
         """Return the standard local historical-data path."""
 
         normalized_symbol = self._normalize_symbol(symbol)
+        target = self.data_directory / f"{normalized_symbol}_1m.csv"
 
-        return (
-            self.data_directory
-            / f"{normalized_symbol}_1m.csv"
-        )
+        from src.core.security import validate_safe_path
+        validate_safe_path(target, self.data_directory)
+
+        return target
 
     def download(
         self,
@@ -129,12 +130,8 @@ class StockDataProvider:
         if not isinstance(symbol, str):
             raise TypeError("symbol must be a string.")
 
-        normalized = symbol.strip().upper()
-
-        if not normalized:
-            raise ValueError("symbol must not be empty.")
-
-        return normalized
+        from src.core.security import validate_symbol
+        return validate_symbol(symbol)
 
     @staticmethod
     def _normalize_suffix(suffix: str) -> str:

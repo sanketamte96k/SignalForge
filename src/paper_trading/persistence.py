@@ -4,6 +4,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+from src.core.io_utils import atomic_write_json
 from src.paper_trading.reporting import PaperTradingReport
 
 
@@ -12,7 +13,7 @@ def save_paper_trading_report(
     path: str | Path,
 ) -> Path:
     """
-    Save a paper-trading report as JSON.
+    Save a paper-trading report as JSON atomically.
 
     The parent directory is created automatically.
     """
@@ -23,11 +24,6 @@ def save_paper_trading_report(
         )
 
     output_path = Path(path)
-
-    output_path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
 
     payload = asdict(report)
 
@@ -41,15 +37,11 @@ def save_paper_trading_report(
     payload["net_return_pct"] = report.net_return_pct
     payload["win_rate_pct"] = report.win_rate_pct
 
-    with output_path.open(
-        "w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            payload,
-            file,
-            indent=2,
-        )
+    atomic_write_json(
+        output_path,
+        payload,
+        indent=2,
+    )
 
     return output_path
 
