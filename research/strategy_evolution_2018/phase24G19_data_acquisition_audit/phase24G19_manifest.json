@@ -1,0 +1,49 @@
+{
+  "phase": "Phase 24G.19",
+  "title": "Historical Market Data Acquisition & Provenance Audit",
+  "specification": "SF-SPEC-ALPHA-2026-V1",
+  "candidate": "Hypothesis B (HYP_B_BASE)",
+  "created_at": "2026-11-03T15:35:00+05:30",
+  "outcome_classification": "DATA_SOURCE_IDENTIFIED",
+  "governance_invariants": {
+    "v1_frozen_baseline_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "quarantined_2020_holdout": "EXPLORATORY / CONTAMINATED (ZERO_ACCESS)",
+    "registry_and_paper_ledger": "UNTOUCHED",
+    "download_authorization_status": "AWAITING_USER_AUTHORIZATION"
+  },
+  "deliverables": {
+    "phase24G19_provider_comparison.md": {
+      "sha256": "b3d642abf247f16f6e1a8b0abd7194fb06a922c714219f21475a4a9d4d16cd39",
+      "size_bytes": 12620
+    },
+    "phase24G19_coverage_matrix.csv": {
+      "sha256": "49f31a3da223fe31aa7d99031978ec96b4618c4bc7ac654c8df14b16fffa792d",
+      "size_bytes": 6990
+    },
+    "phase24G19_data_requirements.md": {
+      "sha256": "f148a21ceb393a71cd005ccc8ee6620be0c486b1d716d5be5fe7f9621102fff6",
+      "size_bytes": 5864
+    },
+    "phase24G19_acquisition_design.md": {
+      "sha256": "19c772cabb08f1abb357c47e2e4156fe64e153a92941afd094943708f61ed9eb",
+      "size_bytes": 5757
+    },
+    "phase24G19_licensing_and_risk_report.md": {
+      "sha256": "d87afd298d809560ac875973649da14c4fed16585b3f7bae4522fbff51770705",
+      "size_bytes": 4905
+    },
+    "phase24G19_final_verdict.md": {
+      "sha256": "2d6af31a9ab15735aef6b46f52b6de62e5702e2be83c292d6d1ed7372ac493dc",
+      "size_bytes": 4501
+    },
+    "tests/test_phase24G19_data_acquisition_audit.py": {
+      "sha256": "a87565ecea9e4735f65c42ffadc3d3b79d5b381d033cc0e51a9db65766177ab5",
+      "size_bytes": 5638
+    },
+    "phase24G19_test_results.md": {
+      "sha256": "5d14f7e97ca04a0a5e7d3d29977b086a964fbc472803843b28ed25339ea57bbd",
+      "size_bytes": 2636
+    }
+  }
+}
