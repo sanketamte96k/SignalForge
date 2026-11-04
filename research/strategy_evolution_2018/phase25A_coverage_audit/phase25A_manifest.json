@@ -1,0 +1,59 @@
+{
+  "phase": "25A",
+  "title": "Complete NIFTY 50 + NIFTY F&O Research Coverage Audit",
+  "verdict": "EQUITY_PARTIAL_FNO_BLOCKED",
+  "artifacts": {
+    "phase25A_blocked_instruments.md": {
+      "bytes": 3481,
+      "sha256": "bde353a6491c8909462cc90683b90a0e53f329fc37c970476ec64c6aabc31130"
+    },
+    "phase25A_budget_compliance_report.md": {
+      "bytes": 2442,
+      "sha256": "4f48b65c1ec109bf87c00aae76965e02ff8289e3a472461c224a9eb299064f4d"
+    },
+    "phase25A_data_provenance_manifest.md": {
+      "bytes": 4330,
+      "sha256": "95bcd38f1c1b641438148202672d8f3303ce9f09e8983270e0e406fb4d31f391"
+    },
+    "phase25A_data_quality_corporate_actions.md": {
+      "bytes": 3921,
+      "sha256": "d378232f87c8e320adc9872dbf98395180f069c81eb417b97ca26bfd9e3c32ba"
+    },
+    "phase25A_equity_coverage_report.md": {
+      "bytes": 10923,
+      "sha256": "cb60bed8108cb82e508eab3d531ae0a65411e98457c197d37712965588e6afc5"
+    },
+    "phase25A_final_report.md": {
+      "bytes": 7611,
+      "sha256": "58b05d64cbe541f00b1cfc4a6e6a23c7edbbf289a12f293ae06dc3f45b98e2f0"
+    },
+    "phase25A_insufficient_stocks_audit.md": {
+      "bytes": 3734,
+      "sha256": "1c735d89fe67c85dd557e56b1b48395e63d3bca3f85d613775752ed1b5881dd0"
+    },
+    "phase25A_nifty50_inventory.md": {
+      "bytes": 9156,
+      "sha256": "7b6c394e0182a36e20cd84ef367456a8e8a68a7cace38939f16c6142b95534d4"
+    },
+    "phase25A_nifty_futures_audit.md": {
+      "bytes": 3449,
+      "sha256": "1c321f7da818480a00cd3f96afdc9e556995c6324890d06184aa938c45747d45"
+    },
+    "phase25A_nifty_options_audit.md": {
+      "bytes": 3573,
+      "sha256": "18e44b60d154550d82ac5771275406ef70bc561f9acbb3eba2248cc4c8942038"
+    },
+    "phase25A_recommended_next_steps.md": {
+      "bytes": 2907,
+      "sha256": "cb5b4ee76661010cab874ce694741c19f38155300491b065bd71f40d5be65e7b"
+    },
+    "phase25A_testing_eligibility.md": {
+      "bytes": 3727,
+      "sha256": "e5f6d139ac8dcead6f7370120ae48bab30807bf262416d3ee4c55ff6fe24e945"
+    },
+    "phase25A_usable_stocks_audit.md": {
+      "bytes": 5443,
+      "sha256": "5a692fb9ab2ab3f96c8eb68746261f0c178adb70463d531f045984250661bcc2"
+    }
+  }
+}
