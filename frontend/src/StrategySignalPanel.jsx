@@ -8,7 +8,9 @@ import {
   runBacktest,
   fetchBacktestJobStatus,
   fetchBacktestJobResult,
+  getBacktestTearsheetUrl,
 } from './api'
+import { BacktestAnalyticsModal } from './BacktestAnalyticsModal'
 
 function formatPrice(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -220,6 +222,7 @@ export function StrategySignalPanel({
   const [backtestResult, setBacktestResult] = useState(null)
   const [backtestSubmitting, setBacktestSubmitting] = useState(false)
   const [cancellingBacktest, setCancellingBacktest] = useState(false)
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
 
   const handleTriggerBacktest = async () => {
     if (backtestSubmitting || backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING') {
@@ -1054,6 +1057,57 @@ export function StrategySignalPanel({
                       <strong style={{ color: '#ff6876' }}>-{backtestResult.metrics.max_drawdown_pct}%</strong>
                     </div>
                   </div>
+
+                  {/* Interactive Analytics & Tearsheet Trigger Actions */}
+                  <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      id="bt-view-analytics-btn"
+                      onClick={() => setShowAnalyticsModal(true)}
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        background: '#13283c',
+                        border: '1px solid #1f4263',
+                        borderRadius: '3px',
+                        color: '#00eaaf',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      📊 INTERACTIVE ANALYTICS
+                    </button>
+                    <a
+                      href={getBacktestTearsheetUrl(backtestResult.job_id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      id="bt-view-tearsheet-btn"
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        background: '#0e1d2c',
+                        border: '1px solid #1a354f',
+                        borderRadius: '3px',
+                        color: '#7cb5ec',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      📑 TEARSHEET
+                    </a>
+                  </div>
                 </div>
               )}
 
@@ -1102,6 +1156,15 @@ export function StrategySignalPanel({
           </>
         )}
       </div>
+
+      {/* Interactive Backtest Analytics & Equity Curves Modal */}
+      {showAnalyticsModal && backtestResult && (
+        <BacktestAnalyticsModal
+          isOpen={showAnalyticsModal}
+          onClose={() => setShowAnalyticsModal(false)}
+          result={backtestResult}
+        />
+      )}
     </div>
   )
 }

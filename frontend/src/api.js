@@ -440,5 +440,13 @@ export function listBacktestJobs() {
   return fetchJson('/api/strategy/backtest/jobs')
 }
 
+export function fetchBacktestAnalytics(jobId) {
+  return fetchJson(`/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}/analytics`)
+}
+
+export function getBacktestTearsheetUrl(jobId, download = false) {
+  return `/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}/tearsheet${download ? '?download=true' : ''}`
+}
+
 
 

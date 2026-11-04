@@ -1,0 +1,39 @@
+{
+  "phase": "Phase 24G.30 \u2014 Interactive Research Reporting & Equity Analytics",
+  "timestamp": "2026-11-04T20:22:00Z",
+  "audit_verdict": "INTERACTIVE_REPORTING_VERIFIED",
+  "artifacts": {
+    "phase24G30_equity_drawdown_definitions.md": {
+      "bytes": 5580,
+      "sha256": "a5d1c2d4eaec9b9d96f703a0bec086e75dff4ac0f551899665b8a3c586e10d31"
+    },
+    "phase24G30_final_report.md": {
+      "bytes": 3813,
+      "sha256": "e087f6dbb28356f4f9ab2e2df1c4a92ddd39b4518bdc51f4d32a52b5e76b61c8"
+    },
+    "phase24G30_html_tearsheet_documentation.md": {
+      "bytes": 4082,
+      "sha256": "3bb3a7e751eac5eac8ef4ed46b367859d731492e084dff2ad0907948775a2564"
+    },
+    "phase24G30_known_limitations.md": {
+      "bytes": 2263,
+      "sha256": "89c9771da94cf23ba4772ed149d9abd55b551d8f9b20b8814f85a1be98d9efc4"
+    },
+    "phase24G30_reporting_architecture.md": {
+      "bytes": 7650,
+      "sha256": "c820a677df400d0f3357a75774b8a5f6099b9dd11203cc425af1da76ff08ce99"
+    },
+    "phase24G30_test_results.md": {
+      "bytes": 5120,
+      "sha256": "a51711fee44d00b6e0546ade26b211c35d781cd038c4461bd5d9af7990738245"
+    },
+    "phase24G30_trade_analytics_report.md": {
+      "bytes": 5713,
+      "sha256": "37fef1b33884afeeed427c428099d8dbb054432efc37ef21fd575db768e3bb75"
+    },
+    "sample_tearsheet_nifty50.html": {
+      "bytes": 20149,
+      "sha256": "d56125eb10cef6864ff3007df547ef4d5cb863b6afbc3a792d4095285cf03649"
+    }
+  }
+}

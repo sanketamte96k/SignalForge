@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalForge — Quantitative Backtest Research Tearsheet [NIFTY 50]</title>
+  <style>
+    :root {
+      --bg: #060b11;
+      --card-bg: #0c141d;
+      --card-border: #1a2a3a;
+      --accent-green: #00eaaf;
+      --accent-red: #ff6876;
+      --accent-blue: #7cb5ec;
+      --accent-yellow: #f0b90b;
+      --text: #e6f0fa;
+      --text-muted: #88a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+    .header-title h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .header-title p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+    .meta-box { text-align: right; font-size: 11.5px; color: var(--text-muted); font-family: monospace; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .badge-causal { background: rgba(0, 234, 175, 0.15); color: var(--accent-green); border: 1px solid rgba(0, 234, 175, 0.4); }
+    .badge-theoretical { background: rgba(255, 104, 118, 0.15); color: var(--accent-red); border: 1px solid rgba(255, 104, 118, 0.4); }
+    .badge-buy { background: rgba(0, 234, 175, 0.15); color: var(--accent-green); }
+    .badge-sell { background: rgba(255, 104, 118, 0.15); color: var(--accent-red); }
+    .reason-tag { background: #162434; color: #9bb3c7; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-family: monospace; }
+
+    .provenance-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      font-size: 11.5px;
+    }
+    .prov-item label { display: block; color: var(--text-muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
+    .prov-item span { font-family: monospace; color: #d0e2f2; word-break: break-all; }
+
+    .grid-kpi {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .kpi-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-val { font-size: 18px; font-weight: 700; margin-top: 4px; font-family: monospace; }
+    .kpi-sub { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+    .metric-pos { color: var(--accent-green); }
+    .metric-neg { color: var(--accent-red); }
+    .metric-neutral { color: var(--text); }
+
+    .section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .section-title { font-size: 13.5px; font-weight: 700; color: #fff; letter-spacing: 0.02em; }
+    .chart-container { width: 100%; overflow-x: auto; }
+
+    /* Table Controls */
+    .table-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: #111e2c;
+      border: 1px solid #1f354b;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: #1a3a54;
+      border-color: var(--accent-blue);
+      color: #fff;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+    th {
+      background: #09131d;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+      cursor: pointer;
+    }
+    th:hover { color: #fff; }
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #13202e;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .mono { font-family: monospace; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .font-bold { font-weight: 700; }
+    .pos { color: var(--accent-green); }
+    .neg { color: var(--accent-red); }
+    .empty-notice { padding: 24px; color: var(--text-muted); font-style: italic; }
+
+    .disclaimer-card {
+      background: rgba(18, 30, 44, 0.6);
+      border: 1px dashed #1e364e;
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-size: 11px;
+      color: #8da4b8;
+      line-height: 1.6;
+    }
+    .disclaimer-card strong { color: #b4c7d6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <h1>SignalForge — Quantitative Backtest Research Tearsheet</h1>
+        <p>Instrument: <strong>NIFTY 50</strong> | Strategy: <strong>Variant C (One Trade/Symbol/Day)</strong></p>
+        <div style="margin-top: 8px;">
+          <span class="badge badge-causal">CAUSAL REALISTIC (NEXT-OPEN BAR FILL)</span>
+        </div>
+      </div>
+      <div class="meta-box">
+        <div>Job ID: <strong>job-test-fixture-1234</strong></div>
+        <div>Date Range: 2024-01-01 to 2024-01-31</div>
+        <div>Total Candles: 7500</div>
+      </div>
+    </header>
+
+    <!-- Provenance & Invariants -->
+    <div class="provenance-card">
+      <div class="prov-item">
+        <label>Frozen V1 Config SHA-256</label>
+        <span>920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7</span>
+      </div>
+      <div class="prov-item">
+        <label>Historical Dataset SHA-256</label>
+        <span>f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a</span>
+      </div>
+      <div class="prov-item">
+        <label>Capital & Cost Framework</label>
+        <span>Start: ₹100,000 | Slippage/Fee: 1.0 bps</span>
+      </div>
+    </div>
+
+    <!-- KPI Metrics Grid -->
+    <div class="grid-kpi">
+      <div class="kpi-card">
+        <div class="kpi-label">Net Return</div>
+        <div class="kpi-val metric-pos">+0.15%</div>
+        <div class="kpi-sub">Total Net P&L: ₹+150.00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Win Rate</div>
+        <div class="kpi-val metric-neutral">50.00%</div>
+        <div class="kpi-sub">2W / 2L / 0BE</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Profit Factor</div>
+        <div class="kpi-val metric-neutral">1.66</div>
+        <div class="kpi-sub">Gross: ₹416.00 / ₹250.00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Maximum Drawdown</div>
+        <div class="kpi-val metric-neg">-0.26%</div>
+        <div class="kpi-sub">Amount: ₹-258.00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Expectancy / Trade</div>
+        <div class="kpi-val metric-pos">₹+37.50</div>
+        <div class="kpi-sub">Total Trades: 4</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Win / Loss Ratio</div>
+        <div class="kpi-val metric-neutral">1.58</div>
+        <div class="kpi-sub">Avg W: ₹204.00 | L: ₹-129.00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Recovery Factor</div>
+        <div class="kpi-val metric-neutral">0.58</div>
+        <div class="kpi-sub">Streaks: 1W / 2L</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Transaction Costs</div>
+        <div class="kpi-val metric-neutral">₹16.00</div>
+        <div class="kpi-sub">Final Equity: ₹100,150.00</div>
+      </div>
+    </div>
+
+    <!-- Interactive Equity Curve -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">ACCOUNT EQUITY PROGRESSION (₹)</div>
+        <div style="font-size: 11px; color: var(--text-muted); font-family: monospace;">
+          Initial: ₹100,000 &nbsp;|&nbsp; Peak: ₹100,196 &nbsp;|&nbsp; Final: ₹100,150
+        </div>
+      </div>
+      <div class="chart-container">
+        <svg viewBox="0 0 820 280" xmlns="http://www.w3.org/2000/svg" class="chart-svg" style="width: 100%; height: auto; background: #08111a; border-radius: 6px; font-family: monospace;">
+<defs>
+  <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#00eaaf" stop-opacity="0.35"/>
+    <stop offset="100%" stop-color="#00eaaf" stop-opacity="0.02"/>
+  </linearGradient>
+</defs>
+<line x1="70" y1="240.0" x2="790" y2="240.0" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="244.0" fill="#6b869e" font-size="10" text-anchor="end">₹99,917</text>
+<line x1="70" y1="170.0" x2="790" y2="170.0" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="174.0" fill="#6b869e" font-size="10" text-anchor="end">₹100,017</text>
+<line x1="70" y1="100.0" x2="790" y2="100.0" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="104.0" fill="#6b869e" font-size="10" text-anchor="end">₹100,117</text>
+<line x1="70" y1="30.0" x2="790" y2="30.0" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="34.0" fill="#6b869e" font-size="10" text-anchor="end">₹100,217</text>
+<line x1="70" y1="182.0" x2="790" y2="182.0" stroke="#f0b90b" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.6"/>
+<text x="786" y="176.0" fill="#f0b90b" font-size="9" text-anchor="end" opacity="0.8">Start: ₹100,000</text>
+<path d="M 70.0,182.0 L 250.0,44.5 L 430.0,117.5 L 610.0,225.5 L 790.0,76.8 L 790.0,240.0 L 70.0,240.0 Z" fill="url(#eqGrad)"/>
+<path d="M 70.0,182.0 L 250.0,44.5 L 430.0,117.5 L 610.0,225.5 L 790.0,76.8" fill="none" stroke="#00eaaf" stroke-width="2.2" stroke-linejoin="round"/>
+<circle cx="70.0" cy="182.0" r="3.5" fill="#00eaaf" stroke="#08111a" stroke-width="1.5"><title>Initial Capital | Time: 2024-01-01 09:15:00 | Equity: ₹100,000.00 | Net: ₹+0.00 | DD: 0.00%</title></circle>
+<circle cx="250.0" cy="44.5" r="3.5" fill="#00eaaf" stroke="#08111a" stroke-width="1.5"><title>Trade #1 | Time: 2024-01-02 10:15:00 | Equity: ₹100,196.00 | Net: ₹+196.00 | DD: 0.00%</title></circle>
+<circle cx="430.0" cy="117.5" r="3.5" fill="#00eaaf" stroke="#08111a" stroke-width="1.5"><title>Trade #2 | Time: 2024-01-05 11:45:00 | Equity: ₹100,092.00 | Net: ₹-104.00 | DD: -0.10%</title></circle>
+<circle cx="610.0" cy="225.5" r="3.5" fill="#00eaaf" stroke="#08111a" stroke-width="1.5"><title>Trade #3 | Time: 2024-01-10 14:15:00 | Equity: ₹99,938.00 | Net: ₹-154.00 | DD: -0.26%</title></circle>
+<circle cx="790.0" cy="76.8" r="3.5" fill="#00eaaf" stroke="#08111a" stroke-width="1.5"><title>Trade #4 | Time: 2024-01-15 12:30:00 | Equity: ₹100,150.00 | Net: ₹+212.00 | DD: -0.05%</title></circle>
+<text x="70" y="268" fill="#6b869e" font-size="10">2024-01-01</text>
+<text x="790" y="268" fill="#6b869e" font-size="10" text-anchor="end">2024-01-15</text>
+</svg>
+      </div>
+    </div>
+
+    <!-- Underwater Drawdown Curve -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">UNDERWATER DRAWDOWN RELATIVE TO PEAK (%)</div>
+        <div style="font-size: 11px; color: var(--accent-red); font-family: monospace;">
+          Max DD: -0.26% (₹-258.00)
+        </div>
+      </div>
+      <div class="chart-container">
+        <svg viewBox="0 0 820 160" xmlns="http://www.w3.org/2000/svg" class="chart-svg" style="width: 100%; height: auto; background: #08111a; border-radius: 6px; font-family: monospace;">
+<defs>
+  <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ff6876" stop-opacity="0.05"/>
+    <stop offset="100%" stop-color="#ff6876" stop-opacity="0.35"/>
+  </linearGradient>
+</defs>
+<line x1="70" y1="20.0" x2="790" y2="20.0" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="24.0" fill="#6b869e" font-size="10" text-anchor="end">0.00%</text>
+<line x1="70" y1="72.5" x2="790" y2="72.5" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="76.5" fill="#6b869e" font-size="10" text-anchor="end">-0.15%</text>
+<line x1="70" y1="125.0" x2="790" y2="125.0" stroke="#162838" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="129.0" fill="#6b869e" font-size="10" text-anchor="end">-0.30%</text>
+<path d="M 70.0,20.0 L 250.0,20.0 L 430.0,55.1 L 610.0,111.3 L 790.0,37.6 L 790.0,20.0 L 70.0,20.0 Z" fill="url(#ddGrad)"/>
+<path d="M 70.0,20.0 L 250.0,20.0 L 430.0,55.1 L 610.0,111.3 L 790.0,37.6" fill="none" stroke="#ff6876" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="70.0" cy="20.0" r="3" fill="#ff6876" stroke="#08111a" stroke-width="1"><title>Initial Capital | Time: 2024-01-01 09:15:00 | DD: ₹0.00 (0.00%)</title></circle>
+<circle cx="250.0" cy="20.0" r="3" fill="#ff6876" stroke="#08111a" stroke-width="1"><title>Trade #1 | Time: 2024-01-02 10:15:00 | DD: ₹0.00 (0.00%)</title></circle>
+<circle cx="430.0" cy="55.1" r="3" fill="#ff6876" stroke="#08111a" stroke-width="1"><title>Trade #2 | Time: 2024-01-05 11:45:00 | DD: ₹-104.00 (-0.10%)</title></circle>
+<circle cx="610.0" cy="111.3" r="3" fill="#ff6876" stroke="#08111a" stroke-width="1"><title>Trade #3 | Time: 2024-01-10 14:15:00 | DD: ₹-258.00 (-0.26%)</title></circle>
+<circle cx="790.0" cy="37.6" r="3" fill="#ff6876" stroke="#08111a" stroke-width="1"><title>Trade #4 | Time: 2024-01-15 12:30:00 | DD: ₹-46.00 (-0.05%)</title></circle>
+</svg>
+      </div>
+    </div>
+
+    <!-- Trade History Table -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">TRADE EXECUTION LOG (4 COMPLETED TRADES)</div>
+        <div class="table-controls">
+          <button type="button" class="filter-btn active" onclick="filterTrades('ALL')">ALL (4)</button>
+          <button type="button" class="filter-btn" onclick="filterTrades('WIN')">WINNERS (2)</button>
+          <button type="button" class="filter-btn" onclick="filterTrades('LOSS')">LOSERS (2)</button>
+          <button type="button" class="filter-btn" onclick="filterTrades('BUY')">LONG / BUY</button>
+          <button type="button" class="filter-btn" onclick="filterTrades('SELL')">SHORT / SELL</button>
+        </div>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="trades-table">
+          <thead>
+            <tr>
+              <th class="text-center">#</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Entry Time</th>
+              <th class="text-right">Entry Price</th>
+              <th>Exit Time</th>
+              <th class="text-right">Exit Price</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Gross P&L</th>
+              <th class="text-right">Costs</th>
+              <th class="text-right">Net P&L</th>
+              <th class="text-right">Return %</th>
+              <th>Exit Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-side="BUY" data-net="196.0">  <td class="text-center">1</td>  <td><strong>NIFTY 50</strong></td>  <td><span class="badge badge-buy">BUY</span></td>  <td class="mono">2024-01-02 09:30:00</td>  <td class="mono text-right">₹21,700.00</td>  <td class="mono">2024-01-02 10:15:00</td>  <td class="mono text-right">₹21,900.00</td>  <td class="text-center">1</td>  <td class="mono text-right">₹+200.00</td>  <td class="mono text-right">₹4.00</td>  <td class="mono text-right font-bold pos">₹+196.00</td>  <td class="mono text-right pos">+0.90%</td>  <td><span class="reason-tag">TAKE_PROFIT</span></td></tr>
+<tr data-side="BUY" data-net="-104.0">  <td class="text-center">2</td>  <td><strong>NIFTY 50</strong></td>  <td><span class="badge badge-buy">BUY</span></td>  <td class="mono">2024-01-05 11:00:00</td>  <td class="mono text-right">₹21,850.00</td>  <td class="mono">2024-01-05 11:45:00</td>  <td class="mono text-right">₹21,750.00</td>  <td class="text-center">1</td>  <td class="mono text-right">₹-100.00</td>  <td class="mono text-right">₹4.00</td>  <td class="mono text-right font-bold neg">₹-104.00</td>  <td class="mono text-right neg">-0.48%</td>  <td><span class="reason-tag">STOP_LOSS</span></td></tr>
+<tr data-side="SELL" data-net="-154.0">  <td class="text-center">3</td>  <td><strong>NIFTY 50</strong></td>  <td><span class="badge badge-sell">SELL</span></td>  <td class="mono">2024-01-10 13:00:00</td>  <td class="mono text-right">₹21,600.00</td>  <td class="mono">2024-01-10 14:15:00</td>  <td class="mono text-right">₹21,750.00</td>  <td class="text-center">1</td>  <td class="mono text-right">₹-150.00</td>  <td class="mono text-right">₹4.00</td>  <td class="mono text-right font-bold neg">₹-154.00</td>  <td class="mono text-right neg">-0.71%</td>  <td><span class="reason-tag">STOP_LOSS</span></td></tr>
+<tr data-side="BUY" data-net="212.0">  <td class="text-center">4</td>  <td><strong>NIFTY 50</strong></td>  <td><span class="badge badge-buy">BUY</span></td>  <td class="mono">2024-01-15 10:00:00</td>  <td class="mono text-right">₹21,500.00</td>  <td class="mono">2024-01-15 12:30:00</td>  <td class="mono text-right">₹21,716.00</td>  <td class="text-center">1</td>  <td class="mono text-right">₹+216.00</td>  <td class="mono text-right">₹4.00</td>  <td class="mono text-right font-bold pos">₹+212.00</td>  <td class="mono text-right pos">+0.98%</td>  <td><span class="reason-tag">TAKE_PROFIT</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Academic Research Disclaimer -->
+    <div class="disclaimer-card">
+      <strong>RESEARCH & ACADEMIC PROTOCOL DISCLAIMER:</strong> This tearsheet was deterministically generated by SignalForge for quantitative research and engineering validation only. Market simulations are computed on historical NSE 1-minute datasets under strict ₹0 budget invariants. Simulated past performance is no guarantee of future returns. No live broker connectivity, financial advisory, or order execution is implied or authorized.
+    </div>
+  </div>
+
+  <script>
+    function filterTrades(category) {
+      const buttons = document.querySelectorAll('.filter-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const rows = document.querySelectorAll('#trades-table tbody tr');
+      rows.forEach(row => {
+        const side = (row.getAttribute('data-side') || '').toUpperCase();
+        const net = parseFloat(row.getAttribute('data-net') || '0');
+
+        let show = true;
+        if (category === 'WIN') show = net > 0;
+        else if (category === 'LOSS') show = net < 0;
+        else if (category === 'BUY') show = side.includes('BUY') || side.includes('LONG');
+        else if (category === 'SELL') show = side.includes('SELL') || side.includes('SHORT');
+
+        row.style.display = show ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

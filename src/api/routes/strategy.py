@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import Any, List
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import HTMLResponse
 
 from src.api.models import (
     BacktestJobCreatedResponse,
@@ -16,6 +17,10 @@ from src.api.routes.nifty import (
     SUPPORTED_STRATEGY_TIMEFRAMES,
     _build_strategy_signal,
     _load_nifty_data,
+)
+from src.backtest.tearsheet import (
+    compute_backtest_analytics,
+    generate_html_tearsheet,
 )
 from src.data.downloader import load_market_data
 from src.data.stock_provider import StockDataProvider
@@ -216,3 +221,102 @@ def cancel_backtest_job(
             detail=f"Cannot cancel job '{job_id}' with status '{job.status.value}'.",
         )
     return {"job_id": job_id, "status": "CANCELLED", "message": "Job cancellation initiated."}
+
+
+@router.get(
+    "/backtest/jobs/{job_id}/tearsheet",
+    response_class=HTMLResponse,
+)
+def get_backtest_job_tearsheet(
+    job_id: str,
+    download: bool = Query(False, description="Whether to trigger file download attachment"),
+) -> HTMLResponse:
+    """
+    Return a self-contained, standalone HTML research tearsheet for a completed backtest job.
+    """
+    manager = get_job_manager()
+    job = manager.get_job(job_id)
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Backtest job '{job_id}' not found.",
+        )
+
+    if job.status in {JobStatus.QUEUED, JobStatus.RUNNING}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Backtest job '{job_id}' is still in progress (status: {job.status.value}). Tearsheet is not yet ready.",
+        )
+
+    if job.status == JobStatus.FAILED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' failed: {job.error}",
+        )
+
+    if job.status == JobStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' was cancelled.",
+        )
+
+    if not job.result:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Backtest job '{job_id}' completed without result payload.",
+        )
+
+    html_content = generate_html_tearsheet(job.result)
+    headers = {}
+    if download:
+        filename = f"signalforge_tearsheet_{job.symbol}_{job_id}.html"
+        headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return HTMLResponse(content=html_content, status_code=200, headers=headers)
+
+
+@router.get(
+    "/backtest/jobs/{job_id}/analytics",
+)
+def get_backtest_job_analytics(
+    job_id: str,
+) -> dict[str, Any]:
+    """
+    Retrieve structured equity curve and extended quantitative performance metrics for a completed job.
+    """
+    manager = get_job_manager()
+    job = manager.get_job(job_id)
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Backtest job '{job_id}' not found.",
+        )
+
+    if job.status in {JobStatus.QUEUED, JobStatus.RUNNING}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Backtest job '{job_id}' is still in progress (status: {job.status.value}). Analytics are not yet ready.",
+        )
+
+    if job.status == JobStatus.FAILED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' failed: {job.error}",
+        )
+
+    if job.status == JobStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' was cancelled.",
+        )
+
+    if not job.result:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Backtest job '{job_id}' completed without result payload.",
+        )
+
+    return compute_backtest_analytics(job.result)
+
