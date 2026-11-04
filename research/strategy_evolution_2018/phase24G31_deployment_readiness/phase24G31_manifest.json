@@ -1,0 +1,39 @@
+{
+  "phase": "24G.31",
+  "title": "Deployment Readiness and Reproducibility Audit",
+  "verdict": "LOCAL_DEPLOYMENT_READY",
+  "artifacts": {
+    "phase24G31_application_integration_report.md": {
+      "bytes": 3993,
+      "sha256": "36034d36b1d9027b06f747c8782bf7d497f6839d2d288777299c30ae0a148873"
+    },
+    "phase24G31_ci_report.md": {
+      "bytes": 4117,
+      "sha256": "f5f02decf2411af6b3bc73bceb932aafaac8853a24a8addcc501baa30979a930"
+    },
+    "phase24G31_docker_feasibility.md": {
+      "bytes": 2920,
+      "sha256": "5dfe3c7e60da5c08a388f891779597de357d30d1a533ddab94bdc874e39d94e1"
+    },
+    "phase24G31_final_report.md": {
+      "bytes": 3581,
+      "sha256": "b1c9425599199c96ab34afcf52753f563366d609c831f33cf139547480bbe495"
+    },
+    "phase24G31_installation_audit.md": {
+      "bytes": 2556,
+      "sha256": "b3452997d2377b7652341626f4e3862724d4fbed383f9d819272e7c93c012802"
+    },
+    "phase24G31_reproducibility_audit.md": {
+      "bytes": 3578,
+      "sha256": "58b775f5f4eaa15dd49f28d551bab56bf772c90fb261847f8cb1500127d83ced"
+    },
+    "phase24G31_security_checklist.md": {
+      "bytes": 3350,
+      "sha256": "958f6d70b2cae0e4880a1dca205e83e7aac09632d39d6e5963aaf0ba6ccbc46f"
+    },
+    "phase24G31_troubleshooting_guide.md": {
+      "bytes": 4217,
+      "sha256": "b4fc9b0e4b723593f5a1498d546a4fdc6ea881eae094e36f9e01849eb3cd7cba"
+    }
+  }
+}

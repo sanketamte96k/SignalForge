@@ -26,6 +26,12 @@ reports/*
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+
 # SignalForge local research/data
 research/*
 !research/strategy_evolution_2018/
@@ -35,4 +41,3 @@ data/*.csv
 temp_nse_data/
 *.parquet
 data/paper_trading/*
-

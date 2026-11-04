@@ -1,0 +1,23 @@
+services:
+  signalforge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: signalforge:latest
+    container_name: signalforge-local
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=production
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      # Mount local data directory as read-only to protect historical data integrity
+      - ./data:/app/data:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
