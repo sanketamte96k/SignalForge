@@ -219,6 +219,7 @@ export function StrategySignalPanel({
   const [backtestError, setBacktestError] = useState(null)
   const [backtestResult, setBacktestResult] = useState(null)
   const [backtestSubmitting, setBacktestSubmitting] = useState(false)
+  const [cancellingBacktest, setCancellingBacktest] = useState(false)
 
   const handleTriggerBacktest = async () => {
     if (backtestSubmitting || backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING') {
@@ -254,17 +255,35 @@ export function StrategySignalPanel({
     }
   }
 
+  const handleCancelBacktest = async () => {
+    if (!backtestJobId || (backtestStatus !== 'QUEUED' && backtestStatus !== 'RUNNING')) {
+      return
+    }
+    setCancellingBacktest(true)
+    try {
+      await cancelBacktestJob(backtestJobId)
+      setBacktestStatus('CANCELLED')
+      setBacktestError('Backtest job cancelled by user.')
+    } catch (err) {
+      setBacktestError(`Failed to cancel backtest job: ${err.message}`)
+    } finally {
+      setCancellingBacktest(false)
+    }
+  }
+
   useEffect(() => {
     if (!backtestJobId || (backtestStatus !== 'QUEUED' && backtestStatus !== 'RUNNING')) {
       return
     }
 
     let isMounted = true
+    let consecutiveNetworkErrors = 0
     const interval = setInterval(async () => {
       try {
         const statusRes = await fetchBacktestJobStatus(backtestJobId)
         if (!isMounted) return
 
+        consecutiveNetworkErrors = 0
         setBacktestStatus(statusRes.status)
         setBacktestProgress(statusRes.progress || 0)
 
@@ -288,7 +307,22 @@ export function StrategySignalPanel({
           setBacktestError('Backtest job was cancelled.')
         }
       } catch (pollErr) {
-        // Transient network error
+        if (!isMounted) return
+        const errMsg = String(pollErr?.message || '')
+        // Server restart detection: HTTP 404 indicates job was lost from memory
+        if (errMsg.includes('404') || errMsg.toLowerCase().includes('not found')) {
+          clearInterval(interval)
+          setBacktestStatus('FAILED')
+          setBacktestError('Job no longer found on server (server may have restarted). Please resubmit.')
+          return
+        }
+
+        consecutiveNetworkErrors += 1
+        if (consecutiveNetworkErrors >= 5) {
+          clearInterval(interval)
+          setBacktestStatus('FAILED')
+          setBacktestError('Connection lost while polling backtest progress. Please verify backend status.')
+        }
       }
     }, 1000)
 
@@ -916,8 +950,8 @@ export function StrategySignalPanel({
                     disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
                     style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
                   >
-                    <option value="next_open">next_open (Causal)</option>
-                    <option value="same_close">same_close (Legacy)</option>
+                    <option value="next_open">next_open (Causal) [Realistic]</option>
+                    <option value="same_close">same_close (Theoretical) [Lookahead Biased]</option>
                   </select>
                 </div>
                 <div>
@@ -940,8 +974,29 @@ export function StrategySignalPanel({
                     <span style={{ color: '#ffaa00' }}>Job ID: <code>{backtestJobId}</code></span>
                     <span style={{ color: '#fff', fontWeight: 'bold' }}>{backtestProgress}%</span>
                   </div>
-                  <div style={{ width: '100%', height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ width: '100%', height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden', marginBottom: '6px' }}>
                     <div style={{ width: `${backtestProgress}%`, height: '100%', background: '#ffaa00', transition: 'width 300ms ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '9.5px', color: '#88a3b8' }}>Cooperative cancellation checkpoint</span>
+                    <button
+                      type="button"
+                      id="bt-cancel-btn"
+                      onClick={handleCancelBacktest}
+                      disabled={cancellingBacktest}
+                      style={{
+                        background: 'rgba(255, 79, 94, 0.15)',
+                        border: '1px solid rgba(255, 79, 94, 0.4)',
+                        color: '#ff6876',
+                        borderRadius: '3px',
+                        padding: '2px 8px',
+                        fontSize: '10px',
+                        cursor: cancellingBacktest ? 'not-allowed' : 'pointer',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {cancellingBacktest ? 'CANCELLING...' : 'CANCEL BACKTEST'}
+                    </button>
                   </div>
                 </div>
               )}
@@ -960,6 +1015,15 @@ export function StrategySignalPanel({
                     <span>SIMULATION RESULTS ({backtestResult.symbol})</span>
                     <span style={{ color: '#88a3b8', fontSize: '10px' }}>{backtestResult.date_range?.total_candles} candles</span>
                   </div>
+                  {backtestResult.execution_model === 'same_close' ? (
+                    <div style={{ padding: '3px 6px', marginBottom: '6px', background: 'rgba(255, 79, 94, 0.15)', border: '1px solid rgba(255, 79, 94, 0.4)', borderRadius: '3px', color: '#ff6876', fontSize: '9.5px', fontWeight: 'bold' }}>
+                      ⚠️ THEORETICAL EXECUTION (LOOKAHEAD BIASED / NON-CAUSAL)
+                    </div>
+                  ) : (
+                    <div style={{ padding: '3px 6px', marginBottom: '6px', background: 'rgba(0, 234, 175, 0.1)', border: '1px solid rgba(0, 234, 175, 0.3)', borderRadius: '3px', color: '#00eaaf', fontSize: '9.5px', fontWeight: 'bold' }}>
+                      ✅ CAUSAL REALISTIC EXECUTION (NEXT-OPEN BAR FILL)
+                    </div>
+                  )}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', fontSize: '11px' }}>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Net Return: </span>

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "vite-node test/state_views.test.js && vite-node test/chart_ux.test.js && vite-node test/scanner_ux.test.js && vite-node test/analysis_workflow.test.js && vite-node test/responsive_layout.test.js && vite-node test/keyboard_shortcuts.test.js && vite-node test/toast_notifications.test.js && vite-node test/accessibility_ux.test.js && vite-node test/settings_ux.test.js && vite-node test/strategy_panel.test.js && vite-node test/paper_trading_phase17.test.js && vite-node test/stock_universe_view.test.js && vite-node test/backtest_job_bridge.test.js",
+    "test": "vite-node test/state_views.test.js && vite-node test/chart_ux.test.js && vite-node test/scanner_ux.test.js && vite-node test/analysis_workflow.test.js && vite-node test/responsive_layout.test.js && vite-node test/keyboard_shortcuts.test.js && vite-node test/toast_notifications.test.js && vite-node test/accessibility_ux.test.js && vite-node test/settings_ux.test.js && vite-node test/strategy_panel.test.js && vite-node test/paper_trading_phase17.test.js && vite-node test/stock_universe_view.test.js && vite-node test/backtest_job_bridge.test.js && vite-node test/backtest_reliability.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

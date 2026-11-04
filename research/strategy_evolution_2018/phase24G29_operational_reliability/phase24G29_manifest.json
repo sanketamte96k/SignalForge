@@ -1,0 +1,34 @@
+{
+  "phase24G29_job_lifecycle_audit.md": {
+    "bytes": 3363,
+    "sha256": "79ea747e7e995599c90352ff3f83add532f646f5594ffc60deeb813b418466ee"
+  },
+  "phase24G29_concurrency_isolation_report.md": {
+    "bytes": 2943,
+    "sha256": "9bb6ca66acaeb43db5faaccb6ae63076e80822715c75e9c4d8aba5d3a5fdf3f3"
+  },
+  "phase24G29_cancellation_behavior_report.md": {
+    "bytes": 2895,
+    "sha256": "ca66261d5a9a6d3a4a283ab27d544c813e8810feda191f0fa40169455fd2a134"
+  },
+  "phase24G29_cli_api_parity_report.md": {
+    "bytes": 2669,
+    "sha256": "d4c436d736d09af3d2c0a42aca4585ae8b0ad0159803d7c589067f962d795dab"
+  },
+  "phase24G29_frontend_resilience_report.md": {
+    "bytes": 2863,
+    "sha256": "befb2db4d564c950c4b92e3f109fc2f7c17904cfbf27d2a8fc8e4e08541f978c"
+  },
+  "phase24G29_test_results.md": {
+    "bytes": 4602,
+    "sha256": "64f1dfe21ccd2c5ece36cca7630f8e7e709ff1deda7ac4389dfa425bc5a205ab"
+  },
+  "phase24G29_known_limitations.md": {
+    "bytes": 1677,
+    "sha256": "fdd00b649ea2b3dea6d01b871839ceccf036e61eaaa12c8e3d4738cb76ee560b"
+  },
+  "phase24G29_final_report.md": {
+    "bytes": 3472,
+    "sha256": "95376aa058b899f7f5a83dad28611197a551c010f65416c881fec8fb92450da6"
+  }
+}

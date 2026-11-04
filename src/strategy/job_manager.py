@@ -233,31 +233,42 @@ class BacktestJobManager:
     def _execute_job(self, job_id: str) -> None:
         """Worker thread entry point for sequential execution."""
         job = self.get_job(job_id)
-        if not job or job.status == JobStatus.CANCELLED:
+        if not job:
             return
 
-        job.status = JobStatus.RUNNING
-        job.started_at = datetime.now(timezone.utc)
-        job.progress = 10.0
+        with self._lock:
+            if job.status == JobStatus.CANCELLED:
+                return
+            job.status = JobStatus.RUNNING
+            job.started_at = datetime.now(timezone.utc)
+            job.progress = 10.0
 
         try:
             params = job.request_params
             symbol = job.symbol
 
+            # Checkpoint 1: Cancellation check before loading data
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+
             # 1. Load Data
-            job.progress = 20.0
             data = self._load_data_for_job(symbol)
 
-            # Check for cancellation
-            if job.status == JobStatus.CANCELLED:
-                return
+            # Checkpoint 2: Cancellation check after loading data
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.progress = 20.0
 
-            # 2. Slice Date Range
+            # 2. Slice Date Range (explicit copy for full thread isolation)
             start_date = params.get("start_date")
             end_date = params.get("end_date")
 
             if start_date or end_date:
-                data = data.loc[start_date:end_date]
+                data = data.loc[start_date:end_date].copy()
+            else:
+                data = data.copy()
 
             if data.empty:
                 raise ValueError(
@@ -270,8 +281,13 @@ class BacktestJobManager:
                     f"Insufficient market data ({total_candles} candles) to compute multi-timeframe indicators. Minimum 100 required."
                 )
 
-            # 3. Strategy Configuration
-            job.progress = 40.0
+            # Checkpoint 3: Cancellation check before indicator & signal build
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.progress = 40.0
+
+            # 3. Strategy Configuration (per-job independent instance)
             config = StrategyConfig(
                 ema_fast_period=int(params.get("ema_fast_period", 20)),
                 ema_slow_period=int(params.get("ema_slow_period", 50)),
@@ -285,14 +301,15 @@ class BacktestJobManager:
             )
 
             # 4. Create Signal Function
-            job.progress = 60.0
             sig_fn = create_signal_function(data, config)
 
-            if job.status == JobStatus.CANCELLED:
-                return
+            # Checkpoint 4: Cancellation check before backtest simulation
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.progress = 60.0
 
             # 5. Run Backtest
-            job.progress = 75.0
             initial_capital = float(params.get("initial_capital", 100_000.0))
             quantity = int(params.get("quantity", 1))
             cost_rate = float(params.get("transaction_cost_rate", 0.0001))
@@ -300,6 +317,11 @@ class BacktestJobManager:
 
             if exec_model not in {"next_open", "same_close"}:
                 raise ValueError(f"Invalid execution_model: '{exec_model}'. Supported: 'next_open', 'same_close'.")
+
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.progress = 75.0
 
             backtest_result = run_backtest(
                 data=data,
@@ -310,8 +332,12 @@ class BacktestJobManager:
                 execution_model=exec_model,
             )
 
-            # 6. Format Result
-            job.progress = 90.0
+            # Checkpoint 5: Check cancellation before formatting & persisting results
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.progress = 90.0
+
             metrics = backtest_result.metrics
             portfolio = backtest_result.portfolio
 
@@ -380,16 +406,22 @@ class BacktestJobManager:
                 "trades": trades_serialized,
             }
 
-            job.result = formatted_result
-            job.status = JobStatus.COMPLETED
-            job.progress = 100.0
-            job.completed_at = datetime.now(timezone.utc)
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.result = formatted_result
+                job.status = JobStatus.COMPLETED
+                job.progress = 100.0
+                job.completed_at = datetime.now(timezone.utc)
 
         except Exception as exc:
-            job.status = JobStatus.FAILED
-            job.error = str(exc)
-            job.completed_at = datetime.now(timezone.utc)
-            job.progress = 0.0
+            with self._lock:
+                if job.status == JobStatus.CANCELLED:
+                    return
+                job.status = JobStatus.FAILED
+                job.error = str(exc)
+                job.completed_at = datetime.now(timezone.utc)
+                job.progress = 0.0
 
 
 # Global singleton instance for the FastAPI application
