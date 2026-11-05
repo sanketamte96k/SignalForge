@@ -1,0 +1,80 @@
+{
+  "phase": "25F.1",
+  "title": "Final Audit Discrepancy Closure",
+  "verdict": "ALL_DISCREPANCIES_RESOLVED",
+  "generated_at": "2026-11-05 16:25:04",
+  "invariants": {
+    "frozen_v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "canonical_nifty50_hash": "f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a",
+    "quarantined_2020_enforced": true,
+    "paper_ledger_preserved": true,
+    "universe_registry_preserved": true,
+    "tests_watchlist_preserved": true,
+    "budget_expenditure_inr": 0.0
+  },
+  "audit_closure_summary": {
+    "membership_discrepancy_resolved": true,
+    "statistical_power_claim_qualified": true,
+    "cost_figures_reconciled": true,
+    "exact_corrected_counts": {
+      "BHEL": {
+        "raw_unfiltered_trades": 585,
+        "tenure_bounded_trades": 41,
+        "excluded_trades": 544
+      },
+      "IDEA": {
+        "raw_unfiltered_trades": 584,
+        "tenure_bounded_trades": 45,
+        "excluded_trades": 539
+      },
+      "NESTLEIND": {
+        "raw_unfiltered_trades": 538,
+        "tenure_bounded_trades": 47,
+        "excluded_trades": 491
+      },
+      "BRITANNIA": {
+        "raw_unfiltered_trades": 571,
+        "tenure_bounded_trades": 158,
+        "excluded_trades": 413
+      },
+      "IBULHSGFIN": {
+        "raw_unfiltered_trades": 544,
+        "tenure_bounded_trades": 462,
+        "excluded_trades": 82
+      },
+      "IOC": {
+        "raw_unfiltered_trades": 579,
+        "tenure_bounded_trades": 537,
+        "excluded_trades": 42
+      }
+    },
+    "cost_figures_reconciliation": {
+      "figure_1_one_way_friction_inr": 15961.56,
+      "figure_2_round_trip_unit_friction_inr": 31827.6,
+      "figure_3_portfolio_friction_inr": 459066.11,
+      "unit_aggregate_turnover_inr": 46562469.77,
+      "portfolio_aggregate_turnover_inr": 809641281.73,
+      "turnover_multiplier": 17.3876,
+      "portfolio_brokerage_cap_hit_rate_pct": 100.0,
+      "portfolio_brokerage_amount_inr": 162960.0
+    },
+    "statistical_power_qualification": {
+      "average_sample_size_per_stock": 525,
+      "autocorrelation_adjusted_neff": 466,
+      "return_stdev_bps": 132.2,
+      "mde_80_power_bps": 15.22,
+      "mde_99_power_bps": 24.3,
+      "power_for_2pct_winrate_pct": 23.3,
+      "status": "QUALIFIED_AND_DOCUMENTED"
+    }
+  },
+  "deliverables": [
+    "phase25F1_discrepancy_resolution.md",
+    "phase25F1_corrected_membership_counts.csv",
+    "phase25F1_statistical_power_methodology.md",
+    "phase25F1_cost_figure_reconciliation.md",
+    "phase25F1_results_manifest.json",
+    "tests/test_phase25F1_discrepancy_closure.py"
+  ]
+}
