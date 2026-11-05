@@ -1,0 +1,366 @@
+{
+  "phase": "25D",
+  "title": "Historical NIFTY 50 Reconstruction and Missing Equity Audit Manifest",
+  "generated_at": "2026-11-05T13:44:56.466011",
+  "invariants": {
+    "frozen_v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "canonical_nifty50_hash": "f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a",
+    "quarantine_2020_enforced": true,
+    "budget_spent_inr": 0.0
+  },
+  "universe_statistics": {
+    "total_historical_companies": 61,
+    "total_historical_securities": 62,
+    "historical_companies_with_1m_data": 38,
+    "historical_companies_missing_1m_data": 23,
+    "eligible_for_backtesting_tenure_bounded": 38,
+    "blocked_by_insufficient_data": 23
+  },
+  "missing_16_modern_stocks_analysis": {
+    "non_historical_entrants_count": 9,
+    "non_historical_entrants": [
+      "BSE",
+      "ETERNAL",
+      "HDFCLIFE",
+      "INDIGO",
+      "JIOFIN",
+      "MAXHEALTH",
+      "TATACONSUM",
+      "TMPV",
+      "TRENT"
+    ],
+    "true_historical_missing_count": 7,
+    "true_historical_missing": [
+      "HINDALCO",
+      "HINDUNILVR",
+      "TCS",
+      "TATASTEEL",
+      "TECHM",
+      "TITAN",
+      "ULTRACEMCO"
+    ]
+  },
+  "distressed_constituents_audit": {
+    "identified_count": 7,
+    "with_data_count": 3,
+    "with_data_symbols": [
+      "IBULHSGFIN",
+      "IDEA",
+      "BHEL"
+    ],
+    "missing_data_count": 4,
+    "missing_data_symbols": [
+      "YESBANK",
+      "ZEEL",
+      "VEDL",
+      "INFRATEL"
+    ]
+  },
+  "available_historical_datasets_manifest": [
+    {
+      "symbol": "ADANIPORTS",
+      "company_name": "Adani Ports and Special Economic Zone Ltd.",
+      "data_tier": "CANONICAL_CLEAN",
+      "file_name": "ADANIPORTS_1m.csv",
+      "sha256": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+      "bars_2017_2019": 275969
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "company_name": "Asian Paints Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "ASIANPAINT__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "79a28ddd3e0360cf7dc569f76df3539a578c348ad7ea5b12092f85503aa05627",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "AXISBANK",
+      "company_name": "Axis Bank Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "AXISBANK__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "c22bddab8d72adb97a528791566fe4851acf33a4cd98745d26a4597e33f20287",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "company_name": "Bajaj Auto Ltd.",
+      "data_tier": "RAW_ARCHIVE_ALIASED",
+      "file_name": "BAJAJ_AUTO__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "a8d0a132a74d9e89d1d4d9c00a312b1f21aa64f57da09d7cc8ee2df1ee020e96",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "company_name": "Bajaj Finserv Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "BAJAJFINSV__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "801c4fea5cf830c4c6801f149267158eef315f542851155b371d817955c1e7e6",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "company_name": "Bajaj Finance Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "BAJFINANCE__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "a4de8d1cb5d7ddc9e337655d1ca6435846d061314756607c926d1970a439e017",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "company_name": "Bharti Airtel Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "BHARTIARTL__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "a68db2d2ba463a97f7c276673962d45112ea55ad92168a25315131a771002416",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BHEL",
+      "company_name": "Bharat Heavy Electricals Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "BHEL__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "dcbf09a80382e8749341c15582217d7430e942d9b6b13fde104174eb90c648bb",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BPCL",
+      "company_name": "Bharat Petroleum Corporation Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "BPCL__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "7dc96acd3c19d110345fbbc1670ba196f15e9aaa3145d5edd7caac27521b2b69",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "BRITANNIA",
+      "company_name": "Britannia Industries Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "BRITANNIA__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "ada3b4df6ffbffbb321cfa8595994f553e2ccda2492e0247507e797ba73ae99f",
+      "bars_2017_2019": 275984
+    },
+    {
+      "symbol": "CIPLA",
+      "company_name": "Cipla Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "CIPLA__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "c66443f30d94f5171b9f98e191be664c44b08d06dcf3e9152988aab95b5a022c",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "COALINDIA",
+      "company_name": "Coal India Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "COALINDIA__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "6cf03622a0e3aae6088c84a82784243848fc46bbcc3c796870ef1bec71fe7e56",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "DRREDDY",
+      "company_name": "Dr. Reddy's Laboratories Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "DRREDDY__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "3ef21a010714663a294a44aed8c5c74ee2478ebb0219fb7a295433c4276aa6b6",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "EICHERMOT",
+      "company_name": "Eicher Motors Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "EICHERMOT__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "e117dede79ffda853362084d77c0f3f432eabe0efc3bcb42461b1e4fb3e4799a",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "GAIL",
+      "company_name": "GAIL (India) Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "GAIL__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "49b832d7f23c3ff438602bbb1576142321d2265f903cd543195eddcb3ddd0ee4",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "GRASIM",
+      "company_name": "Grasim Industries Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "GRASIM__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "cd587b465d1fe319b8762dc9695463169448f7ec55a84c4ed7d111ebf7360b2d",
+      "bars_2017_2019": 275956
+    },
+    {
+      "symbol": "HCLTECH",
+      "company_name": "HCL Technologies Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "HCLTECH__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "4f529184d8cd5537ef71cb5a1d5dc13705906277e0be0f05b34978b9d55cde46",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "HDFC",
+      "company_name": "Housing Development Finance Corporation Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "HDFC__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "39f6b900cb2252f8bb2f3488ce633a0ec2962156938d16d16bfa797902b690eb",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "HDFCBANK",
+      "company_name": "HDFC Bank Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "HDFCBANK__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "63bef04199016c4bac009cb5347e1eb692c596417b517986414eafc902fa10b2",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "IBULHSGFIN",
+      "company_name": "Indiabulls Housing Finance Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "IBULHSGFIN__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "689dc1a1a7d2a6aefd679e1f6bef66146268737ffb6b9e1a2d0faaf843763e47",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "ICICIBANK",
+      "company_name": "ICICI Bank Ltd.",
+      "data_tier": "CANONICAL_CLEAN",
+      "file_name": "ICICIBANK_1m.csv",
+      "sha256": "36eab7652ff59040564d91d723b8475a1761c4bfe325ded2758339ae0664196e",
+      "bars_2017_2019": 275966
+    },
+    {
+      "symbol": "IDEA",
+      "company_name": "Idea Cellular Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "IDEA__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "458177e7c742cbb4024e67073d339a96061467aaff6aefc303a0814f17a59673",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "company_name": "IndusInd Bank Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "INDUSINDBK__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "ecc1181b4075939e4cf3b7abfcc329395c2ff9fcd08d2365e50b98e122589309",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "INFY",
+      "company_name": "Infosys Ltd.",
+      "data_tier": "CANONICAL_CLEAN",
+      "file_name": "INFY_1m.csv",
+      "sha256": "41e1c679baf0dd08dd48a86ddbec9e7a2ea1e548a6fa0c663d12fad5a040fd55",
+      "bars_2017_2019": 275966
+    },
+    {
+      "symbol": "IOC",
+      "company_name": "Indian Oil Corporation Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "IOC__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "126d5099cbf85b5a238b045942903e4dfd6c5ab23a7a84c08f9305c4f8653941",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "ITC",
+      "company_name": "ITC Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "ITC__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "1ac8ce7b7fd158feca188b873bbf0a0e90b3b03edc3a4218e8bed3e51ae1d1da",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "company_name": "JSW Steel Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "JSWSTEEL__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "c4bd53cbde581cefbf5916018bdff3a89c72625c18fb0c2a7682d53df4d359e5",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "company_name": "Kotak Mahindra Bank Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "KOTAKBANK__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "cab42a48d73430d88595b450c1a1e0c8ec6aa708c2ee5fae9431cac1cb676f4c",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "LT",
+      "company_name": "Larsen & Toubro Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "LT__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "f70e6662550ff5ba37cd39d906b740ca68c5e30328893ee8f4a9b4893d49bbb1",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "M&M",
+      "company_name": "Mahindra & Mahindra Ltd.",
+      "data_tier": "RAW_ARCHIVE_ALIASED",
+      "file_name": "M_M__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "f42cb8b246577f20419145db738e55604cf22be6707a5135d359b19e0b6db2cb",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "MARUTI",
+      "company_name": "Maruti Suzuki India Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "MARUTI__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "361730ae28246b5d7974e2f13878c44f7cc6732570cba26b14c4e8fe9a976c2b",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "NESTLEIND",
+      "company_name": "Nestle India Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "NESTLEIND__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "17d567a4776a8b90e8c9f729b2d86a153a315a65dc4ce4fa3b14f1a5f304b346",
+      "bars_2017_2019": 275973
+    },
+    {
+      "symbol": "NTPC",
+      "company_name": "NTPC Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "NTPC__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "a9283f6304427101576772b84b6a0555144dbe681de239846b7d0edca1b65721",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "ONGC",
+      "company_name": "Oil & Natural Gas Corporation Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "ONGC__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "0e2a607213b68ff10f8dec58341118c5c82102df40a99f6066f74fb5492ae176",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "POWERGRID",
+      "company_name": "Power Grid Corporation of India Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "POWERGRID__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "9ff4d0f779dd5f0421f7f8dc7c96a1fbd72cbc0048a8e027e2ae67d297a7f8b4",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "RELIANCE",
+      "company_name": "Reliance Industries Ltd.",
+      "data_tier": "CANONICAL_CLEAN",
+      "file_name": "RELIANCE_1m.csv",
+      "sha256": "a2dd7374b27045cddc2b528065d40007ca24ce131965636b9206a317d7c50260",
+      "bars_2017_2019": 275966
+    },
+    {
+      "symbol": "SBIN",
+      "company_name": "State Bank of India",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "SBIN__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "f0205b45f3cb1225ca37021603d6786a41c6254f44f08a11103cc374af605664",
+      "bars_2017_2019": 275985
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "company_name": "Sun Pharmaceutical Industries Ltd.",
+      "data_tier": "RAW_ARCHIVE",
+      "file_name": "SUNPHARMA__EQ__NSE__NSE__MINUTE.csv",
+      "sha256": "1b8a90aa97b701170721bc2b4390c7b94dd7e3a92e7aee77d28f5c462982cef3",
+      "bars_2017_2019": 275985
+    }
+  ]
+}
