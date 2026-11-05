@@ -1,0 +1,70 @@
+{
+  "phase": "26A",
+  "title": "NIFTY Futures Historical Contract-Level Data Feasibility Audit",
+  "verdict": "BLOCKED_NO_DATA",
+  "generated_at": "2026-11-05 16:40:18",
+  "governance_and_invariants": {
+    "budget_expenditure_inr": 0.0,
+    "frozen_v1_config_hash": "920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7",
+    "canonical_adaniports_hash": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    "canonical_nifty50_hash": "f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a",
+    "quarantined_2020_enforced": true,
+    "paper_ledger_preserved": true,
+    "universe_registry_preserved": true,
+    "tests_watchlist_preserved": true,
+    "deployment_status": "STRICTLY_ON_HOLD"
+  },
+  "audit_summary": {
+    "total_futures_contracts_discovered": 0,
+    "total_futures_bars_available": 0,
+    "required_contracts_2017_2019": 36,
+    "contracts_missing_data": 36,
+    "spot_indices_examined_count": 13,
+    "spot_index_tick_sessions_examined": 51,
+    "rollover_feasibility": "ROLLOVER_INFEASIBLE_NO_CONTRACT_DATA"
+  },
+  "inspected_spot_datasets": [
+    {
+      "path": "data/historical/nifty50_1m_signalforge.csv",
+      "sha256": "f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a",
+      "type": "CASH_SPOT_INDEX",
+      "rows": 847814,
+      "volume_sum": 0.0,
+      "has_expiry": false
+    },
+    {
+      "path": "data/historical/nifty50_1m_research.csv",
+      "sha256": "e00ac09758c3b70b75c1ef5a3aa02fbcac8234cecbf402a0f8bf32335bfab832",
+      "type": "CASH_SPOT_INDEX",
+      "rows": 847814,
+      "volume_sum": 0.0,
+      "has_expiry": false
+    },
+    {
+      "path": "data/historical/nifty50_github_1m.csv",
+      "sha256": "9b347479bb242e8cea8f85011a4d53e8938c1bfea1697fa25d8ef25d8888784d",
+      "type": "CASH_SPOT_INDEX",
+      "rows": 852087,
+      "volume_sum": 0.0,
+      "has_expiry": false
+    },
+    {
+      "path": "temp_nse_data/NSE Minute Data/NSE_Index_Data/NIFTY_50__EQ__INDICES__NSE__MINUTE.csv",
+      "sha256": "13b135c2216926b58cbaab791a80a0dc81c6dd83fe06e45268729ef9d5fc6fa3",
+      "type": "CASH_SPOT_INDEX",
+      "rows": 370740,
+      "volume_sum": 0.0,
+      "has_expiry": false
+    }
+  ],
+  "verdict_rationale": "Zero contract-level NIFTY Futures datasets exist on-disk in the local data lake. All discovered NIFTY 50 files are cash spot indices with zero volume and no expiry parameters. Under the strict \u20b90 research budget boundary, external paid data acquisition is prohibited, and substituting spot index data for futures is strictly barred due to basis spread and contract expiration mechanics.",
+  "deliverables": [
+    "phase26A_futures_data_inventory.csv",
+    "phase26A_contract_coverage_matrix.csv",
+    "phase26A_data_quality_audit.md",
+    "phase26A_rollover_feasibility.md",
+    "phase26A_provenance_manifest.json",
+    "phase26A_final_verdict.md",
+    "tests/test_phase26A_futures_data_audit.py"
+  ]
+}
