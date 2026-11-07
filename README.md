@@ -154,6 +154,7 @@ It does **not** provide financial advice and does not guarantee trading performa
 ### Sanket Amte
 
 B.Tech Information Technology Student
+
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Sanket%20Amte-0A66C2?logo=linkedin)](https://www.linkedin.com/in/sanket-amte-a55a61332/)
 [![Portfolio](https://img.shields.io/badge/Portfolio-Visit-000000?logo=vercel)](https://sanket-portfolio-lemon.vercel.app)
 
