@@ -1,107 +1,122 @@
 # SignalForge
 
-> **Quantitative Intraday Market Research & Causal Backtesting Platform**  
-> *Engineered for systematic research across Indian equities (NSE) with strict zero-lookahead causal verification.*
+> **Quantitative Market Research & Causal Backtesting Platform**
+
+SignalForge is an offline-first research platform for **historical market analysis, causal backtesting, paper-trading simulation, and quantitative reporting** for Indian equities.
+
+Built with **Python/FastAPI + React**, with a strong focus on reproducibility, validation, and avoiding future-data leakage.
+
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.141.1-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=111111)](https://react.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 
 ---
 
-## 1. Overview & Core Philosophy
+## 🚀 Key Features
 
-SignalForge is an offline quantitative research, signal analysis, and backtesting workstation designed for Indian equity markets. It connects a high-performance Python/FastAPI simulation engine to an interactive React 19 frontend terminal.
-
-### Architectural Core Principles
-1. **Causal-First Execution:** Enforces strict temporal boundaries. Strategy signals evaluated on candle $t$ execute on the open of candle $t+1$ (`next_open` causal model). Non-causal `same_close` execution is classified and badged as theoretical lookahead.
-2. **Zero Data Fabrication:** Equity progression and drawdown curves reflect actual trade executions. No interpolated ticks or synthetic valuations are generated.
-3. **Cryptographic Provenance:** Historical strategy baselines are anchored by immutable SHA-256 configuration hashes.
-4. **Offline & Self-Contained:** Strict ₹0 budget mandate. Operates completely without paid subscriptions, cloud queues, external CDNs, or tracking scripts.
-5. **Human-in-the-Loop:** Designed for research, analysis, and paper-trading simulation. Zero automatic broker order routing.
-
----
-
-## 2. Key Features
-
-- **Asynchronous Backtest Engine:** Multi-threaded job coordinator supporting non-blocking simulation, bounded memory queues, and cooperative cancellation checkpoints.
-- **Interactive Equity & Drawdown Analytics:** High-contrast responsive SVG equity progression curves, underwater drawdown depth tracking, and peak recovery verification.
-- **Filterable Trade History:** Complete trade execution log with client-side sorting and filtering by trade direction, profitability, and exit reason.
-- **Standalone HTML Tearsheets:** Generates self-contained, offline research reports reproducible directly from saved simulation payloads.
-- **Stock Universe Governance:** Strict pipeline qualification tracking (Historical Data $\to$ Backtest $\to$ OOS Validation $\to$ Paper Trading).
-- **Interactive Paper Trading:** Real-time simulated execution bracket management, trailing stops, and trade journaling.
+- **Causal Backtesting** — `signal(t) → execution(t+1 open)`
+- **Historical Replay** — repeatable research over historical market data
+- **Multi-Timeframe Analysis** — strategy and indicator evaluation across timeframes
+- **Paper Trading** — simulated entries, exits, stops, targets, and trade journaling
+- **Quantitative Analytics** — equity curve, drawdown, trade history, and KPIs
+- **Stock Universe Validation** — data → backtest → OOS validation → paper trading
+- **Research Tearsheets** — standalone HTML reports
+- **Research Provenance** — SHA-256 integrity checks for frozen configurations/data
+- **Automated Testing** — backend + frontend tests through GitHub Actions
 
 ---
 
-## 3. Quick Start Guide
+## 🛠️ Tech Stack
 
-### Prerequisites
-- Python 3.10 to 3.14 (Validated on 3.12, 3.13, 3.14.3)
-- Node.js v18.0.0+ (Validated on v20 LTS and v22.14.0)
+**Backend:** Python, FastAPI, Uvicorn, Pydantic  
+**Data & Research:** Pandas, NumPy  
+**Frontend:** React 19, Vite, Lightweight Charts  
+**Testing:** Pytest, Node/Vite test runner  
+**DevOps:** Docker, Docker Compose, GitHub Actions
 
-### 1. Installation
-```bash
-# Clone the repository
-git clone https://github.com/sanketamte96k/SignalForge.git
-cd SignalForge
+---
 
-# Setup Python virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .\.venv\Scripts\Activate.ps1
+## 🏗️ Architecture
 
-# Install backend dependencies
-pip install -r requirements.txt
-
-# Install frontend dependencies
-cd frontend
-npm install
-cd ..
+```text
+React 19 Frontend
+       │
+       │ REST / JSON
+       ▼
+FastAPI Backend
+       │
+       ├── Strategy & Indicators
+       ├── Backtesting
+       ├── Market Data
+       ├── Scanner
+       ├── Paper Trading
+       └── Validation
+                │
+                ▼
+        Historical / Universe Data
 ```
 
-### 2. Launch Local Servers
-**Terminal 1 (FastAPI Backend):**
-```bash
-uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
-```
+---
 
-**Terminal 2 (React Frontend Terminal):**
-```bash
-cd frontend
-npm run dev
-```
+## 📊 Research Integrity
 
-Open **`http://localhost:5173/`** in your browser.
+SignalForge is designed for **research and simulation**, not live trading.
+
+The project explicitly focuses on:
+
+- causal execution
+- future-data leakage detection
+- data quality validation
+- transaction-cost/slippage modeling
+- reproducible research
+- safe file and configuration handling
+
+**No automatic broker order execution is implemented.**
 
 ---
 
-## 4. Documentation Index
+## 🧪 Testing & CI
 
-Complete documentation guides are available in the **[`docs/`](docs/)** directory:
+The repository includes tests for:
 
-| Guide | Description |
-| :--- | :--- |
-| **[`docs/INSTALLATION.md`](docs/INSTALLATION.md)** | Step-by-step clean environment installation guide. |
-| **[`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)** | Environment variables, `.env.example`, and config reference. |
-| **[`docs/STARTUP.md`](docs/STARTUP.md)** | Complete startup walkthrough and backtest verification tutorial. |
-| **[`docs/API.md`](docs/API.md)** | REST API endpoint documentation and Swagger UI details. |
-| **[`docs/TESTING.md`](docs/TESTING.md)** | Running backend `pytest` and frontend `npm test` suites. |
-| **[`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)** | Solutions for common setup, network, and port issues. |
-| **[`docs/BACKUP_RECOVERY.md`](docs/BACKUP_RECOVERY.md)** | Data classification, backup commands, and state recovery. |
-| **[`docs/SECURITY_DEPLOYMENT.md`](docs/SECURITY_DEPLOYMENT.md)** | Security architecture, path traversal guards, and scope boundaries. |
+- strategy causality
+- future-data leakage
+- backtesting
+- paper trading
+- data validation
+- reporting and analytics
+- frontend workflows
 
----
-
-## 5. Protected Invariants & Provenance
-
-SignalForge enforces cryptographic protection over core research benchmarks:
-
-- **Frozen V1 Configuration SHA-256:**
-  `920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7`
-- **Canonical ADANIPORTS 1m SHA-256:**
-  `fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9`
-- **Canonical NIFTY 50 1m SHA-256:**
-  `f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a`
-- **2020 Holdout Partition:** Quarantined as `EXPLORATORY / CONTAMINATED` (Zero strategy training access).
-- **Hypothesis B Strategy:** Disqualified due to multi-timeframe look-ahead bias confirmed in Phase 24G.24/25.
+GitHub Actions runs backend tests, frontend tests, and the production frontend build.
 
 ---
 
-## 6. Research & Academic Protocol Disclaimer
+## 📚 Documentation
 
-> **DISCLAIMER:** SignalForge is an offline quantitative research and academic analysis software system. It is designed for historical backtesting and simulated paper-trading only. It does NOT provide financial advisory services, investment recommendations, or automated broker order routing. Simulated historical performance does not guarantee future live trading profits. All research adheres to a strict ₹0 budget protocol.
+Detailed guides are available in [`docs/`](docs/):
+
+- [Installation](docs/INSTALLATION.md)
+- [Configuration](docs/CONFIGURATION.md)
+- [API](docs/API.md)
+- [Testing](docs/TESTING.md)
+- [Security & Deployment](docs/SECURITY_DEPLOYMENT.md)
+
+---
+
+## ⚠️ Disclaimer
+
+SignalForge is an **educational and research-oriented project** for historical analysis and simulated paper trading.
+
+It does not provide financial advice, guarantee profits, or place live broker orders.
+
+---
+
+## 👨‍💻 Author
+
+**SANKET AMTE**  
+*Java Full Stack Developer | Backend Developer*
+
+📧 **Email:** sanketamte6584@gmail.com  |  🔗 **LinkedIn:** LinkedIn Profile  |  💻 **GitHub:** GitHub Profile
+
+> **Research carefully. Validate causally. Build reproducibly.**
