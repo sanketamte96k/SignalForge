@@ -870,26 +870,26 @@ function App() {
                 />
               </section>
 
-          {/* Lower Section: Top Signals Today, Sector Performance, Watchlists */}
-          <section className="lower-grid">
-            {/* Top Signals Today */}
-            <div className="panel signals-panel">
-              <PanelTitle title="Top Signals Today" action="View All" />
+              {/* Lower Section: Top Signals Today, Sector Performance, Watchlists */}
+              <section className="lower-grid">
+                {/* Top Signals Today */}
+                <div className="panel signals-panel">
+                  <PanelTitle title="Top Signals Today" action="View All" />
 
-              <div className="filter-tabs">
-                {['All', 'NIFTY 50', 'Watchlists', 'Sectors'].map(
-                  (tab) => (
-                    <button
-                      type="button"
-                      className={activeSignalFilter === tab ? 'active' : ''}
-                      key={tab}
-                      onClick={() => setActiveSignalFilter(tab)}
-                    >
-                      {tab}
-                    </button>
-                  ),
-                )}
-              </div>
+                  <div className="filter-tabs">
+                    {['All', 'NIFTY 50', 'Watchlists', 'Sectors'].map(
+                      (tab) => (
+                        <button
+                          type="button"
+                          className={activeSignalFilter === tab ? 'active' : ''}
+                          key={tab}
+                          onClick={() => setActiveSignalFilter(tab)}
+                        >
+                          {tab}
+                        </button>
+                      ),
+                    )}
+                  </div>
 
                   <div className="table-wrapper">
                     <div className="signals-table">
@@ -1364,335 +1364,199 @@ function NiftyAnalysisView({
           <section className="analysis-header-panel panel">
             <div className="analysis-header-top">
               <div className="analysis-title-block">
-            <div className="symbol-badge-row">
-              <h1 className="analysis-symbol">{symbol}</h1>
-              <span className="strategy-tag">Strategy Analysis</span>
-              <span className="historical-badge">
-                <span className="badge-dot blue" />
-                Historical API
-              </span>
-            </div>
-            <p className="analysis-subtitle">
-              SignalForge Causal Multi-Timeframe Strategy Engine (5m • 10m • 15m • 30m)
-            </p>
-          </div>
-
-          <div className="analysis-header-metrics">
-            <div className="header-metric-box">
-              <span className="metric-box-label">Current Price</span>
-              <strong className="metric-box-price tabular-num">
-                {price !== null ? `?${formatPrice(price)}` : '�'}
-              </strong>
-            </div>
-
-            <div className="header-metric-box">
-              <span className="metric-box-label">Timestamp</span>
-              <strong className="metric-box-val tabular-num">
-                {formatApiTimestamp(timestamp)}
-              </strong>
-            </div>
-
-            <div className="header-metric-box">
-              <span className="metric-box-label">Data Status</span>
-              <span className="provenance-pill">Historical (26 Mar 2024)</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Primary Signal & MTF Alignment Grid */}
-      <section className="analysis-grid-three">
-        {/* Primary Signal Card */}
-        <div className="panel analysis-card primary-signal-card">
-          <div className="card-header-clean">
-            <span className="card-tag">AUTHORITATIVE ENGINE SIGNAL</span>
-            <span className="engine-status-pill">Phase 10.2 Causal</span>
-          </div>
-
-          <div className="primary-signal-body">
-            <div className={`analysis-dominant-badge ${signalClass}`}>
-              <span className="signal-badge-glow" />
-              <span className="dominant-signal-text">{signalText}</span>
-            </div>
-
-            <div className="signal-reason-box">
-              <span className="reason-label">SIGNAL REASON</span>
-              <p className="reason-text">"{reason}"</p>
-            </div>
-
-            <div className="signal-meta-row">
-              <div className="meta-stat">
-                <span className="meta-label">Signal Score</span>
-                <strong className="meta-val tabular-num">{score}</strong>
-              </div>
-              <div className="meta-stat">
-                <span className="meta-label">Confidence</span>
-                <strong className="meta-val tabular-num">{confidence}</strong>
-              </div>
-              <div className="meta-stat">
-                <span className="meta-label">MTF Alignment</span>
-                <strong className="meta-val tabular-num">{mtfAlignment}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* MTF Summary Card */}
-        <div className="panel analysis-card mtf-summary-card">
-          <div className="card-header-clean">
-            <span className="card-tag">MTF SUMMARY</span>
-            <span className="summary-val-pill tabular-num">
-              Alignment: {mtfAlignment}
-            </span>
-          </div>
-
-          <div className="mtf-summary-body">
-            <p className="mtf-summary-desc">
-              Visual agreement across the 4 validated timeframes evaluated by the causal engine:
-            </p>
-
-            <div className="mtf-alignment-list">
-              {supportedTimeframes.map((tf) => {
-                const tfData = data?.timeframes?.[tf]
-                const tfTrend = tfData?.trend
-                  ? tfData.trend.replace(/_/g, ' ')
-                  : '�'
-                const trendClass =
-                  tfTrend === 'SHORT'
-                    ? 'negative'
-                    : tfTrend === 'LONG'
-                      ? 'positive'
-                      : 'neutral'
-
-                return (
-                  <div className="mtf-summary-item" key={tf}>
-                    <div className="tf-badge-pill">{tf}</div>
-                    <span className="tf-arrow">?</span>
-                    <span className={`tf-trend-tag ${trendClass}`}>
-                      {tfTrend}
-                    </span>
-                    <span className="tf-item-close tabular-num text-muted">
-                      {tfData?.close ? `?${formatPrice(tfData.close)}` : '�'}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="mtf-total-alignment-meter">
-              <div className="meter-header">
-                <span>Overall Alignment Score:</span>
-                <strong className="tabular-num">{mtfAlignment}</strong>
-              </div>
-              <div className="meter-track">
-                <div
-                  className="meter-fill"
-                  style={{
-                    width: `${Math.min(100, Math.max(0, (Number(mtfAlignment) / 4) * 100))}%`,
-                  }}
-                />
-              </div>
-              <small className="meter-caption">
-                Source: <code>analysis.timeframe_alignment</code> (Requires all 4 timeframes aligned for trade confirmation).
-              </small>
-            </div>
-          </div>
-        </div>
-
-        {/* Execution Levels Card */}
-        <div className="panel analysis-card execution-levels-card">
-          <div className="card-header-clean">
-            <span className="card-tag">TRADE EXECUTION SECTION</span>
-            <span className="not-avail-pill">Strictly Causal</span>
-          </div>
-
-          <div className="execution-levels-body">
-            <div className="exec-status-banner">
-              <Icon type="alert-circle" />
-              <div>
-                <strong>Execution Levels</strong>
-                <p>Not available for current NO TRADE signal.</p>
-              </div>
-            </div>
-
-            <div className="execution-levels-grid">
-              <div className="exec-level-row">
-                <span>Entry Price</span>
-                <strong className="text-muted tabular-num">�</strong>
-              </div>
-              <div className="exec-level-row">
-                <span>Stop Loss (SL)</span>
-                <strong className="text-muted tabular-num">�</strong>
-              </div>
-              <div className="exec-level-row">
-                <span>Target 1 (T1)</span>
-                <strong className="text-muted tabular-num">�</strong>
-              </div>
-              <div className="exec-level-row">
-                <span>Target 2 (T2)</span>
-                <strong className="text-muted tabular-num">�</strong>
-              </div>
-              <div className="exec-level-row">
-                <span>Risk / Reward (R:R)</span>
-                <strong className="text-muted tabular-num">�</strong>
-              </div>
-            </div>
-
-            <p className="execution-note">
-              Execution brackets and targets are only calculated by the strategy upon confirmed BUY/SELL setup generation. No hypothetical levels are fabricated.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Timeframe Analysis Matrix (4 Cards) */}
-      <section className="analysis-section">
-        <div className="section-title-wrap">
-          <h2 className="section-title">Timeframe Analysis</h2>
-          <span className="section-sub">
-            Causal indicator values from the 4 validated timeframes ({supportedTimeframes.join(', ')})
-          </span>
-        </div>
-
-        <div className="timeframes-grid">
-          {supportedTimeframes.map((tfKey) => {
-            const tfData = data?.timeframes?.[tfKey]
-            const tfTrend = tfData?.trend
-              ? tfData.trend.replace(/_/g, ' ')
-              : '�'
-            const trendClass =
-              tfTrend === 'SHORT'
-                ? 'negative'
-                : tfTrend === 'LONG'
-                  ? 'positive'
-                  : 'neutral'
-
-            return (
-              <div className="panel timeframe-card" key={tfKey}>
-                <div className="tf-card-header">
-                  <div className="tf-card-title-group">
-                    <span className="tf-pill">{tfKey}</span>
-                    <strong className="tf-card-name">{tfLabels[tfKey]}</strong>
-                  </div>
-
-                  <div className="tf-header-badges">
-                    <span className={`tf-trend-badge ${trendClass}`}>
-                      {tfTrend}
-                    </span>
-                    <span
-                      className={`tf-readiness-pill ${tfData?.ready ? 'ready' : 'pending'
-                        }`}
-                    >
-                      {tfData?.ready ? 'Ready' : 'Not Ready'}
-                    </span>
-                  </div>
+                <div className="symbol-badge-row">
+                  <h1 className="analysis-symbol">{symbol}</h1>
+                  <span className="strategy-tag">Strategy Analysis</span>
+                  <span className="historical-badge">
+                    <span className="badge-dot blue" />
+                    Historical API
+                  </span>
                 </div>
+                <p className="analysis-subtitle">
+                  SignalForge Causal Multi-Timeframe Strategy Engine (5m • 10m • 15m • 30m)
+                </p>
+              </div>
 
-                <div className="tf-timestamp-row">
-                  <span className="text-muted">Candle Time:</span>
-                  <strong className="tabular-num">
-                    {formatApiTimestamp(tfData?.timestamp)}
+              <div className="analysis-header-metrics">
+                <div className="header-metric-box">
+                  <span className="metric-box-label">Last Historical Close</span>
+                  <strong className="metric-box-price tabular-num">
+                    {price !== null ? `?${formatPrice(price)}` : '�'}
                   </strong>
                 </div>
 
-                <div className="tf-metrics-table">
-                  <div className="tf-metric-item">
-                    <span className="tf-metric-label">Close</span>
-                    <strong className="tf-metric-val tabular-num">
-                      {tfData?.close !== undefined && tfData?.close !== null
-                        ? `?${formatPrice(tfData.close)}`
-                        : '�'}
-                    </strong>
-                  </div>
-
-                  <div className="tf-metric-item">
-                    <span className="tf-metric-label">EMA 20</span>
-                    <strong className="tf-metric-val tabular-num">
-                      {formatNumber(tfData?.ema20)}
-                    </strong>
-                  </div>
-
-                  <div className="tf-metric-item">
-                    <span className="tf-metric-label">EMA 50</span>
-                    <strong className="tf-metric-val tabular-num">
-                      {formatNumber(tfData?.ema50)}
-                    </strong>
-                  </div>
-
-                  <div className="tf-metric-item">
-                    <span className="tf-metric-label">RSI 14</span>
-                    <strong className="tf-metric-val tabular-num">
-                      {formatNumber(tfData?.rsi14)}
-                    </strong>
-                  </div>
-
-                  <div className="tf-metric-item">
-                    <span className="tf-metric-label">ATR 14</span>
-                    <strong className="tf-metric-val tabular-num">
-                      {formatNumber(tfData?.atr14)}
-                    </strong>
-                  </div>
-
-                  <div className="tf-metric-item">
-                    <span className="tf-metric-label">RVOL 20</span>
-                    <strong className="tf-metric-val tabular-num text-muted">
-                      {tfData?.rvol20 !== null && tfData?.rvol20 !== undefined
-                        ? formatNumber(tfData.rvol20)
-                        : '�'}
-                    </strong>
-                  </div>
+                <div className="header-metric-box">
+                  <span className="metric-box-label">Timestamp</span>
+                  <strong className="metric-box-val tabular-num">
+                    {formatApiTimestamp(timestamp)}
+                  </strong>
                 </div>
 
-                <div className="tf-card-footer">
-                  <span className="tf-status-dot" />
-                  <span>
-                    Trend evaluated by <code>trend_direction()</code>
-                  </span>
+                <div className="header-metric-box">
+                  <span className="metric-box-label">Data Status</span>
+                  <span className="provenance-pill">Historical (26 Mar 2024)</span>
                 </div>
               </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* 5. Indicator Analysis & Explanation Section */}
-      <section className="analysis-section">
-        <div className="section-title-wrap">
-          <h2 className="section-title">Indicator Analysis</h2>
-          <span className="section-sub">
-            Authoritative strategy indicator architecture and causal breakdown
-          </span>
-        </div>
-
-        <div className="panel indicator-analysis-panel">
-          {/* Root indicator status banner */}
-          <div className="indicator-root-status-banner">
-            <div className="status-banner-badge">ROOT INDICATOR STATUS</div>
-            <div className="status-banner-content">
-              <strong>"Use timeframe-level values below."</strong>
-              <p>
-                The SignalForge causal strategy computes indicators across resampled multi-timeframe candles (5m, 10m, 15m, 30m) rather than raw 1-minute noise candles. Root-level indicators are intentionally null in the engine response.
-              </p>
             </div>
-          </div>
+          </section>
 
-          {/* Timeframe Indicators Table */}
-          <div className="table-wrapper">
-            <div className="indicator-comparison-table">
-              <div className="table-head">
-                <span>Timeframe</span>
-                <span className="text-right">Close</span>
-                <span className="text-right">EMA 20</span>
-                <span className="text-right">EMA 50</span>
-                <span className="text-right">RSI 14</span>
-                <span className="text-right">ATR 14</span>
-                <span className="text-right">RVOL 20</span>
-                <span className="text-center">Trend</span>
-                <span className="text-center">Status</span>
+          {/* 3. Primary Signal & MTF Alignment Grid */}
+          <section className="analysis-grid-three">
+            {/* Primary Signal Card */}
+            <div className="panel analysis-card primary-signal-card">
+              <div className="card-header-clean">
+                <span className="card-tag">AUTHORITATIVE ENGINE SIGNAL</span>
+                <span className="engine-status-pill">Phase 10.2 Causal</span>
               </div>
 
-              {supportedTimeframes.map((tf) => {
-                const tfData = data?.timeframes?.[tf]
+              <div className="primary-signal-body">
+                <div className={`analysis-dominant-badge ${signalClass}`}>
+                  <span className="signal-badge-glow" />
+                  <span className="dominant-signal-text">{signalText}</span>
+                </div>
+
+                <div className="signal-reason-box">
+                  <span className="reason-label">SIGNAL REASON</span>
+                  <p className="reason-text">"{reason}"</p>
+                </div>
+
+                <div className="signal-meta-row">
+                  <div className="meta-stat">
+                    <span className="meta-label">Signal Score</span>
+                    <strong className="meta-val tabular-num">{score}</strong>
+                  </div>
+                  <div className="meta-stat">
+                    <span className="meta-label">Confidence</span>
+                    <strong className="meta-val tabular-num">{confidence}</strong>
+                  </div>
+                  <div className="meta-stat">
+                    <span className="meta-label">MTF Alignment</span>
+                    <strong className="meta-val tabular-num">{mtfAlignment}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MTF Summary Card */}
+            <div className="panel analysis-card mtf-summary-card">
+              <div className="card-header-clean">
+                <span className="card-tag">MTF SUMMARY</span>
+                <span className="summary-val-pill tabular-num">
+                  Alignment: {mtfAlignment}
+                </span>
+              </div>
+
+              <div className="mtf-summary-body">
+                <p className="mtf-summary-desc">
+                  Visual agreement across the 4 validated timeframes evaluated by the causal engine:
+                </p>
+
+                <div className="mtf-alignment-list">
+                  {supportedTimeframes.map((tf) => {
+                    const tfData = data?.timeframes?.[tf]
+                    const tfTrend = tfData?.trend
+                      ? tfData.trend.replace(/_/g, ' ')
+                      : '�'
+                    const trendClass =
+                      tfTrend === 'SHORT'
+                        ? 'negative'
+                        : tfTrend === 'LONG'
+                          ? 'positive'
+                          : 'neutral'
+
+                    return (
+                      <div className="mtf-summary-item" key={tf}>
+                        <div className="tf-badge-pill">{tf}</div>
+                        <span className="tf-arrow">?</span>
+                        <span className={`tf-trend-tag ${trendClass}`}>
+                          {tfTrend}
+                        </span>
+                        <span className="tf-item-close tabular-num text-muted">
+                          {tfData?.close ? `?${formatPrice(tfData.close)}` : '�'}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div className="mtf-total-alignment-meter">
+                  <div className="meter-header">
+                    <span>Overall Alignment Score:</span>
+                    <strong className="tabular-num">{mtfAlignment}</strong>
+                  </div>
+                  <div className="meter-track">
+                    <div
+                      className="meter-fill"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, (Number(mtfAlignment) / 4) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                  <small className="meter-caption">
+                    Source: <code>analysis.timeframe_alignment</code> (Requires all 4 timeframes aligned for trade confirmation).
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            {/* Execution Levels Card */}
+            <div className="panel analysis-card execution-levels-card">
+              <div className="card-header-clean">
+                <span className="card-tag">TRADE EXECUTION SECTION</span>
+                <span className="not-avail-pill">Strictly Causal</span>
+              </div>
+
+              <div className="execution-levels-body">
+                <div className="exec-status-banner">
+                  <Icon type="alert-circle" />
+                  <div>
+                    <strong>Execution Levels</strong>
+                    <p>Not available for current NO TRADE signal.</p>
+                  </div>
+                </div>
+
+                <div className="execution-levels-grid">
+                  <div className="exec-level-row">
+                    <span>Entry Price</span>
+                    <strong className="text-muted tabular-num">�</strong>
+                  </div>
+                  <div className="exec-level-row">
+                    <span>Stop Loss (SL)</span>
+                    <strong className="text-muted tabular-num">�</strong>
+                  </div>
+                  <div className="exec-level-row">
+                    <span>Target 1 (T1)</span>
+                    <strong className="text-muted tabular-num">�</strong>
+                  </div>
+                  <div className="exec-level-row">
+                    <span>Target 2 (T2)</span>
+                    <strong className="text-muted tabular-num">�</strong>
+                  </div>
+                  <div className="exec-level-row">
+                    <span>Risk / Reward (R:R)</span>
+                    <strong className="text-muted tabular-num">�</strong>
+                  </div>
+                </div>
+
+                <p className="execution-note">
+                  Execution brackets and targets are only calculated by the strategy upon confirmed BUY/SELL setup generation. No hypothetical levels are fabricated.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* 4. Timeframe Analysis Matrix (4 Cards) */}
+          <section className="analysis-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Timeframe Analysis</h2>
+              <span className="section-sub">
+                Causal indicator values from the 4 validated timeframes ({supportedTimeframes.join(', ')})
+              </span>
+            </div>
+
+            <div className="timeframes-grid">
+              {supportedTimeframes.map((tfKey) => {
+                const tfData = data?.timeframes?.[tfKey]
                 const tfTrend = tfData?.trend
                   ? tfData.trend.replace(/_/g, ' ')
                   : '�'
@@ -1704,119 +1568,255 @@ function NiftyAnalysisView({
                       : 'neutral'
 
                 return (
-                  <div className="indicator-row" key={tf}>
-                    <strong>{tfLabels[tf]}</strong>
-                    <span className="text-right tabular-num">
-                      {tfData?.close ? `?${formatPrice(tfData.close)}` : '�'}
-                    </span>
-                    <span className="text-right tabular-num">
-                      {formatNumber(tfData?.ema20)}
-                    </span>
-                    <span className="text-right tabular-num">
-                      {formatNumber(tfData?.ema50)}
-                    </span>
-                    <span className="text-right tabular-num">
-                      {formatNumber(tfData?.rsi14)}
-                    </span>
-                    <span className="text-right tabular-num">
-                      {formatNumber(tfData?.atr14)}
-                    </span>
-                    <span className="text-right tabular-num text-muted">
-                      {tfData?.rvol20 !== null && tfData?.rvol20 !== undefined
-                        ? formatNumber(tfData.rvol20)
-                        : '�'}
-                    </span>
-                    <div className="badge-cell text-center">
-                      <span className={`tf-trend-tag small ${trendClass}`}>
-                        {tfTrend}
-                      </span>
+                  <div className="panel timeframe-card" key={tfKey}>
+                    <div className="tf-card-header">
+                      <div className="tf-card-title-group">
+                        <span className="tf-pill">{tfKey}</span>
+                        <strong className="tf-card-name">{tfLabels[tfKey]}</strong>
+                      </div>
+
+                      <div className="tf-header-badges">
+                        <span className={`tf-trend-badge ${trendClass}`}>
+                          {tfTrend}
+                        </span>
+                        <span
+                          className={`tf-readiness-pill ${tfData?.ready ? 'ready' : 'pending'
+                            }`}
+                        >
+                          {tfData?.ready ? 'Ready' : 'Not Ready'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="badge-cell text-center">
-                      <span className="ready-indicator-dot" />
-                      <span className="text-muted small">
-                        {tfData?.ready ? 'Ready' : 'Pending'}
+
+                    <div className="tf-timestamp-row">
+                      <span className="text-muted">Candle Time:</span>
+                      <strong className="tabular-num">
+                        {formatApiTimestamp(tfData?.timestamp)}
+                      </strong>
+                    </div>
+
+                    <div className="tf-metrics-table">
+                      <div className="tf-metric-item">
+                        <span className="tf-metric-label">Close</span>
+                        <strong className="tf-metric-val tabular-num">
+                          {tfData?.close !== undefined && tfData?.close !== null
+                            ? `?${formatPrice(tfData.close)}`
+                            : '�'}
+                        </strong>
+                      </div>
+
+                      <div className="tf-metric-item">
+                        <span className="tf-metric-label">EMA 20</span>
+                        <strong className="tf-metric-val tabular-num">
+                          {formatNumber(tfData?.ema20)}
+                        </strong>
+                      </div>
+
+                      <div className="tf-metric-item">
+                        <span className="tf-metric-label">EMA 50</span>
+                        <strong className="tf-metric-val tabular-num">
+                          {formatNumber(tfData?.ema50)}
+                        </strong>
+                      </div>
+
+                      <div className="tf-metric-item">
+                        <span className="tf-metric-label">RSI 14</span>
+                        <strong className="tf-metric-val tabular-num">
+                          {formatNumber(tfData?.rsi14)}
+                        </strong>
+                      </div>
+
+                      <div className="tf-metric-item">
+                        <span className="tf-metric-label">ATR 14</span>
+                        <strong className="tf-metric-val tabular-num">
+                          {formatNumber(tfData?.atr14)}
+                        </strong>
+                      </div>
+
+                      <div className="tf-metric-item">
+                        <span className="tf-metric-label">RVOL 20</span>
+                        <strong className="tf-metric-val tabular-num text-muted">
+                          {tfData?.rvol20 !== null && tfData?.rvol20 !== undefined
+                            ? formatNumber(tfData.rvol20)
+                            : '�'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="tf-card-footer">
+                      <span className="tf-status-dot" />
+                      <span>
+                        Trend evaluated by <code>trend_direction()</code>
                       </span>
                     </div>
                   </div>
                 )
               })}
             </div>
-          </div>
+          </section>
 
-          {/* RVOL Zero-Volume Notification Box */}
-          <div className="rvol-notice-card">
-            <div className="rvol-notice-header">
-              <span className="rvol-icon-wrap">
-                <Icon type="alert-circle" />
+          {/* 5. Indicator Analysis & Explanation Section */}
+          <section className="analysis-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Indicator Analysis</h2>
+              <span className="section-sub">
+                Authoritative strategy indicator architecture and causal breakdown
               </span>
-              <div>
-                <strong>RVOL 20</strong>
-                <span className="rvol-status-tag">
-                  Unavailable � source volume is zero
+            </div>
+
+            <div className="panel indicator-analysis-panel">
+              {/* Root indicator status banner */}
+              <div className="indicator-root-status-banner">
+                <div className="status-banner-badge">ROOT INDICATOR STATUS</div>
+                <div className="status-banner-content">
+                  <strong>"Use timeframe-level values below."</strong>
+                  <p>
+                    The SignalForge causal strategy computes indicators across resampled multi-timeframe candles (5m, 10m, 15m, 30m) rather than raw 1-minute noise candles. Root-level indicators are intentionally null in the engine response.
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeframe Indicators Table */}
+              <div className="table-wrapper">
+                <div className="indicator-comparison-table">
+                  <div className="table-head">
+                    <span>Timeframe</span>
+                    <span className="text-right">Close</span>
+                    <span className="text-right">EMA 20</span>
+                    <span className="text-right">EMA 50</span>
+                    <span className="text-right">RSI 14</span>
+                    <span className="text-right">ATR 14</span>
+                    <span className="text-right">RVOL 20</span>
+                    <span className="text-center">Trend</span>
+                    <span className="text-center">Status</span>
+                  </div>
+
+                  {supportedTimeframes.map((tf) => {
+                    const tfData = data?.timeframes?.[tf]
+                    const tfTrend = tfData?.trend
+                      ? tfData.trend.replace(/_/g, ' ')
+                      : '�'
+                    const trendClass =
+                      tfTrend === 'SHORT'
+                        ? 'negative'
+                        : tfTrend === 'LONG'
+                          ? 'positive'
+                          : 'neutral'
+
+                    return (
+                      <div className="indicator-row" key={tf}>
+                        <strong>{tfLabels[tf]}</strong>
+                        <span className="text-right tabular-num">
+                          {tfData?.close ? `?${formatPrice(tfData.close)}` : '�'}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {formatNumber(tfData?.ema20)}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {formatNumber(tfData?.ema50)}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {formatNumber(tfData?.rsi14)}
+                        </span>
+                        <span className="text-right tabular-num">
+                          {formatNumber(tfData?.atr14)}
+                        </span>
+                        <span className="text-right tabular-num text-muted">
+                          {tfData?.rvol20 !== null && tfData?.rvol20 !== undefined
+                            ? formatNumber(tfData.rvol20)
+                            : '�'}
+                        </span>
+                        <div className="badge-cell text-center">
+                          <span className={`tf-trend-tag small ${trendClass}`}>
+                            {tfTrend}
+                          </span>
+                        </div>
+                        <div className="badge-cell text-center">
+                          <span className="ready-indicator-dot" />
+                          <span className="text-muted small">
+                            {tfData?.ready ? 'Ready' : 'Pending'}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* RVOL Zero-Volume Notification Box */}
+              <div className="rvol-notice-card">
+                <div className="rvol-notice-header">
+                  <span className="rvol-icon-wrap">
+                    <Icon type="alert-circle" />
+                  </span>
+                  <div>
+                    <strong>RVOL 20</strong>
+                    <span className="rvol-status-tag">
+                      Unavailable � source volume is zero
+                    </span>
+                  </div>
+                </div>
+                <p className="rvol-notice-desc">
+                  The historical NIFTY dataset has volume = 0. In accordance with SignalForge engine rules, relative volume calculation is automatically disabled to prevent division-by-zero or false volume confirmation. RVOL is intentionally represented as unavailable.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* 6. Data Provenance Section */}
+          <section className="analysis-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Data Provenance</h2>
+              <span className="section-sub">
+                Causal integrity and data verification audit trail
+              </span>
+            </div>
+
+            <div className="panel provenance-panel">
+              <div className="provenance-grid">
+                <div className="provenance-item">
+                  <span className="prov-label">Data Source</span>
+                  <strong className="prov-val">SignalForge historical dataset</strong>
+                  <span className="prov-sub">
+                    <code>data/historical/nifty50_1m_signalforge.csv</code>
+                  </span>
+                </div>
+
+                <div className="provenance-item">
+                  <span className="prov-label">Latest Candle</span>
+                  <strong className="prov-val tabular-num">
+                    {formatApiTimestamp(timestamp)}
+                  </strong>
+                  <span className="prov-sub">Evaluated up to 26 Mar 2024, 3:29 pm</span>
+                </div>
+
+                <div className="provenance-item">
+                  <span className="prov-label">Data Status</span>
+                  <strong className="prov-val">Historical</strong>
+                  <span className="prov-sub">
+                    Non-live replay data (Live adapter scheduled for Phase 11)
+                  </span>
+                </div>
+
+                <div className="provenance-item">
+                  <span className="prov-label">Signal Source</span>
+                  <strong className="prov-val">SignalForge causal strategy engine</strong>
+                  <span className="prov-sub">
+                    Zero lookahead bias • Strict candle close causality
+                  </span>
+                </div>
+              </div>
+
+              <div className="provenance-footer-note">
+                <span className="prov-check-icon">
+                  <Icon type="check-small" />
+                </span>
+                <span>
+                  Authoritative alignment verified: <code>/api/nifty/analysis.signal</code> is guaranteed identical to <code>/api/nifty/signal.signal</code>.
                 </span>
               </div>
             </div>
-            <p className="rvol-notice-desc">
-              The historical NIFTY dataset has volume = 0. In accordance with SignalForge engine rules, relative volume calculation is automatically disabled to prevent division-by-zero or false volume confirmation. RVOL is intentionally represented as unavailable.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Data Provenance Section */}
-      <section className="analysis-section">
-        <div className="section-title-wrap">
-          <h2 className="section-title">Data Provenance</h2>
-          <span className="section-sub">
-            Causal integrity and data verification audit trail
-          </span>
-        </div>
-
-        <div className="panel provenance-panel">
-          <div className="provenance-grid">
-            <div className="provenance-item">
-              <span className="prov-label">Data Source</span>
-              <strong className="prov-val">SignalForge historical dataset</strong>
-              <span className="prov-sub">
-                <code>data/historical/nifty50_1m_signalforge.csv</code>
-              </span>
-            </div>
-
-            <div className="provenance-item">
-              <span className="prov-label">Latest Candle</span>
-              <strong className="prov-val tabular-num">
-                {formatApiTimestamp(timestamp)}
-              </strong>
-              <span className="prov-sub">Evaluated up to 26 Mar 2024, 3:29 pm</span>
-            </div>
-
-            <div className="provenance-item">
-              <span className="prov-label">Data Status</span>
-              <strong className="prov-val">Historical</strong>
-              <span className="prov-sub">
-                Non-live replay data (Live adapter scheduled for Phase 11)
-              </span>
-            </div>
-
-            <div className="provenance-item">
-              <span className="prov-label">Signal Source</span>
-              <strong className="prov-val">SignalForge causal strategy engine</strong>
-              <span className="prov-sub">
-                Zero lookahead bias • Strict candle close causality
-              </span>
-            </div>
-          </div>
-
-          <div className="provenance-footer-note">
-            <span className="prov-check-icon">
-              <Icon type="check-small" />
-            </span>
-            <span>
-              Authoritative alignment verified: <code>/api/nifty/analysis.signal</code> is guaranteed identical to <code>/api/nifty/signal.signal</code>.
-            </span>
-          </div>
-        </div>
-      </section>
+          </section>
         </>
       )}
     </div>

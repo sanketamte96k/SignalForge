@@ -523,6 +523,53 @@
   outline-offset: 1px;
 }
 
+.chart-zoom-reset,
+.chart-zoom-jump-latest {
+  width: auto;
+  padding: 0 6px;
+  font-size: 10px;
+}
+
+/* Panned Away Notice */
+.chart-panned-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(255, 179, 0, 0.08);
+  border-bottom: 1px solid rgba(255, 179, 0, 0.25);
+  color: #ffb300;
+  font-size: 11px;
+}
+
+.chart-panned-notice .panned-text {
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.chart-panned-notice .panned-jump-btn {
+  background: #ffb300;
+  color: #08111a;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.chart-panned-notice .panned-jump-btn:hover {
+  opacity: 0.9;
+}
+
+.nifty-spot-volume-note {
+  color: #8faec2;
+  font-size: 9px;
+  font-style: italic;
+  text-transform: none;
+}
+
 .chart-zoom-info {
   font-size: 9px;
   color: #6d889c;

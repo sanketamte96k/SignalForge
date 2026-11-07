@@ -296,7 +296,7 @@ function PaperTradingView() {
           <span className="paper-page-kicker">SIMULATED EXECUTION</span>
           <h1>Paper Trading Engine</h1>
           <p>
-            Real-time simulated paper trading powered by SignalForge strategy signals with zero look-ahead bias and deterministic execution.
+            Simulated paper trading powered by SignalForge strategy signals with zero look-ahead bias and deterministic execution.
           </p>
         </div>
 
@@ -307,6 +307,27 @@ function PaperTradingView() {
           </div>
         </div>
       </header>
+
+      <div
+        className="paper-trading-historical-notice"
+        style={{
+          padding: '10px 14px',
+          background: 'rgba(255, 179, 0, 0.08)',
+          border: '1px solid rgba(255, 179, 0, 0.25)',
+          borderRadius: '6px',
+          color: '#ffb300',
+          fontSize: '12px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
+        <span>⚠️</span>
+        <span>
+          <strong>Market Data Status:</strong> Paper trading unavailable: historical market data only. Latest available data: 26 Mar 2024. New paper orders for NIFTY 50 cannot be opened against historical datasets.
+        </span>
+      </div>
 
       {loading && !status && !summary ? (
         <LoadingState
@@ -355,7 +376,7 @@ function PaperTradingView() {
             <StatCard
               label="Open Trades"
               value={formatNumber(displaySummary.open_trades, 0)}
-              subValue="Active in current market"
+              subValue="Unclosed ledger positions"
             />
 
             <StatCard
@@ -383,7 +404,7 @@ function PaperTradingView() {
           <section className="paper-session-panel" style={{ marginTop: '20px' }}>
             <SectionHeader
               title="Active Open Positions"
-              subtitle="Positions currently active and monitoring Stop Loss / Targets."
+              subtitle="Simulated positions with status OPEN in local paper ledger."
               right={
                 <span className="paper-trade-count" style={{ background: openTrades.length > 0 ? 'rgba(0, 217, 163, 0.2)' : undefined, color: openTrades.length > 0 ? '#00eaaf' : undefined }}>
                   {openTrades.length} open

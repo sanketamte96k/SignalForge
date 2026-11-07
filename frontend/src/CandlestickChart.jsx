@@ -152,6 +152,11 @@ export function CandlestickChart({
     updateRange(next)
   }, [candles.length, updateRange])
 
+  const handleJumpToLatest = useCallback(() => {
+    const next = calculateViewRange(candles.length, null, 'reset')
+    updateRange(next)
+  }, [candles.length, updateRange])
+
 
 
   const width = 780
@@ -217,6 +222,8 @@ export function CandlestickChart({
 
   const first = visibleCandles[0]
   const last = visibleCandles[visibleCandles.length - 1]
+  const absoluteLastCandle = candles[candles.length - 1]
+  const isPannedAway = candles.length > 0 && currentRange.end < candles.length
   const latestEma20 = ema20[ema20.length - 1]
   const latestEma50 = ema50[ema50.length - 1]
 
@@ -479,8 +486,32 @@ export function CandlestickChart({
           >
             Reset
           </button>
+          <button
+            type="button"
+            className="chart-zoom-btn chart-zoom-jump-latest"
+            onClick={handleJumpToLatest}
+            title="Jump to Latest Candle"
+            aria-label="Jump to latest candle"
+          >
+            Jump to Latest
+          </button>
         </div>
       </div>
+
+      {isPannedAway && (
+        <div className="chart-panned-notice">
+          <span className="panned-text">
+            Viewing: {formatShortTime(first?.timestamp)} – {formatShortTime(last?.timestamp)} | Latest available: {formatShortTime(absoluteLastCandle?.timestamp)}
+          </span>
+          <button
+            type="button"
+            className="panned-jump-btn"
+            onClick={handleJumpToLatest}
+          >
+            Jump to Latest
+          </button>
+        </div>
+      )}
 
       <svg
         ref={svgRef}
@@ -505,6 +536,21 @@ export function CandlestickChart({
           height={height}
           className="chart-background"
         />
+
+        <text
+          x={width / 2}
+          y={chartTop + chartHeight / 2}
+          className="chart-watermark"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="rgba(255, 255, 255, 0.06)"
+          fontSize="24"
+          fontWeight="700"
+          letterSpacing="2px"
+          pointerEvents="none"
+        >
+          HISTORICAL DATA • MARCH 2024
+        </text>
 
         {gridRows.map((ratio) => {
           const y = chartTop + ratio * chartHeight
@@ -689,6 +735,11 @@ export function CandlestickChart({
       <div className="chart-data-footer">
         <span>Real OHLCV data</span>
         <span>EMA 20 / EMA 50 calculated from chart closes</span>
+        {(chartData?.symbol === 'NIFTY 50' || symbol === 'NIFTY 50') && (
+          <span className="nifty-spot-volume-note" title="Volume is zero for cash spot index; genuine trade volume is present on underlying equities and derivatives.">
+            Note: Zero volume expected for NIFTY 50 cash spot index
+          </span>
+        )}
         <span>Latest: {formatAnalysisPrice(Number(last?.close))}</span>
       </div>
     </div>

@@ -229,6 +229,11 @@ export function StrategySignalPanel({
       return
     }
 
+    if ((symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI') && ((backtestStartDate && backtestStartDate > '2024-03-26') || (backtestEndDate && backtestEndDate > '2024-03-26'))) {
+      setBacktestError('NIFTY 50 historical backtest date exceeds verified dataset boundary. Maximum permitted date is 2024-03-26.')
+      return
+    }
+
     if (backtestInitialCapital <= 0) {
       setBacktestError('Initial capital must be greater than zero.')
       return
@@ -359,6 +364,11 @@ export function StrategySignalPanel({
 
   // Handle Trade Execution
   const handleConfirmPaperTrade = async () => {
+    if (isHistorical || symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI') {
+      setActionError('Paper trading unavailable: historical market data only. Latest available data: 26 Mar 2024.')
+      return
+    }
+
     if (orderQuantity <= 0 || !Number.isInteger(orderQuantity)) {
       setActionError('Quantity must be an integer > 0')
       return
@@ -519,8 +529,15 @@ export function StrategySignalPanel({
                 <strong className="instrument-title">{symbol}</strong>
               </div>
               <div className="signal-metric-row">
-                <span className="detail-muted">Current Price</span>
-                <strong className="numeric-val tabular-num">{displayPrice}</strong>
+                <span className="detail-muted">{isHistorical ? 'HISTORICAL CLOSE' : 'Current Price'}</span>
+                <strong className="numeric-val tabular-num">
+                  {displayPrice}
+                  {isHistorical && rawTimestamp && (
+                    <span style={{ fontSize: '11px', fontWeight: 'normal', color: '#88a3b8', marginLeft: '6px' }}>
+                      ({displayTimestamp})
+                    </span>
+                  )}
+                </strong>
               </div>
               <div className="signal-metric-row">
                 <span className="detail-muted">Signal Timestamp</span>
@@ -551,13 +568,12 @@ export function StrategySignalPanel({
               <div className="confirmation-header">
                 <span className="detail-muted-title">CONFIRMATION FACTORS</span>
                 <span
-                  className={`confirmation-status-pill ${
-                    confirmationStatus === 'Confirmed'
+                  className={`confirmation-status-pill ${confirmationStatus === 'Confirmed'
                       ? 'confirmed'
                       : confirmationStatus === 'Partial'
                         ? 'partial'
                         : 'neutral'
-                  }`}
+                    }`}
                 >
                   {confirmationStatus}
                 </span>
@@ -565,9 +581,8 @@ export function StrategySignalPanel({
 
               <div className="factor-list">
                 <div
-                  className={`factor-item ${
-                    emaConfirmed ? 'factor-confirmed' : 'factor-neutral'
-                  }`}
+                  className={`factor-item ${emaConfirmed ? 'factor-confirmed' : 'factor-neutral'
+                    }`}
                 >
                   <span className="factor-icon-wrap">
                     <PanelIcon
@@ -585,9 +600,8 @@ export function StrategySignalPanel({
                 </div>
 
                 <div
-                  className={`factor-item ${
-                    rsiConfirmed ? 'factor-confirmed' : 'factor-neutral'
-                  }`}
+                  className={`factor-item ${rsiConfirmed ? 'factor-confirmed' : 'factor-neutral'
+                    }`}
                 >
                   <span className="factor-icon-wrap">
                     <PanelIcon
@@ -605,9 +619,8 @@ export function StrategySignalPanel({
                 </div>
 
                 <div
-                  className={`factor-item ${
-                    volumeConfirmed ? 'factor-confirmed' : 'factor-neutral'
-                  }`}
+                  className={`factor-item ${volumeConfirmed ? 'factor-confirmed' : 'factor-neutral'
+                    }`}
                 >
                   <span className="factor-icon-wrap">
                     <PanelIcon
@@ -627,9 +640,8 @@ export function StrategySignalPanel({
                 </div>
 
                 <div
-                  className={`factor-item ${
-                    mtfConfirmed ? 'factor-confirmed' : 'factor-neutral'
-                  }`}
+                  className={`factor-item ${mtfConfirmed ? 'factor-confirmed' : 'factor-neutral'
+                    }`}
                 >
                   <span className="factor-icon-wrap">
                     <PanelIcon
@@ -741,7 +753,7 @@ export function StrategySignalPanel({
                       <strong>₹{formatPrice(activeTrade.entry_price)}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#88a3b8' }}>Current Price: </span>
+                      <span style={{ color: '#88a3b8' }}>{isHistorical ? 'Historical Close: ' : 'Current Price: '}</span>
                       <strong>{displayPrice}</strong>
                     </div>
                     <div>
@@ -840,31 +852,50 @@ export function StrategySignalPanel({
                 </div>
               ) : rawSignal === 'BUY' || rawSignal === 'SELL' ? (
                 /* Case C: Trigger Button Available */
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmModal(true)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 0',
-                    borderRadius: '4px',
-                    border: '1px solid rgba(0, 217, 163, 0.4)',
-                    background: rawSignal === 'BUY'
-                      ? 'linear-gradient(180deg, rgba(0, 217, 163, 0.2) 0%, rgba(0, 168, 126, 0.3) 100%)'
-                      : 'linear-gradient(180deg, rgba(255, 79, 94, 0.2) 0%, rgba(217, 45, 60, 0.3) 100%)',
-                    color: rawSignal === 'BUY' ? '#00eaaf' : '#ff6876',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                    letterSpacing: '0.04em',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 150ms ease',
-                  }}
-                >
-                  <span>⚡ PAPER TRADE ({rawSignal})</span>
-                </button>
+                (isHistorical || symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI') ? (
+                  <div
+                    className="paper-trading-disabled-banner"
+                    style={{
+                      padding: '8px 10px',
+                      background: 'rgba(255, 179, 0, 0.1)',
+                      border: '1px solid rgba(255, 179, 0, 0.3)',
+                      borderRadius: '4px',
+                      color: '#ffb300',
+                      fontSize: '11px',
+                      textAlign: 'center',
+                      margin: '8px 0',
+                    }}
+                  >
+                    <span style={{ fontWeight: 'bold' }}>⚡ PAPER TRADE UNAVAILABLE: </span>
+                    Paper trading unavailable: historical market data only. Latest available data: 26 Mar 2024.
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmModal(true)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 0',
+                      borderRadius: '4px',
+                      border: '1px solid rgba(0, 217, 163, 0.4)',
+                      background: rawSignal === 'BUY'
+                        ? 'linear-gradient(180deg, rgba(0, 217, 163, 0.2) 0%, rgba(0, 168, 126, 0.3) 100%)'
+                        : 'linear-gradient(180deg, rgba(255, 79, 94, 0.2) 0%, rgba(217, 45, 60, 0.3) 100%)',
+                      color: rawSignal === 'BUY' ? '#00eaaf' : '#ff6876',
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                      letterSpacing: '0.04em',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      transition: 'all 150ms ease',
+                    }}
+                  >
+                    <span>⚡ PAPER TRADE ({rawSignal})</span>
+                  </button>
+                )
               ) : (
                 /* Case D: NO_TRADE setup */
                 <div
@@ -929,6 +960,7 @@ export function StrategySignalPanel({
                     type="date"
                     value={backtestStartDate}
                     onChange={(e) => setBacktestStartDate(e.target.value)}
+                    max={symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI' ? '2024-03-26' : undefined}
                     disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
                     style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
                   />
@@ -940,6 +972,7 @@ export function StrategySignalPanel({
                     type="date"
                     value={backtestEndDate}
                     onChange={(e) => setBacktestEndDate(e.target.value)}
+                    max={symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI' ? '2024-03-26' : undefined}
                     disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
                     style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
                   />

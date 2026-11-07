@@ -180,6 +180,12 @@ def create_paper_trade(
     Open a new interactive paper trade based on an active strategy signal.
     Rejects duplicate active positions (409) and invalid signals/brackets/capital (400).
     """
+    if req.symbol and req.symbol.strip().upper() in {"NIFTY 50", "NIFTY", "^NSEI"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Paper trading unavailable: historical market data only. Latest available data: 26 Mar 2024.",
+        )
+
     service = _get_interactive_service()
 
     try:

@@ -43,6 +43,32 @@ function TradingModeView() {
   const displaySymbol = signalData?.symbol || 'NIFTY 50'
   const displayTimeframe = signalData?.timeframe || '15m'
 
+  const getFreshness = () => {
+    if (signalLoading) {
+      return { dot: 'gray', label: 'Checking Market Data...' }
+    }
+    if (signalError || !signalData) {
+      return { dot: 'gray', label: 'DATA UNAVAILABLE' }
+    }
+    if (!signalData.timestamp) {
+      return { dot: 'amber', label: 'UNVERIFIED' }
+    }
+    const rawTs = String(signalData.timestamp)
+    const parsedTs = (rawTs.includes('+') || rawTs.endsWith('Z')) ? new Date(rawTs) : new Date(rawTs + '+05:30')
+    if (isNaN(parsedTs.getTime())) {
+      return { dot: 'amber', label: 'UNVERIFIED' }
+    }
+    const ageHours = (Date.now() - parsedTs.getTime()) / (1000 * 60 * 60)
+    const isHistorical = signalData.status === 'HISTORICAL' || ageHours > 24
+    if (isHistorical) {
+      const formattedDate = parsedTs.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      return { dot: 'amber', label: `HISTORICAL REPLAY — Data ended ${formattedDate}` }
+    }
+    return { dot: 'green', label: 'Market Data Live' }
+  }
+
+  const freshness = getFreshness()
+
   return (
     <div className="trading-mode-view">
       <header className="trading-mode-header">
@@ -152,7 +178,7 @@ function TradingModeView() {
                   <span className="signal-value">{displayTime}</span>
                 </div>
                 <div className="signal-row">
-                  <span className="signal-label">Price</span>
+                  <span className="signal-label">{signalData?.status === 'HISTORICAL' ? 'Last Historical Close' : 'Price'}</span>
                   <span className="signal-value">{displayPrice}</span>
                 </div>
                 
@@ -186,8 +212,8 @@ function TradingModeView() {
 
           <div className="validation-status">
             <div className="status-item">
-              <span className={`status-dot ${signalData ? 'green' : 'gray'}`}></span>
-              Market Data Freshness
+              <span className={`status-dot ${freshness.dot}`}></span>
+              {freshness.label}
             </div>
             <div className="status-item">
               <span className="status-dot green"></span>

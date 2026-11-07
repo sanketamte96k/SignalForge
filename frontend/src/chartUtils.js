@@ -166,15 +166,37 @@ export function matchSignalToCandle(signal, candles) {
   if (signal.timestamp) {
     const signalTime = new Date(signal.timestamp).getTime()
     if (!Number.isNaN(signalTime)) {
+      // Determine candle duration tolerance from adjacent candles or signal timeframe
+      let toleranceMs = 60000
+      if (candles.length >= 2) {
+        const t0 = new Date(candles[0].timestamp).getTime()
+        const t1 = new Date(candles[1].timestamp).getTime()
+        if (!Number.isNaN(t0) && !Number.isNaN(t1)) {
+          const delta = Math.abs(t1 - t0)
+          if (delta > 0 && delta <= 24 * 3600 * 1000) {
+            toleranceMs = Math.max(toleranceMs, delta)
+          }
+        }
+      } else if (signal.timeframe) {
+        const tf = String(signal.timeframe).toLowerCase()
+        const match = tf.match(/^(\d+)([mhd])$/)
+        if (match) {
+          const val = parseInt(match[1], 10)
+          const unit = match[2]
+          const multiplier = unit === 'm' ? 60000 : unit === 'h' ? 3600000 : 86400000
+          toleranceMs = Math.max(toleranceMs, val * multiplier)
+        }
+      }
+
       for (let i = candles.length - 1; i >= 0; i--) {
         const candleTime = new Date(candles[i].timestamp).getTime()
-        if (!Number.isNaN(candleTime) && Math.abs(candleTime - signalTime) < 60000) {
+        if (!Number.isNaN(candleTime) && Math.abs(candleTime - signalTime) <= toleranceMs) {
           return { candle: candles[i], index: i, signal }
         }
       }
     }
   }
 
-  const lastIndex = candles.length - 1
-  return { candle: candles[lastIndex], index: lastIndex, signal }
+  // Strict safety: do not fall back to pinning off-screen or mismatched signals to lastIndex
+  return null
 }

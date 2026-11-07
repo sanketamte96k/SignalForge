@@ -126,6 +126,12 @@ class BacktestJobManager:
         else:
             normalized_symbol = validate_symbol(raw_symbol)
 
+        start_date = combined.get("start_date")
+        end_date = combined.get("end_date")
+        if normalized_symbol == "NIFTY 50":
+            if (start_date and str(start_date)[:10] > "2024-03-26") or (end_date and str(end_date)[:10] > "2024-03-26"):
+                raise ValueError("NIFTY 50 historical backtest date exceeds verified dataset boundary. Maximum permitted date is 2024-03-26.")
+
         job_id = f"job-{uuid.uuid4().hex[:12]}"
         now = datetime.now(timezone.utc)
 

@@ -243,6 +243,7 @@
 .status-dot.green { background: var(--sf-cyan); }
 .status-dot.gray { background: var(--sf-text-dim); }
 .status-dot.red { background: var(--sf-red); }
+.status-dot.amber, .status-dot.orange { background: #ff9f43; }
 
 .action-button {
   margin-top: auto;
