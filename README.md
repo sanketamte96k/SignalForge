@@ -6,34 +6,52 @@ SignalForge is an offline-first research platform for **historical market analys
 
 Built with **Python/FastAPI + React**, with a strong focus on reproducibility, validation, and avoiding future-data leakage.
 
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.141.1-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=111111)](https://react.dev/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=docker)](https://www.docker.com/)
 
 ---
 
 ## 🚀 Key Features
 
-- **Causal Backtesting** — `signal(t) → execution(t+1 open)`
-- **Historical Replay** — repeatable research over historical market data
-- **Multi-Timeframe Analysis** — strategy and indicator evaluation across timeframes
-- **Paper Trading** — simulated entries, exits, stops, targets, and trade journaling
-- **Quantitative Analytics** — equity curve, drawdown, trade history, and KPIs
+- **Causal Backtesting** — signal at candle `t` executes at `t+1 open`
+- **Historical Replay** for research and strategy evaluation
+- **Multi-Timeframe Analysis**
+- **Paper Trading Simulation**
+- **Quantitative Analytics** including equity and drawdown analysis
 - **Stock Universe Validation** — data → backtest → OOS validation → paper trading
-- **Research Tearsheets** — standalone HTML reports
-- **Research Provenance** — SHA-256 integrity checks for frozen configurations/data
-- **Automated Testing** — backend + frontend tests through GitHub Actions
+- **Research Tearsheets** for strategy results and reporting
+- **Research Provenance** using SHA-256 hashing
+- **Automated Testing** with backend and frontend CI
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Backend:** Python, FastAPI, Uvicorn, Pydantic  
-**Data & Research:** Pandas, NumPy  
-**Frontend:** React 19, Vite, Lightweight Charts  
-**Testing:** Pytest, Node/Vite test runner  
-**DevOps:** Docker, Docker Compose, GitHub Actions
+### Backend
+- Python
+- FastAPI
+- Uvicorn
+- Pydantic
+
+### Data & Research
+- Pandas
+- NumPy
+
+### Frontend
+- React 19
+- Vite
+- Lightweight Charts
+
+### Testing
+- Pytest
+- Frontend test runner
+
+### DevOps
+- Docker
+- Docker Compose
+- GitHub Actions
 
 ---
 
@@ -41,17 +59,17 @@ Built with **Python/FastAPI + React**, with a strong focus on reproducibility, v
 
 ```text
 React 19 Frontend
-       │
-       │ REST / JSON
-       ▼
+        │
+        │ REST / JSON
+        ▼
 FastAPI Backend
-       │
-       ├── Strategy & Indicators
-       ├── Backtesting
-       ├── Market Data
-       ├── Scanner
-       ├── Paper Trading
-       └── Validation
+        │
+        ├── Strategy & Indicators
+        ├── Backtesting
+        ├── Market Data
+        ├── Scanner
+        ├── Paper Trading
+        └── Validation
                 │
                 ▼
         Historical / Universe Data
@@ -63,14 +81,15 @@ FastAPI Backend
 
 SignalForge is designed for **research and simulation**, not live trading.
 
-The project explicitly focuses on:
+The platform focuses on:
 
-- causal execution
-- future-data leakage detection
-- data quality validation
-- transaction-cost/slippage modeling
-- reproducible research
-- safe file and configuration handling
+- Causal execution
+- Future-data leakage detection
+- Data-quality validation
+- Transaction-cost and slippage modelling
+- Reproducible research
+- Safe configuration and file handling
+- Historical strategy validation
 
 **No automatic broker order execution is implemented.**
 
@@ -78,45 +97,69 @@ The project explicitly focuses on:
 
 ## 🧪 Testing & CI
 
-The repository includes tests for:
+SignalForge includes tests covering:
 
-- strategy causality
-- future-data leakage
-- backtesting
-- paper trading
-- data validation
-- reporting and analytics
-- frontend workflows
+- Strategy causality
+- Future-data leakage
+- Backtesting
+- Paper trading
+- Data validation
+- Reporting
+- Analytics
+- API behaviour
 
-GitHub Actions runs backend tests, frontend tests, and the production frontend build.
+GitHub Actions is used to run backend tests, frontend tests, and the production frontend build.
 
 ---
 
 ## 📚 Documentation
 
-Detailed guides are available in [`docs/`](docs/):
+Detailed project documentation is available in the `docs/` directory.
 
 - [Installation](docs/INSTALLATION.md)
 - [Configuration](docs/CONFIGURATION.md)
-- [API](docs/API.md)
+- [API Documentation](docs/API.md)
 - [Testing](docs/TESTING.md)
+- [Startup Guide](docs/STARTUP.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Security & Deployment](docs/SECURITY_DEPLOYMENT.md)
+- [Backup & Recovery](docs/BACKUP_RECOVERY.md)
+
+---
+
+## 💡 Suggestions & Feedback
+
+Have an idea to improve SignalForge?
+
+You can send suggestions, feedback, or improvement ideas directly to:
+
+**📧 [sanketamte6584@gmail.com](mailto:sanketamte6584@gmail.com)**
+
+Please include a clear description of the suggestion and, when possible, explain the problem it would solve.
 
 ---
 
 ## ⚠️ Disclaimer
 
-SignalForge is an **educational and research-oriented project** for historical analysis and simulated paper trading.
+SignalForge is an **educational and research project** for historical market analysis and simulated paper trading.
 
-It does not provide financial advice, guarantee profits, or place live broker orders.
+It does **not** provide financial advice and does not guarantee trading performance.
+
+**No live broker order execution is provided.**
 
 ---
 
 ## 👨‍💻 Author
 
-**SANKET AMTE**  
-*Java Full Stack Developer | Backend Developer*
+### Sanket Amte
 
-📧 **Email:** sanketamte6584@gmail.com  |  🔗 **LinkedIn:** LinkedIn Profile  |  💻 **GitHub:** GitHub Profile
+B.Tech Information Technology Student
 
-> **Research carefully. Validate causally. Build reproducibly.**
+[![GitHub](https://img.shields.io/badge/GitHub-sanketamte96k-181717?logo=github)](https://github.com/sanketamte96k)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Sanket%20Amte-0A66C2?logo=linkedin)](https://www.linkedin.com/in/sanket-amte-a55a61332/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-000000?logo=vercel)](https://sanket-portfolio-lemon.vercel.app)
+[![Email](https://img.shields.io/badge/Email-Contact-EA4335?logo=gmail)](mailto:sanketamte6584@gmail.com)
+
+---
+
+⭐ **If you find SignalForge useful, consider giving the repository a star.**
