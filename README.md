@@ -26,34 +26,34 @@ Built with **Python/FastAPI + React**, with a strong focus on reproducibility, v
 - **Automated Testing** with backend and frontend CI
 
 ---
-
 ## 🛠️ Tech Stack
 
-### Backend
-- Python
-- FastAPI
-- Uvicorn
-- Pydantic
+### Languages
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-### Data & Research
-- Pandas
-- NumPy
+### Backend & API
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-499848?style=for-the-badge&logo=python&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white)
+![REST API](https://img.shields.io/badge/REST%20API-005571?style=for-the-badge)
+
+### Data & Quant Research
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
+![YFinance](https://img.shields.io/badge/yfinance-1F6FEB?style=for-the-badge)
 
 ### Frontend
-- React 19
-- Vite
-- Lightweight Charts
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Lightweight Charts](https://img.shields.io/badge/Lightweight%20Charts-2962FF?style=for-the-badge)
 
-### Testing
-- Pytest
-- Frontend test runner
-
-### DevOps
-- Docker
-- Docker Compose
-- GitHub Actions
-
----
+### Testing & DevOps
+![Pytest](https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 
 ## 🏗️ Architecture
 
