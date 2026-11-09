@@ -73,3 +73,4 @@ To eliminate future ambiguity, SignalForge research enforces the following opera
    - The authoritative figure for institutional feasibility, capacity analysis, and commercial portfolio survivability under realistic ₹10 Lakh capital deployment.
 3. **One-Way Entry Friction (`Figure 1 = ₹15,961.56`):**
    - Strictly classified as a partial one-way cost estimate; deprecated for portfolio reporting.
+

@@ -102,3 +102,4 @@ The candidate datasets discovered in the repository were cryptographically finge
 Zero genuine historical NIFTY Futures contracts are available in the local repository. Substituting cash spot index bars would create severe look-ahead bias and unexecutable fills.
 
 The technical data quality verdict is formally certified as **`BLOCKED_NO_DATA`**.
+

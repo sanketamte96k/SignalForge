@@ -68,3 +68,4 @@ The complete SignalForge research workflow was exercised and validated from clea
 - **Action:** Clicked `📑 TEARSHEET`.
 - **Endpoint:** `GET /api/strategy/backtest/jobs/{job_id}/tearsheet` returned standalone HTML.
 - **Offline Integrity:** Saved 20,149 byte file opened in external browser without network connection; all SVG charts and styles rendered with 100% fidelity.
+

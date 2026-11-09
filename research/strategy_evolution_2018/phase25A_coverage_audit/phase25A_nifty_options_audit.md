@@ -51,3 +51,4 @@ Assuming options can be simulated by applying Black-Scholes formulas to spot ind
 4. **Corporate Actions & Strike Adjustments:** Constituent dividend distributions cause non-standard options contract adjustments and discrete jumps in forward pricing.
 
 **Conclusion:** SignalForge possesses zero historical options datasets. NIFTY Options research (CE & PE) is certified as **`BLOCKED_NO_DATA`**.
+

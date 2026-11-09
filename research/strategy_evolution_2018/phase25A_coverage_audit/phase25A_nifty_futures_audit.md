@@ -50,3 +50,4 @@ The cash spot index (`NIFTY 50`) is a **non-tradable mathematical index calculat
 4. **Margin & Financing:** Futures involve initial and mark-to-market margins, overnight leverage, and capital charges that do not exist in equity or cash simulations.
 
 **Conclusion:** Treating spot index bars as tradable futures trades is a catastrophic backtest failure mode. NIFTY Futures research is formally classified as **`BLOCKED_NO_DATA`**.
+

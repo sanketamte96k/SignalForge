@@ -111,3 +111,4 @@ This troubleshooting guide documents reproducible procedures for diagnosing and 
 | **Data Corruption** | High | Atomic writes prevent partial writes; restore from immutable backup if disk faults occur. |
 | **Out of Memory** | High | Restart processes; verify maximum 1 concurrent backtest worker limit. |
 | **Vite Cache Stale** | Low | Run `npm run build` or delete `frontend/node_modules/.vite/`. |
+

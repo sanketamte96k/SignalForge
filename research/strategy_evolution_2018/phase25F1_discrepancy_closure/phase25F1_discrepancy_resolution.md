@@ -150,3 +150,4 @@ Full component breakdowns and penny-accurate accounting tables are published in 
 - **Underlying Strategy Invariants:** 100% preserved
 - **2020 Holdout Dataset:** Strictly quarantined (zero access)
 - **Live / Paper Deployment:** **`STRICTLY_ON_HOLD`**
+

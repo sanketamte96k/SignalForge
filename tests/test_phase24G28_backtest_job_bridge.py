@@ -85,7 +85,7 @@ def test_job_creation_and_defaults():
     job = mgr.create_job(
         symbol="NIFTY 50",
         start_date="2024-01-01",
-        end_date="2024-03-31",
+        end_date="2024-03-26",
         execution_model="next_open",
         initial_capital=100000.0,
         quantity=1,
@@ -386,3 +386,89 @@ def test_final_verdict_consistency():
     assert final_report.exists(), "Final report missing"
     content = final_report.read_text(encoding="utf-8")
     assert "BACKTEST_JOB_BRIDGE_COMPLETED" in content, "Missing authorized verdict"
+
+
+# ----------------------------------------------------------------------------
+# 5. Phase 27C.1: Return Percentage Mathematical Identity & Scaling Verification
+# ----------------------------------------------------------------------------
+
+def test_phase27c1_return_percentage_mathematical_identity():
+    """
+    Verify Phase 27C.1: Total return percentage and trade return percentages
+    must adhere to exact mathematical definition:
+      total_return_pct == (total_pnl / initial_capital) * 100.0
+      trade['return_pct'] == (net_pnl / entry_notional) * 100.0
+    Guarantees no redundant 100x multiplication occurs.
+    """
+    mgr = get_job_manager()
+    job = mgr.submit_job(
+        symbol="NIFTY 50",
+        start_date="2024-01-01",
+        end_date="2024-01-15",
+        execution_model="next_open",
+        initial_capital=100000.0,
+        quantity=1,
+    )
+
+    deadline = time.time() + 20.0
+    while time.time() < deadline:
+        status = mgr.get_job_status(job.job_id)
+        if status and status.status in (JobStatus.COMPLETED, JobStatus.FAILED):
+            break
+        time.sleep(0.2)
+
+    res = mgr.get_job(job.job_id).result
+    assert res is not None, "Job result must not be None"
+    metrics = res["metrics"]
+    portfolio = res["portfolio"]
+
+    # 1. Verify Portfolio Total Return Identity
+    total_pnl = float(metrics["total_pnl"])
+    initial_cap = float(portfolio["initial_capital"])
+    reported_total_ret = float(metrics["total_return_pct"])
+
+    expected_total_ret = round((total_pnl / initial_cap) * 100.0, 2)
+    assert abs(reported_total_ret - expected_total_ret) < 1e-4, (
+        f"total_return_pct mismatch: reported {reported_total_ret} vs expected {expected_total_ret}"
+    )
+
+    # 2. Verify Trade-Level Return Identity for every trade
+    trades = res["trades"]
+    for t in trades:
+        entry_price = float(t["entry_price"])
+        qty = int(t["quantity"])
+        net_pnl = float(t["net_pnl"])
+        reported_trade_ret = float(t["return_pct"])
+
+        notional = entry_price * qty
+        expected_trade_ret = round((net_pnl / notional) * 100.0, 3)
+        assert abs(reported_trade_ret - expected_trade_ret) < 1e-4, (
+            f"Trade #{t['trade_id']} return_pct mismatch: reported {reported_trade_ret} vs expected {expected_trade_ret}"
+        )
+
+
+def test_phase27c1_api_result_lifecycle_return_percentage():
+    """Verify HTTP API endpoint get_backtest_job_result returns correct return percentages."""
+    req = BacktestRunRequest(
+        symbol="NIFTY 50",
+        start_date="2024-01-01",
+        end_date="2024-01-15",
+        initial_capital=100000.0,
+        quantity=1,
+    )
+    job = create_backtest_job(req)
+
+    deadline = time.time() + 20.0
+    while time.time() < deadline:
+        stat = get_backtest_job_status(job.job_id)
+        if stat.status == "COMPLETED":
+            break
+        time.sleep(0.2)
+
+    api_res = get_backtest_job_result(job.job_id)
+    assert api_res.status == "COMPLETED"
+
+    # Mathematical identity verification on API model response
+    expected_ret = round((api_res.metrics.total_pnl / 100000.0) * 100.0, 2)
+    assert abs(api_res.metrics.total_return_pct - expected_ret) < 1e-4
+

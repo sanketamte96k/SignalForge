@@ -83,3 +83,4 @@ The following **34 stocks** are eligible for quantitative backtesting, parameter
 1. **Backtesting Scope:** Backtesting must strictly target the historical 2017–2019 window.
 2. **Strategy Codebase:** Backtest runs must evaluate frozen V1 or explicit new candidate versions without altering the frozen baseline hash (`920515d71ebb2cea693193897103d19c1ec35c5013b85715dc209b64a45e4ec7`).
 3. **Execution Modeling:** Fills must use next-bar open or realistic slippage models with statutory transaction costs (brokerage, STT, exchange turnover fees, GST, stamp duty).
+

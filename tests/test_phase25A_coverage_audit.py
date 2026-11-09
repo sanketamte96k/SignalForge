@@ -192,3 +192,4 @@ def test_no_backtesting_claimed_in_phase25a():
         m = json.load(f)
     
     assert m["audit_verdict"] == "EQUITY_PARTIAL_FNO_BLOCKED"
+

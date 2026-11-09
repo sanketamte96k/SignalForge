@@ -63,3 +63,4 @@ def test_watchlist_preserves_symbol_order():
         "INFY",
         "HCLTECH",
     )
+

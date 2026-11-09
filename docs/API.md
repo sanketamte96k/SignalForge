@@ -69,3 +69,4 @@ Interactive OpenAPI documentation is available locally at:
 - `GET /api/paper-trading/trades`
 - `POST /api/paper-trading/trades`
 - `POST /api/paper-trading/trades/{trade_id}/close`
+

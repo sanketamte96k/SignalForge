@@ -26,7 +26,7 @@ import uuid
 import numpy as np
 import pandas as pd
 
-from src.backtest.engine import run_backtest
+from src.backtest.engine import IntradayEngineConfig, run_backtest, run_intraday_backtest
 from src.backtest.indian_market_costs import (
     COST_PROFILES,
     DISCOUNT_BROKER_REALISTIC_CONFIG,
@@ -361,19 +361,76 @@ class BacktestJobManager:
                 }
                 cost_rate = 0.0
 
+            # Phase 27C.2 Production Intraday Risk Configuration
+            stop_loss_atr = float(params.get("stop_loss_atr", 1.5))
+            take_profit_atr = float(params.get("take_profit_atr", 3.0))
+            session_end_time = str(params.get("session_end_time", "15:15"))
+            risk_per_trade_pct = float(params.get("risk_per_trade_pct", 0.01))
+            max_leverage = float(params.get("max_leverage", 5.0))
+
+            max_exposure = params.get("max_exposure")
+            if max_exposure is not None:
+                max_exposure = float(max_exposure)
+            elif initial_capital == 10_000.0:
+                max_exposure = 50_000.0
+            else:
+                max_exposure = initial_capital * max_leverage
+
+            overall_loss_limit = params.get("overall_loss_limit")
+            if overall_loss_limit is not None:
+                overall_loss_limit = float(overall_loss_limit)
+
+            capital_protection_floor = params.get("capital_protection_floor")
+            if capital_protection_floor is not None:
+                capital_protection_floor = float(capital_protection_floor)
+            elif overall_loss_limit is not None:
+                capital_protection_floor = max(0.0, initial_capital - overall_loss_limit)
+            elif initial_capital == 10_000.0:
+                capital_protection_floor = 8_000.0
+                overall_loss_limit = 2_000.0
+
+            risk_config_meta = {
+                "initial_capital": initial_capital,
+                "risk_per_trade_pct": risk_per_trade_pct,
+                "max_leverage": max_leverage,
+                "max_exposure": max_exposure,
+                "stop_loss_atr": stop_loss_atr,
+                "take_profit_atr": take_profit_atr,
+                "session_end_time": session_end_time,
+                "capital_protection_floor": capital_protection_floor,
+                "overall_loss_limit": overall_loss_limit,
+                "enforce_eod_square_off": True,
+                "gap_execution": True,
+                "conservative_same_candle": True,
+            }
+
             with self._lock:
                 if job.status == JobStatus.CANCELLED:
                     return
                 job.progress = 75.0
 
-            backtest_result = run_backtest(
-                data=data,
-                signal_function=sig_fn,
+            intraday_cfg = IntradayEngineConfig(
                 initial_capital=initial_capital,
-                quantity=quantity,
+                risk_per_trade=risk_per_trade_pct,
+                max_leverage=max_leverage,
+                max_exposure=max_exposure,
+                capital_protection_floor=capital_protection_floor,
+                overall_loss_limit=overall_loss_limit,
+                stop_atr_multiplier=stop_loss_atr,
+                target_atr_multiplier=take_profit_atr,
                 transaction_cost_rate=cost_rate,
+                session_end_time=session_end_time,
+                enforce_eod_square_off=True,
+                gap_execution=True,
+                conservative_same_candle=True,
                 execution_model=exec_model,
                 cost_config=cost_config,
+            )
+
+            backtest_result = run_intraday_backtest(
+                data=data,
+                signal_generator=sig_fn,
+                config=intraday_cfg,
             )
 
             # Checkpoint 5: Check cancellation before formatting & persisting results
@@ -406,7 +463,7 @@ class BacktestJobManager:
                         "gross_pnl": round(float(t.gross_pnl), 2),
                         "costs": round(float(t.transaction_cost), 2),
                         "net_pnl": round(float(t.net_pnl), 2),
-                        "return_pct": round(float(t.return_pct) * 100.0, 3),
+                        "return_pct": round(float(t.return_pct), 3),
                         "exit_reason": str(t.exit_reason),
                     }
                 )
@@ -427,13 +484,15 @@ class BacktestJobManager:
                 },
                 "execution_model": exec_model,
                 "cost_model": cost_model_meta,
+                "risk_config": risk_config_meta,
+                "bankruptcy_reason": backtest_result.bankruptcy_reason,
                 "metrics": {
                     "total_trades": metrics.total_trades,
                     "winning_trades": metrics.winning_trades,
                     "losing_trades": metrics.losing_trades,
                     "breakeven_trades": metrics.breakeven_trades,
                     "total_pnl": round(float(metrics.total_pnl), 2),
-                    "total_return_pct": round(float(metrics.total_return_pct) * 100.0, 2),
+                    "total_return_pct": round(float(metrics.total_return_pct), 2),
                     "win_rate_pct": round(float(metrics.win_rate_pct), 2),
                     "average_win": round(float(metrics.average_win), 2) if not math.isnan(metrics.average_win) else 0.0,
                     "average_loss": round(float(metrics.average_loss), 2) if not math.isnan(metrics.average_loss) else 0.0,
@@ -446,7 +505,8 @@ class BacktestJobManager:
                     "final_equity": round(float(portfolio.cash), 2),
                     "peak_equity": round(float(portfolio.peak_equity), 2),
                     "max_drawdown_pct": round(float(portfolio.max_drawdown), 2),
-                    "is_bankrupt": portfolio.is_bankrupt,
+                    "is_bankrupt": portfolio.is_bankrupt or (backtest_result.bankruptcy_reason is not None),
+                    "bankruptcy_reason": backtest_result.bankruptcy_reason,
                 },
                 "trades": trades_serialized,
             }

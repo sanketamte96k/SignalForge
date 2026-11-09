@@ -36,6 +36,7 @@ frontend/dist-ssr/
 research/*
 !research/strategy_evolution_2018/
 !research/strategy_evolution_2018/**
+research/**/__pycache__/
 data/*.parquet
 data/*.csv
 temp_nse_data/

@@ -21,3 +21,4 @@ SignalForge is engineered with defense-in-depth principles appropriate for quant
 - **Not Certified for Public Cloud Production:** SignalForge does not implement user authentication (OAuth2 / JWT), tenant isolation, role-based access control (RBAC), or rate-limiting DDoS protection.
 - **In-Memory Coordination:** The `BacktestJobManager` is an in-memory job queue designed for workstation concurrency (`max_workers=2`). It does not use distributed queues (Celery, Redis) or database persistence.
 - **Regulatory Status:** The system is an offline academic research tool under a strict ₹0 budget. It is NOT authorized for live automated order execution, proprietary capital deployment, or public investment advisory under SEBI regulations.
+

@@ -31,6 +31,7 @@ class Trade:
     transaction_cost: float
     net_pnl: float
     return_pct: float
+    symbol: str = "NIFTY 50"
     exit_reason: str = "SIGNAL"
     slippage: float = 0.0
     brokerage: float = 0.0
@@ -118,6 +119,7 @@ def simulate_trade(
     risk_based_quantity: int = 0,
     max_allowed_quantity: int = 0,
     cost_config: Optional[IntradayCostConfig] = None,
+    symbol: str = "NIFTY 50",
 ) -> Trade:
     """
     Simulate one completed trade.
@@ -290,6 +292,7 @@ def simulate_trade(
         transaction_cost=transaction_cost,
         net_pnl=net_pnl,
         return_pct=return_pct,
+        symbol=symbol,
         exit_reason=exit_reason,
         slippage=slippage_cost,
         brokerage=brokerage_cost,

@@ -477,11 +477,15 @@ class IntradayEngineConfig:
     initial_capital: float = 100000.0
     risk_per_trade: float = 0.01
     max_leverage: float = 5.0
+    max_exposure: Optional[float] = None
+    capital_protection_floor: Optional[float] = None
+    overall_loss_limit: Optional[float] = None
     stop_atr_multiplier: float = 1.5
     target_atr_multiplier: float = 3.0
     brokerage_per_trade: float = 20.0
     slippage_rate: float = 0.0005
     statutory_fee_rate: float = 0.0
+    transaction_cost_rate: float = 0.0001
     session_end_time: str = "15:29"
     enforce_eod_square_off: bool = True
     gap_execution: bool = True
@@ -558,9 +562,13 @@ def run_intraday_backtest(
         tr2 = (df["High"] - prev_close).abs()
         tr3 = (df["Low"] - prev_close).abs()
         tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-        df["ATR"] = tr.rolling(14).mean()
+        df["ATR"] = tr.ewm(alpha=1 / 14, adjust=False, min_periods=14).mean()
 
     capital = float(config.initial_capital)
+    effective_floor = config.capital_protection_floor
+    if effective_floor is None and config.overall_loss_limit is not None:
+        effective_floor = max(0.0, config.initial_capital - config.overall_loss_limit)
+
     portfolio = Portfolio(initial_capital=config.initial_capital)
     trades: list[Trade] = []
     position: dict | None = None
@@ -622,6 +630,7 @@ def run_intraday_backtest(
                     brokerage=config.brokerage_per_trade,
                     slippage_rate=config.slippage_rate,
                     statutory_fee_rate=config.statutory_fee_rate,
+                    transaction_cost_rate=config.transaction_cost_rate,
                     cost_config=config.cost_config,
                     exit_reason="EOD",
                     capital_before=position["capital_before"],
@@ -636,6 +645,19 @@ def run_intraday_backtest(
                 portfolio.apply_trade(trade)
                 trades.append(trade)
                 position = None
+
+                if capital <= 0:
+                    bankruptcy_reason = (
+                        f"BANKRUPTCY: Capital dropped to {capital:.2f} at {current_time}"
+                    )
+                    break
+
+                if effective_floor is not None and capital <= effective_floor:
+                    bankruptcy_reason = (
+                        f"PROTECTION_FLOOR: Capital dropped to {capital:.2f} at {current_time} "
+                        f"(protection floor: {effective_floor:.2f})"
+                    )
+                    break
             pending_entry = None
 
         # ----------------------------------------------------
@@ -645,8 +667,24 @@ def run_intraday_backtest(
             config.execution_model == "next_open"
             and pending_entry is not None
             and position is None
-            and capital > 0
         ):
+            if capital <= 0:
+                if bankruptcy_reason is None:
+                    bankruptcy_reason = (
+                        f"BANKRUPTCY: Capital dropped to {capital:.2f} at {current_time}"
+                    )
+                pending_entry = None
+                break
+
+            if effective_floor is not None and capital <= effective_floor:
+                if bankruptcy_reason is None:
+                    bankruptcy_reason = (
+                        f"PROTECTION_FLOOR: Capital dropped to {capital:.2f} at {current_time} "
+                        f"(protection floor: {effective_floor:.2f})"
+                    )
+                pending_entry = None
+                break
+
             if not (
                 config.enforce_eod_square_off
                 and current_time.time() >= session_end_t
@@ -660,6 +698,8 @@ def run_intraday_backtest(
                     if stop_dist > 0:
                         risk_qty = int(risk_amount / stop_dist)
                         max_notional = capital * config.max_leverage
+                        if config.max_exposure is not None:
+                            max_notional = min(max_notional, config.max_exposure)
                         max_allowed_qty = int(max_notional / entry_p)
                         final_qty = min(risk_qty, max_allowed_qty)
                         if final_qty > 0:
@@ -698,6 +738,14 @@ def run_intraday_backtest(
             exit_price = None
             exit_reason = None
 
+            # Calculate price where position breaches protection floor if floor exists
+            floor_p = None
+            if effective_floor is not None and position["quantity"] > 0:
+                if side == "LONG":
+                    floor_p = entry_p + (effective_floor - capital) / position["quantity"]
+                else:
+                    floor_p = entry_p - (effective_floor - capital) / position["quantity"]
+
             if side == "LONG":
                 # A. Gap down through stop at Open
                 if config.gap_execution and bar_open <= stop_p:
@@ -723,6 +771,13 @@ def run_intraday_backtest(
                 elif bar_high >= target_p:
                     exit_price = target_p
                     exit_reason = "TARGET"
+                # F. Protection floor breach
+                elif floor_p is not None and bar_low <= floor_p:
+                    if config.gap_execution and bar_open <= floor_p:
+                        exit_price = bar_open
+                    else:
+                        exit_price = floor_p
+                    exit_reason = "PROTECTION_FLOOR"
 
             elif side == "SHORT":
                 # A. Gap up through stop at Open
@@ -749,8 +804,15 @@ def run_intraday_backtest(
                 elif bar_low <= target_p:
                     exit_price = target_p
                     exit_reason = "TARGET"
+                # F. Protection floor breach
+                elif floor_p is not None and bar_high >= floor_p:
+                    if config.gap_execution and bar_open >= floor_p:
+                        exit_price = bar_open
+                    else:
+                        exit_price = floor_p
+                    exit_reason = "PROTECTION_FLOOR"
 
-            # F. End of Day Square-Off if neither stop nor target hit
+            # G. End of Day Square-Off if neither stop, target, nor floor hit
             if (
                 exit_price is None
                 and config.enforce_eod_square_off
@@ -771,6 +833,7 @@ def run_intraday_backtest(
                     brokerage=config.brokerage_per_trade,
                     slippage_rate=config.slippage_rate,
                     statutory_fee_rate=config.statutory_fee_rate,
+                    transaction_cost_rate=config.transaction_cost_rate,
                     cost_config=config.cost_config,
                     exit_reason=exit_reason,
                     capital_before=position["capital_before"],
@@ -792,12 +855,35 @@ def run_intraday_backtest(
                         f"BANKRUPTCY: Capital dropped to {capital:.2f} at {current_time}"
                     )
                     break
+
+                # Check protection floor breach
+                if effective_floor is not None and capital <= effective_floor:
+                    bankruptcy_reason = (
+                        f"PROTECTION_FLOOR: Capital dropped to {capital:.2f} at {current_time} "
+                        f"(protection floor: {effective_floor:.2f})"
+                    )
+                    break
                 continue
 
         # ----------------------------------------------------
         # 3. OPEN NEW POSITION
         # ----------------------------------------------------
-        if position is None and capital > 0:
+        if position is None:
+            if capital <= 0:
+                if bankruptcy_reason is None:
+                    bankruptcy_reason = (
+                        f"BANKRUPTCY: Capital dropped to {capital:.2f} at {current_time}"
+                    )
+                break
+
+            if effective_floor is not None and capital <= effective_floor:
+                if bankruptcy_reason is None:
+                    bankruptcy_reason = (
+                        f"PROTECTION_FLOOR: Capital dropped to {capital:.2f} at {current_time} "
+                        f"(protection floor: {effective_floor:.2f})"
+                    )
+                break
+
             # Do not enter at or after session end time
             if config.enforce_eod_square_off and current_time.time() >= session_end_t:
                 continue
@@ -845,6 +931,8 @@ def run_intraday_backtest(
 
             risk_qty = int(risk_amount / stop_dist)
             max_notional = capital * config.max_leverage
+            if config.max_exposure is not None:
+                max_notional = min(max_notional, config.max_exposure)
             max_allowed_qty = int(max_notional / entry_p)
 
             final_qty = min(risk_qty, max_allowed_qty)
@@ -890,6 +978,7 @@ def run_intraday_backtest(
             brokerage=config.brokerage_per_trade,
             slippage_rate=config.slippage_rate,
             statutory_fee_rate=config.statutory_fee_rate,
+            transaction_cost_rate=config.transaction_cost_rate,
             cost_config=config.cost_config,
             exit_reason="EOD",
             capital_before=position["capital_before"],
@@ -909,6 +998,9 @@ def run_intraday_backtest(
         initial_capital=config.initial_capital,
         max_drawdown_pct=portfolio.max_drawdown,
     )
+
+    if bankruptcy_reason is not None:
+        portfolio.is_bankrupt = True
 
     if config.cost_config is not None:
         cost_model_info = {

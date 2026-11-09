@@ -45,3 +45,4 @@ Copy-Item -Force "$BackupDir\universe_registry.json" "data\"
 cp -r "$BACKUP_DIR/paper_trading/"* data/paper_trading/
 cp "$BACKUP_DIR/universe_registry.json" data/
 ```
+

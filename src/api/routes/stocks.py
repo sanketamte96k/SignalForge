@@ -1,11 +1,14 @@
-﻿from datetime import datetime
+from datetime import datetime
 from pathlib import Path
 import tempfile
+import pandas as pd
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
 from src.api.models import (
     StockAddRequest,
+    StockChartCandle,
+    StockChartResponse,
     StockDataReadinessResponse,
     StockImportResponse,
     StockResponse,
@@ -14,8 +17,11 @@ from src.api.models import (
     StockSearchResponse,
     StockValidationResponse,
 )
+from src.core.security import validate_symbol
+from src.data.resampler import resample_ohlcv
 from src.data.stock_importer import StockDataImporter
 from src.data.stock_provider import StockDataProvider
+from src.indicators.indicators import calculate_rsi
 from src.scanner.engine import StockScannerEngine
 from src.universe.manager import UniverseManager
 from src.validation.stock_service import StockValidationService
@@ -271,6 +277,135 @@ def scan_stocks() -> StockScannerResponse:
         sell_count=sell_count,
         no_trade_count=no_trade_count,
         items=items,
+    )
+
+
+SUPPORTED_CHART_TIMEFRAMES = {"1m", "5m", "10m", "15m", "30m"}
+MAX_CHART_CANDLES = 500
+
+
+@router.get(
+    "/{symbol}/chart",
+    response_model=StockChartResponse,
+)
+def get_stock_chart(
+    symbol: str,
+    timeframe: str = Query("5m"),
+    limit: int = Query(200, ge=1, le=MAX_CHART_CANDLES),
+) -> StockChartResponse:
+    """Return real stock OHLCV candles plus backend RSI(14)."""
+    norm_symbol = symbol.strip().upper()
+    if not norm_symbol:
+        raise HTTPException(
+            status_code=400,
+            detail="Symbol cannot be empty.",
+        )
+
+    timeframe_val = (
+        str(timeframe.default)
+        if hasattr(timeframe, "default") and isinstance(timeframe.default, str)
+        else str(timeframe)
+    )
+    limit_val = (
+        int(limit.default)
+        if hasattr(limit, "default") and isinstance(limit.default, int)
+        else int(limit)
+    )
+
+    if norm_symbol in {"NIFTY 50", "NIFTY", "^NSEI"}:
+        raise HTTPException(
+            status_code=400,
+            detail="NIFTY 50 is an index. Use /api/nifty/chart for index candles.",
+        )
+
+    try:
+        validate_symbol(norm_symbol)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid symbol '{symbol}': {exc}",
+        ) from exc
+
+    if timeframe_val not in SUPPORTED_CHART_TIMEFRAMES:
+        supported = ", ".join(sorted(SUPPORTED_CHART_TIMEFRAMES))
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Unsupported chart timeframe: '{timeframe_val}'. "
+                f"Supported: {supported}."
+            ),
+        )
+
+    provider = StockDataProvider()
+    path = provider.local_path(norm_symbol)
+    if not path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Historical data not available for symbol '{norm_symbol}'.",
+        )
+
+    try:
+        data = provider.load(norm_symbol)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unable to load market data for '{norm_symbol}': {exc}",
+        ) from exc
+
+    if data.empty:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Market data for '{norm_symbol}' is empty.",
+        )
+
+    if timeframe_val == "1m":
+        chart_data = data.copy()
+    else:
+        try:
+            chart_data = resample_ohlcv(data, timeframe_val)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=str(exc),
+            ) from exc
+
+    if chart_data.empty:
+        raise HTTPException(
+            status_code=503,
+            detail=f"No complete {norm_symbol} candles available for {timeframe_val}.",
+        )
+
+    rsi_series = calculate_rsi(
+        chart_data["close"],
+        period=14,
+    )
+
+    display_data = chart_data.tail(limit_val).copy()
+    display_rsi = rsi_series.loc[display_data.index]
+
+    candles: list[StockChartCandle] = []
+    for timestamp, row in display_data.iterrows():
+        rsi_value = display_rsi.loc[timestamp]
+        candles.append(
+            StockChartCandle(
+                timestamp=pd.Timestamp(timestamp).to_pydatetime(),
+                open=float(row["open"]),
+                high=float(row["high"]),
+                low=float(row["low"]),
+                close=float(row["close"]),
+                volume=float(row["volume"]),
+                rsi14=(
+                    round(float(rsi_value), 4)
+                    if pd.notna(rsi_value)
+                    else None
+                ),
+            )
+        )
+
+    return StockChartResponse(
+        symbol=norm_symbol,
+        timeframe=timeframe_val,
+        candles=candles,
     )
 
 

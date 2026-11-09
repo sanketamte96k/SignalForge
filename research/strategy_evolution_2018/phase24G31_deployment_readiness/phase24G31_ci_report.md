@@ -59,3 +59,4 @@ To handle this cleanly without inventing fake production data or committing larg
 | `npm install` | Ubuntu 22.04 | ~12s | Installs React 19, Vite, Lightweight Charts |
 | `npm test` | Ubuntu 22.04 | ~1s | Passes all 15 suites (147 tests) |
 | `npm run build` | Ubuntu 22.04 | ~1s | Generates optimized production assets in `frontend/dist` |
+

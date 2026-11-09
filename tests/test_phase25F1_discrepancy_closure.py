@@ -238,3 +238,4 @@ def test_official_closure_verdict():
 
     doc = (DELIVERABLES_DIR / "phase25F1_discrepancy_resolution.md").read_text(encoding="utf-8")
     assert "**`ALL_DISCREPANCIES_RESOLVED`**" in doc
+

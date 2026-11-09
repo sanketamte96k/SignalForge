@@ -99,3 +99,4 @@ If genuine NIFTY Futures data is acquired in future phases, the following archit
 Because zero contract-level datasets exist on disk, futures rollover cannot be simulated or backtested.
 
 The rollover feasibility verdict is officially certified as **`ROLLOVER_INFEASIBLE_NO_CONTRACT_DATA`**.
+

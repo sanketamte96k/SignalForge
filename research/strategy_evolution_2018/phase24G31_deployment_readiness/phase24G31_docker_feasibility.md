@@ -83,3 +83,4 @@ docker compose down
 
 ### Verdict:
 Docker support is verified as feasible, self-contained, and valuable for developers on non-Windows workstations who prefer containerized isolation without installing local Node/Python tooling.
+

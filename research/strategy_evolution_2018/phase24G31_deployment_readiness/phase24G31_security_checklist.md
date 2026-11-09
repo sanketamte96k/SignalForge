@@ -55,3 +55,4 @@ app.add_middleware(
 ```
 - Completely excludes wildcard `*` origins.
 - Restricts origin access strictly to the local developer machine.
+

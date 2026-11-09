@@ -195,3 +195,4 @@ def test_combined_portfolio_results_integrity():
     assert total_sig == acc + rej, f"Signals sum mismatch: {total_sig} != {acc} + {rej}"
     assert rej > 0, "Shared portfolio must exhibit trade rejections due to capacity limits"
     assert port["rejection_rate_pct"] > 50.0, "Expected significant rejection rate due to concurrency"
+

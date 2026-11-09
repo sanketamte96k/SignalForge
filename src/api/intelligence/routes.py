@@ -12,6 +12,8 @@ from typing import Dict, List, Optional
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 
+from src.core.security import validate_symbol
+from src.data.stock_provider import StockDataProvider
 from src.intelligence.models import (
     SymbolIntelligence,
     MarketOverview,
@@ -37,38 +39,61 @@ router = APIRouter(
     tags=["Intelligence"],
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-CLEAN_DATA_DIR = PROJECT_ROOT / "research" / "clean_data_2018"
-DATA_DIR = PROJECT_ROOT / "data"
-
-DEFAULT_SYMBOLS = ["RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK"]
+_stock_provider = StockDataProvider()
+DEFAULT_SYMBOLS = ["RELIANCE", "INFY", "ICICIBANK", "ADANIENT", "ADANIPORTS"]
 _config = IntelligenceConfig()
 
 
 def _load_symbol_dataframe(symbol: str, max_bars: int = 300) -> pd.DataFrame:
     """
-    Loads latest OHLCV data for a given symbol.
-    Checks clean_data_2018 first, then data/.
+    Loads latest OHLCV market data for a given equity symbol from canonical historical storage.
+    Validates symbol format and safe-path invariants.
     """
-    clean_path = CLEAN_DATA_DIR / f"{symbol.upper()}_2018.csv"
-    if clean_path.exists():
-        df = pd.read_csv(clean_path, index_col=0, parse_dates=True)
-        if len(df) > max_bars:
-            df = df.tail(max_bars).copy()
-        return df
+    norm_symbol = symbol.strip().upper()
+    if not norm_symbol:
+        raise HTTPException(
+            status_code=400,
+            detail="Symbol cannot be empty.",
+        )
 
-    # Fallback to data/{symbol}.parquet or csv
-    parquet_path = DATA_DIR / f"{symbol.upper()}.parquet"
-    if parquet_path.exists():
-        df = pd.read_parquet(parquet_path)
-        if not isinstance(df.index, pd.DatetimeIndex) and "timestamp" in df.columns:
-            df["timestamp"] = pd.to_datetime(df["timestamp"])
-            df.set_index("timestamp", inplace=True)
-        if len(df) > max_bars:
-            df = df.tail(max_bars).copy()
-        return df
+    if norm_symbol in {"NIFTY 50", "NIFTY", "^NSEI"}:
+        raise HTTPException(
+            status_code=400,
+            detail="NIFTY 50 is an index. Market Intelligence operates on equity symbols.",
+        )
 
-    raise HTTPException(status_code=404, detail=f"No data available for symbol '{symbol}'")
+    try:
+        validate_symbol(norm_symbol)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid symbol '{symbol}': {exc}",
+        ) from exc
+
+    path = _stock_provider.local_path(norm_symbol)
+    if not path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No market data available for symbol '{norm_symbol}'",
+        )
+
+    try:
+        df = _stock_provider.load(norm_symbol)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unable to load market data for '{norm_symbol}': {exc}",
+        ) from exc
+
+    if df.empty:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Market data for '{norm_symbol}' is empty.",
+        )
+
+    if len(df) > max_bars:
+        return df.tail(max_bars).copy()
+    return df.copy()
 
 
 @router.get("/overview", response_model=IntelligenceOverviewResponse)
@@ -109,6 +134,12 @@ def list_scanned_opportunities(
     """
     Returns all scanned universe symbols ranked by opportunity and tradeability.
     """
+    min_opp_val = (
+        float(min_opportunity.default)
+        if hasattr(min_opportunity, "default") and isinstance(min_opportunity.default, (int, float))
+        else float(min_opportunity)
+    )
+
     results: List[SymbolIntelligence] = []
     latest_ts = str(pd.Timestamp.now())
 
@@ -123,7 +154,7 @@ def list_scanned_opportunities(
                 continue
             if bias and intel.direction != bias:
                 continue
-            if intel.opportunity_score < min_opportunity:
+            if intel.opportunity_score < min_opp_val:
                 continue
 
             results.append(intel)
@@ -175,12 +206,23 @@ def get_symbol_intelligence_history(
     Returns a causal historical progression of intelligence evaluations over recent bars.
     Evaluates strictly with historical slices up to each evaluation timestamp (zero lookahead).
     """
-    df = _load_symbol_dataframe(symbol, max_bars=bars + 50)
+    bars_val = (
+        int(bars.default)
+        if hasattr(bars, "default") and isinstance(bars.default, int)
+        else int(bars)
+    )
+    step_val = (
+        int(step.default)
+        if hasattr(step, "default") and isinstance(step.default, int)
+        else int(step)
+    )
+
+    df = _load_symbol_dataframe(symbol, max_bars=bars_val + 50)
     history_points: List[IntelligenceHistoryPoint] = []
 
     # Slide window backwards
     total_len = len(df)
-    indices = range(max(50, total_len - bars), total_len, step)
+    indices = range(max(50, total_len - bars_val), total_len, step_val)
 
     for idx in indices:
         slice_df = df.iloc[:idx].copy()

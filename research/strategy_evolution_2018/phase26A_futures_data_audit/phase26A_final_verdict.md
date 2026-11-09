@@ -71,3 +71,4 @@ The governance framework mandates selecting from four explicit verdict classific
    As established in Phase 25A, NIFTY Options (CE and PE) also lack historical contract-level strike data and remain gated.
 3. **Recommended Immediate Focus:**
    Focus research on the verified 34-stock historical cash equity universe (Phase 25D/25E/25F), investigating structural improvements such as higher-timeframe regime filters (Daily/Hourly), volume profile distribution, or alternative non-momentum alpha hypotheses.
+

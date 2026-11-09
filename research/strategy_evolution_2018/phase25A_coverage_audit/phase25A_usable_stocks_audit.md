@@ -60,3 +60,4 @@ The following 34 stocks possess continuous 1-minute historical datasets on disk 
    The bars for calendar year 2020 (~94,000 bars per stock) remain strictly off-limits under the `CONTAMINATED / ZERO ACCESS` quarantine protocol.
 3. **Out-of-Sample (2021–2025) Boundary:**
    Zero bars exist locally for 2021–2025 across all 34 stocks under the ₹0 budget.
+

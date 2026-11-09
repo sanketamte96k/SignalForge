@@ -94,3 +94,4 @@ The 50 constituents represent 14 distinct macroeconomic sectors of the Indian ec
 | **Services (Transportation & Logistics)**| 2 | ADANIPORTS, INDIGO |
 | **Capital Goods** | 1 | BEL |
 | **Construction** | 1 | LT |
+

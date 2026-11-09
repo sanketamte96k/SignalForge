@@ -237,3 +237,4 @@ def test_distressed_constituents_audit():
     assert dist["identified_count"] == 7
     assert dist["with_data_count"] == 3  # IBULHSGFIN, IDEA, BHEL
     assert dist["missing_data_count"] == 4  # YESBANK, ZEEL, VEDL, INFRATEL
+

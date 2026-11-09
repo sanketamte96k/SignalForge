@@ -58,3 +58,4 @@ This runs all 15 test suites:
 - `test/backtest_analytics.test.js`
 
 Expected output: `15 suites passed, 147 tests passed, 0 failed`.
+

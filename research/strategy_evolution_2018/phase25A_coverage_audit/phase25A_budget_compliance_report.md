@@ -40,3 +40,4 @@ During Phase 25A execution:
 ## 3. Financial Certification
 
 I certify that Phase 25A operated entirely offline within local development bounds, using legitimately available pre-existing archives, incurring **₹0.00** in direct or indirect costs.
+

@@ -122,3 +122,4 @@ The capital required to trade options depends fundamentally on directional posit
 **Final Execution Verdict:** **`EXECUTION_INFEASIBLE_NO_DATA`**
 
 Until clean, verified contract-level options minute data and bid-ask quotes are procured under strict ₹0 budget governance, no options execution or strategy backtesting is permitted.
+

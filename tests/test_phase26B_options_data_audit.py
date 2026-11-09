@@ -216,3 +216,4 @@ def test_options_final_verdict_document_verdict():
     assert "BLOCKED_NO_DATA" in content
     assert "STRICTLY_ON_HOLD" in content
     assert "₹0" in content or "0.00" in content
+

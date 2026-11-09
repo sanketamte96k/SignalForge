@@ -57,3 +57,4 @@ The forensic findings are conclusive:
 * **Options Research Status:** **HALTED (`BLOCKED_NO_DATA`)**.
 * **Permitted Action:** Under the strict ₹0 budget, investigate whether genuinely free, open, and legally redistributable NSE options datasets (with full contract symbology, strikes, expiries, and OHLCV) exist from authorized academic repositories or verified open-access archives before revisiting options modeling.
 * **Prohibited Action:** Do NOT attempt to run backtests, paper trading, or live execution on options until verified historical contract data is formally ingested and audited.
+

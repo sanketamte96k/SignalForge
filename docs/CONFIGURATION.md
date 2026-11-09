@@ -31,3 +31,4 @@ cp .env.example .env
 
 > [!CAUTION]
 > The `.env` file is excluded from version control in `.gitignore`. Never commit API keys, personal credentials, or live passwords to git.
+

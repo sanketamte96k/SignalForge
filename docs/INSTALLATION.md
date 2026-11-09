@@ -79,3 +79,4 @@ if (!(Test-Path "data\paper_trading\interactive_trades.json")) { "[]" | Out-File
 # Linux / macOS
 [ -f data/paper_trading/interactive_trades.json ] || echo "[]" > data/paper_trading/interactive_trades.json
 ```
+

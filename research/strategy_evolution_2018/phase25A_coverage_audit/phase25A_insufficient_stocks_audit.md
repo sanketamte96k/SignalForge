@@ -42,3 +42,4 @@ The following 16 constituent equities of the NIFTY 50 index have **zero 1-minute
    `temp_nse_data/Live NSE Tick Data` contains partial tick logs for TCS covering April–June 2021 (51 sessions). Tick feeds do not represent clean, continuous, multi-year 1-minute OHLCV series and cannot be spliced without survivorship bias.
 4. **Mandatory Block Verdict:**
    All 16 equities remain strictly **BLOCKED** from backtesting until authorized multi-year 1-minute datasets are acquired under an approved budget.
+

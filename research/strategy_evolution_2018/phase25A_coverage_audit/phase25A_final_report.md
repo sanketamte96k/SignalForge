@@ -111,3 +111,4 @@ A dedicated automated test suite (`tests/test_phase25A_coverage_audit.py`) was i
 | `research/.../phase25A_final_report.md` | This final executive summary audit report |
 | `research/.../phase25A_manifest.json` | Checksums for all Phase 25A markdown reports |
 | `tests/test_phase25A_coverage_audit.py` | Automated regression test suite (13 tests) |
+

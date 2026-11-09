@@ -70,3 +70,4 @@ http://localhost:5173/
    - View interactive SVG Equity Curve and Underwater Drawdown Curve.
    - Inspect the **Trade History** tab with interactive filtering (`ALL`, `WINNERS`, `LOSERS`).
 9. Click **📑 TEARSHEET** to open the standalone self-contained HTML research tearsheet in a new tab.
+

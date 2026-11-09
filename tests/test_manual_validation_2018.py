@@ -41,7 +41,6 @@ from src.backtest.portfolio import Portfolio
 from src.backtesting.data_loader import BacktestDataLoader
 from scripts.run_backtest_2018 import (
     calculate_indicators,
-    generate_signal,
     INITIAL_CAPITAL,
     RISK_PER_TRADE,
     STOP_ATR,

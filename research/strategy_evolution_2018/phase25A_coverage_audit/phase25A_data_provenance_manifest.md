@@ -58,3 +58,4 @@ flowchart TD
 - **Coverage Window:** 2017-01-02 to 2021-01-01. Collection ceased on 2021-01-01.
 - **Licensing:** Public domain / GNU General Public License v3.0 (`temp_nse_data/LICENSE`).
 - **Completeness:** Contains 34 of 50 current NIFTY constituents; 16 constituents were omitted or listed after 2020.
+

@@ -115,3 +115,4 @@ Low statistical power only hinders research when the observed sample mean is pos
 - **Net Expectancy:** An average loss of **-₹175.46 per trade** in portfolio deployment.
 
 Because the empirical point estimates lie deeply in the negative loss territory rather than near zero, the strategy is rejected not because of a lack of statistical power, but because of **demonstrated negative alpha after friction**.
+

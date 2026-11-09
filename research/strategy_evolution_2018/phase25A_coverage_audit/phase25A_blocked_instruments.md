@@ -52,3 +52,4 @@ In addition to instrument-specific deficits, two major temporal blocks apply to 
    - Applicable to: All 50 equities, NIFTY futures, and NIFTY options.
    - Status: **ZERO DATA ON DISK**.
    - Blocker: The upstream free archive terminated collection on 2021-01-01. Free public APIs (Yahoo Finance, Alpha Vantage) enforce hard lookback cutoffs (60 days max for 1m data) and do not retain 2021–2024 intraday bars. Zero commercial data can be acquired without explicit user authorization and budget allocation.
+

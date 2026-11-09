@@ -69,3 +69,4 @@ If data directories are fresh:
 mkdir -p data/historical/stocks data/paper_trading data/universe
 ```
 The active paper trading ledger defaults to an empty JSON array (`[]`) if not present.
+

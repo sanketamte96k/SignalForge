@@ -102,3 +102,4 @@ Of the 50 current NIFTY 50 constituents:
   - Daily candles will **NOT** be substituted for 1-minute candles.
   - Missing candles will **NOT** be interpolated or fabricated.
   - All 16 instruments are classified as **BLOCKED_NO_DATA**.
+

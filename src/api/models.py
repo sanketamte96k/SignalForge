@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from datetime import datetime
 from typing import Any
 
@@ -163,6 +164,30 @@ class NiftyChartResponse(BaseModel):
     symbol: str
     timeframe: str
     candles: list[NiftyChartCandle]
+
+
+class StockChartCandle(BaseModel):
+    """One real stock chart candle with backend RSI(14)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    timestamp: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+    rsi14: float | None = None
+
+
+class StockChartResponse(BaseModel):
+    """Historical stock chart data for a selected timeframe."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str
+    timeframe: str
+    candles: list[StockChartCandle]
 
 
 class StockResponse(BaseModel):
@@ -780,7 +805,7 @@ class BacktestRunRequest(BaseModel):
     symbol: str = "NIFTY 50"
     start_date: str | None = None
     end_date: str | None = None
-    initial_capital: float = 100_000.0
+    initial_capital: float = 10_000.0
     quantity: int = 1
     transaction_cost_rate: float = 0.0001
     cost_profile: str = "DISCOUNT_BROKER_REALISTIC"
@@ -796,6 +821,16 @@ class BacktestRunRequest(BaseModel):
     minimum_atr: float = 0.0
     minimum_long_rsi: float = 60.0
     use_rvol: bool = False
+
+    # Production Intraday Risk Controls (Phase 27C.2)
+    stop_loss_atr: float = 1.5
+    take_profit_atr: float = 3.0
+    session_end_time: str = "15:15"
+    risk_per_trade_pct: float = 0.01
+    max_leverage: float = 5.0
+    max_exposure: float | None = None
+    capital_protection_floor: float | None = None
+    overall_loss_limit: float | None = None
 
     @field_validator("symbol")
     @classmethod
@@ -840,6 +875,63 @@ class BacktestRunRequest(BaseModel):
     def validate_execution_model_field(cls, v: str) -> str:
         if v not in {"next_open", "same_close"}:
             raise ValueError("execution_model must be 'next_open' or 'same_close'.")
+        return v
+
+    @field_validator("stop_loss_atr")
+    @classmethod
+    def validate_stop_loss_atr_field(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("stop_loss_atr must be greater than zero.")
+        return v
+
+    @field_validator("take_profit_atr")
+    @classmethod
+    def validate_take_profit_atr_field(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("take_profit_atr must be greater than zero.")
+        return v
+
+    @field_validator("session_end_time")
+    @classmethod
+    def validate_session_end_time_field(cls, v: str) -> str:
+        s = v.strip()
+        if not re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d$", s):
+            raise ValueError(f"session_end_time must be in 'HH:MM' 24-hour format, got '{v}'.")
+        return s
+
+    @field_validator("risk_per_trade_pct")
+    @classmethod
+    def validate_risk_per_trade_pct_field(cls, v: float) -> float:
+        if v <= 0 or v > 1.0:
+            raise ValueError("risk_per_trade_pct must be in range (0.0, 1.0].")
+        return v
+
+    @field_validator("max_leverage")
+    @classmethod
+    def validate_max_leverage_field(cls, v: float) -> float:
+        if v < 1.0:
+            raise ValueError("max_leverage must be at least 1.0.")
+        return v
+
+    @field_validator("capital_protection_floor")
+    @classmethod
+    def validate_capital_protection_floor_field(cls, v: float | None) -> float | None:
+        if v is not None and v < 0:
+            raise ValueError("capital_protection_floor cannot be negative.")
+        return v
+
+    @field_validator("overall_loss_limit")
+    @classmethod
+    def validate_overall_loss_limit_field(cls, v: float | None) -> float | None:
+        if v is not None and v <= 0:
+            raise ValueError("overall_loss_limit must be greater than zero.")
+        return v
+
+    @field_validator("max_exposure")
+    @classmethod
+    def validate_max_exposure_field(cls, v: float | None) -> float | None:
+        if v is not None and v <= 0:
+            raise ValueError("max_exposure must be greater than zero.")
         return v
 
 
@@ -921,6 +1013,9 @@ class BacktestJobResultResponse(BaseModel):
     metrics: BacktestMetricsItem
     portfolio: dict[str, Any]
     trades: list[BacktestTradeItem]
+    bankruptcy_reason: str | None = None
+    risk_config: dict[str, Any] | None = None
+    cost_model: dict[str, Any] | None = None
 
 
 

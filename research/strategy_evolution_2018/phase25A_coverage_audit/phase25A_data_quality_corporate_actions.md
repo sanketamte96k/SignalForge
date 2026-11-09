@@ -51,3 +51,4 @@ Forensic inspection of the upstream Alice Blue / Kaggle minute dataset reveals t
    Annual 60-minute special evening sessions (e.g. 18:15 to 19:15 IST) are present in the datasets. The pipeline correctly identifies these as authenticated special sessions rather than invalid data gaps.
 3. **Quarantine Segregation:**
    For the 5 clean stocks, the SignalForge pipeline segregated between 138 and 141 individual minute anomalies (e.g. post-market auction prints, exchange settlement ticks) into `data/historical/quarantine/`, preserving the pristine integrity of the primary backtest files.
+
