@@ -83,6 +83,60 @@ CONSERVATIVE_STRESS_CONFIG = IntradayCostConfig(
     is_illustrative=True,
 )
 
+ZERO_COST_CONFIG = IntradayCostConfig(
+    name="ZERO_COST",
+    description="Theoretical zero-friction model (0 brokerage, 0 taxes, 0 slippage, 0 spread)",
+    brokerage_rate_pct=0.0,
+    brokerage_max_per_leg_inr=0.0,
+    stt_rate_sell_pct=0.0,
+    exchange_charge_rate_pct=0.0,
+    sebi_charge_rate_pct=0.0,
+    stamp_duty_rate_buy_pct=0.0,
+    gst_rate_pct=0.0,
+    slippage_rate_pct=0.0,
+    spread_rate_pct=0.0,
+    is_illustrative=False,
+)
+
+DEFAULT_EQUITY_INTRADAY_COST_CONFIG = DISCOUNT_BROKER_REALISTIC_CONFIG
+
+COST_PROFILES: dict[str, IntradayCostConfig] = {
+    "DISCOUNT_BROKER_REALISTIC": DISCOUNT_BROKER_REALISTIC_CONFIG,
+    "STATUTORY_ONLY": STATUTORY_ONLY_CONFIG,
+    "CONSERVATIVE_STRESS": CONSERVATIVE_STRESS_CONFIG,
+    "ZERO_COST": ZERO_COST_CONFIG,
+}
+
+
+def get_cost_config(name: str) -> IntradayCostConfig:
+    """Retrieve an approved canonical transaction cost configuration by profile name."""
+    norm = str(name).strip().upper()
+    if norm not in COST_PROFILES:
+        raise ValueError(
+            f"Unsupported cost profile '{name}'. "
+            f"Supported profiles: {sorted(COST_PROFILES.keys())}"
+        )
+    return COST_PROFILES[norm]
+
+
+@dataclass(frozen=True)
+class LegCostBreakdown:
+    """Cost accounting for a single executed leg (BUY or SELL)."""
+    leg: str
+    price: float
+    quantity: int
+    turnover: float
+    brokerage: float
+    stt: float
+    exchange_charges: float
+    sebi_charges: float
+    stamp_duty: float
+    gst: float
+    slippage: float
+    spread_cost: float
+    statutory_charges: float
+    total_costs: float
+
 
 @dataclass(frozen=True)
 class TradeCostBreakdown:
@@ -104,6 +158,109 @@ class TradeCostBreakdown:
     is_gross_win: bool
     is_net_win: bool
     is_cost_flipped: bool  # True if gross_pnl > 0 but net_pnl <= 0
+    statutory_charges: float = 0.0
+
+
+def calculate_leg_transaction_costs(
+    leg: Literal["BUY", "SELL"] | str,
+    price: float,
+    quantity: int,
+    config: Optional[IntradayCostConfig] = None,
+) -> LegCostBreakdown:
+    """
+    Calculate comprehensive transaction costs for a single execution leg (BUY or SELL).
+    
+    Formula Reference:
+      - Turnover = price * quantity
+      - Brokerage = min(cap, turnover * rate)
+      - STT = turnover * 0.025% (SELL leg only; 0 on BUY leg)
+      - Exchange Charges = turnover * 0.00325%
+      - SEBI Charges = turnover * 0.0001%
+      - Stamp Duty = turnover * 0.003% (BUY leg only; 0 on SELL leg)
+      - GST = 18% * (Brokerage + Exchange Charges + SEBI Charges)
+      - Slippage = turnover * slippage_rate
+      - Spread Cost = turnover * spread_rate
+    """
+    if config is None:
+        config = DISCOUNT_BROKER_REALISTIC_CONFIG
+
+    leg_norm = str(leg).strip().upper()
+    if leg_norm not in {"BUY", "SELL"}:
+        raise ValueError(f"Unsupported leg '{leg}'. Expected 'BUY' or 'SELL'.")
+
+    if not isinstance(quantity, (int, float)) or quantity <= 0:
+        raise ValueError(f"quantity must be greater than zero, got {quantity}")
+    qty = int(quantity)
+
+    if not isinstance(price, (int, float)) or price <= 0:
+        raise ValueError(f"price must be greater than zero, got {price}")
+    p = float(price)
+
+    turnover = round(p * qty, 2)
+
+    # 1. Brokerage on leg
+    if config.brokerage_rate_pct > 0.0:
+        brokerage = min(config.brokerage_max_per_leg_inr, turnover * config.brokerage_rate_pct)
+    else:
+        brokerage = 0.0
+
+    # 2. STT: on SELL leg only
+    stt = turnover * config.stt_rate_sell_pct if leg_norm == "SELL" else 0.0
+
+    # 3. NSE Exchange Charges
+    exchange_charges = turnover * config.exchange_charge_rate_pct
+
+    # 4. SEBI Turnover Charges
+    sebi_charges = turnover * config.sebi_charge_rate_pct
+
+    # 5. Stamp Duty: on BUY leg only
+    stamp_duty = turnover * config.stamp_duty_rate_buy_pct if leg_norm == "BUY" else 0.0
+
+    # 6. GST: 18% on (Brokerage + Exchange Charges + SEBI Charges)
+    taxable_services = brokerage + exchange_charges + sebi_charges
+    gst = taxable_services * config.gst_rate_pct
+
+    # 7. Slippage & Spread
+    slippage = turnover * config.slippage_rate_pct
+    spread_cost = turnover * config.spread_rate_pct
+
+    statutory_charges = stt + exchange_charges + sebi_charges + stamp_duty + gst
+    total_costs = brokerage + statutory_charges + slippage + spread_cost
+
+    return LegCostBreakdown(
+        leg=leg_norm,
+        price=p,
+        quantity=qty,
+        turnover=turnover,
+        brokerage=round(brokerage, 2),
+        stt=round(stt, 2),
+        exchange_charges=round(exchange_charges, 2),
+        sebi_charges=round(sebi_charges, 2),
+        stamp_duty=round(stamp_duty, 2),
+        gst=round(gst, 2),
+        slippage=round(slippage, 2),
+        spread_cost=round(spread_cost, 2),
+        statutory_charges=round(statutory_charges, 2),
+        total_costs=round(total_costs, 2),
+    )
+
+
+def calculate_buy_side_costs(
+    price: float,
+    quantity: int,
+    config: Optional[IntradayCostConfig] = None,
+) -> LegCostBreakdown:
+    """Calculate buy-side transaction costs for Indian equity intraday."""
+    return calculate_leg_transaction_costs("BUY", price=price, quantity=quantity, config=config)
+
+
+def calculate_sell_side_costs(
+    price: float,
+    quantity: int,
+    config: Optional[IntradayCostConfig] = None,
+) -> LegCostBreakdown:
+    """Calculate sell-side transaction costs for Indian equity intraday."""
+    return calculate_leg_transaction_costs("SELL", price=price, quantity=quantity, config=config)
 
 
 def calculate_trade_transaction_costs(
@@ -132,8 +289,23 @@ def calculate_trade_transaction_costs(
     if config is None:
         config = DISCOUNT_BROKER_REALISTIC_CONFIG
 
-    side_norm = side.upper()
-    qty = max(1, int(quantity))
+    if not isinstance(quantity, (int, float)) or quantity <= 0:
+        raise ValueError(f"quantity must be greater than zero, got {quantity}")
+    qty = int(quantity)
+
+    if not isinstance(entry_price, (int, float)) or entry_price <= 0:
+        raise ValueError(f"entry_price must be greater than zero, got {entry_price}")
+    if not isinstance(exit_price, (int, float)) or exit_price <= 0:
+        raise ValueError(f"exit_price must be greater than zero, got {exit_price}")
+
+    side_raw = str(side).strip().upper()
+    if side_raw in {"LONG", "BUY"}:
+        side_norm = "LONG"
+    elif side_raw in {"SHORT", "SELL"}:
+        side_norm = "SHORT"
+    else:
+        raise ValueError(f"Unsupported side '{side}'. Expected 'LONG' or 'SHORT'.")
+
     entry_t = round(float(entry_price) * qty, 2)
     exit_t = round(float(exit_price) * qty, 2)
     total_t = round(entry_t + exit_t, 2)
@@ -170,16 +342,29 @@ def calculate_trade_transaction_costs(
     # 8. Spread Cost
     spread_cost = total_t * config.spread_rate_pct
 
-    # Total Costs
-    total_costs = (
-        brokerage
-        + stt
-        + exchange_charges
-        + sebi_charges
-        + stamp_duty
-        + gst
-        + slippage
-        + spread_cost
+    brokerage_rounded = round(brokerage, 2)
+    stt_rounded = round(stt, 2)
+    exchange_charges_rounded = round(exchange_charges, 2)
+    sebi_charges_rounded = round(sebi_charges, 2)
+    stamp_duty_rounded = round(stamp_duty, 2)
+    gst_rounded = round(gst, 2)
+    slippage_rounded = round(slippage, 2)
+    spread_cost_rounded = round(spread_cost, 2)
+
+    statutory_charges_rounded = round(
+        stt_rounded
+        + exchange_charges_rounded
+        + sebi_charges_rounded
+        + stamp_duty_rounded
+        + gst_rounded,
+        2,
+    )
+    total_costs_rounded = round(
+        brokerage_rounded
+        + statutory_charges_rounded
+        + slippage_rounded
+        + spread_cost_rounded,
+        2,
     )
 
     # Gross P&L
@@ -189,7 +374,7 @@ def calculate_trade_transaction_costs(
         gross_pnl = (float(entry_price) - float(exit_price)) * qty
 
     gross_pnl = round(gross_pnl, 2)
-    net_pnl = round(gross_pnl - total_costs, 2)
+    net_pnl = round(gross_pnl - total_costs_rounded, 2)
 
     is_gross_win = gross_pnl > 0.0
     is_net_win = net_pnl > 0.0
@@ -199,20 +384,21 @@ def calculate_trade_transaction_costs(
         turnover=total_t,
         entry_turnover=entry_t,
         exit_turnover=exit_t,
-        brokerage=round(brokerage, 2),
-        stt=round(stt, 2),
-        exchange_charges=round(exchange_charges, 2),
-        sebi_charges=round(sebi_charges, 2),
-        stamp_duty=round(stamp_duty, 2),
-        gst=round(gst, 2),
-        slippage=round(slippage, 2),
-        spread_cost=round(spread_cost, 2),
-        total_costs=round(total_costs, 2),
+        brokerage=brokerage_rounded,
+        stt=stt_rounded,
+        exchange_charges=exchange_charges_rounded,
+        sebi_charges=sebi_charges_rounded,
+        stamp_duty=stamp_duty_rounded,
+        gst=gst_rounded,
+        slippage=slippage_rounded,
+        spread_cost=spread_cost_rounded,
+        total_costs=total_costs_rounded,
         gross_pnl=gross_pnl,
         net_pnl=net_pnl,
         is_gross_win=is_gross_win,
         is_net_win=is_net_win,
         is_cost_flipped=is_cost_flipped,
+        statutory_charges=statutory_charges_rounded,
     )
 
 

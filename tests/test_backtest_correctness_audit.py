@@ -251,6 +251,7 @@ def test_indian_transaction_cost_breakdown_and_separation():
         + breakdown.gst
         + breakdown.stamp_duty
         + breakdown.slippage_cost
+        + breakdown.spread_penalty
     )
     assert abs(breakdown.total_cost - calculated_total) < 0.01
 
@@ -559,7 +560,7 @@ def test_backtest_accounting_reconciliation_invariance():
         assert abs(cb.gross_pnl - expected_gross) < 1e-4
 
         expected_total_cost = (
-            cb.brokerage + cb.stt + cb.exchange_fee + cb.sebi_fee + cb.gst + cb.stamp_duty + cb.slippage_cost
+            cb.brokerage + cb.stt + cb.exchange_fee + cb.sebi_fee + cb.gst + cb.stamp_duty + cb.slippage_cost + cb.spread_penalty
         )
         assert abs(cb.total_cost - expected_total_cost) < 0.001
         assert abs(cb.net_pnl - (cb.gross_pnl - cb.total_cost)) < 1e-4

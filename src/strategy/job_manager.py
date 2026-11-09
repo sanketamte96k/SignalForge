@@ -27,6 +27,11 @@ import numpy as np
 import pandas as pd
 
 from src.backtest.engine import run_backtest
+from src.backtest.indian_market_costs import (
+    COST_PROFILES,
+    DISCOUNT_BROKER_REALISTIC_CONFIG,
+    get_cost_config,
+)
 from src.core.security import validate_safe_path, validate_symbol
 from src.data.downloader import load_market_data
 from src.data.stock_provider import StockDataProvider
@@ -321,8 +326,40 @@ class BacktestJobManager:
             cost_rate = float(params.get("transaction_cost_rate", 0.0001))
             exec_model = str(params.get("execution_model", "next_open"))
 
+            if "cost_profile" in params and params["cost_profile"] is not None:
+                cost_profile_raw = str(params["cost_profile"]).strip().upper()
+            else:
+                # Default across all entry points: canonical realistic model.
+                # Legacy linear mode is never silently activated; it requires explicit cost_profile="LEGACY_LINEAR".
+                cost_profile_raw = "DISCOUNT_BROKER_REALISTIC"
+
             if exec_model not in {"next_open", "same_close"}:
                 raise ValueError(f"Invalid execution_model: '{exec_model}'. Supported: 'next_open', 'same_close'.")
+
+            if cost_profile_raw == "LEGACY_LINEAR":
+                cost_config = None
+                cost_model_meta = {
+                    "mode": "LEGACY_LINEAR",
+                    "transaction_cost_rate": cost_rate,
+                    "description": "Legacy linear turnover multiplier",
+                }
+            else:
+                cost_config = get_cost_config(cost_profile_raw)
+                cost_model_meta = {
+                    "mode": "CANONICAL",
+                    "profile_name": cost_config.name,
+                    "description": cost_config.description,
+                    "brokerage_rate_pct": cost_config.brokerage_rate_pct,
+                    "brokerage_max_per_leg_inr": cost_config.brokerage_max_per_leg_inr,
+                    "stt_rate_sell_pct": cost_config.stt_rate_sell_pct,
+                    "exchange_charge_rate_pct": cost_config.exchange_charge_rate_pct,
+                    "sebi_charge_rate_pct": cost_config.sebi_charge_rate_pct,
+                    "stamp_duty_rate_buy_pct": cost_config.stamp_duty_rate_buy_pct,
+                    "gst_rate_pct": cost_config.gst_rate_pct,
+                    "slippage_rate_pct": cost_config.slippage_rate_pct,
+                    "spread_rate_pct": cost_config.spread_rate_pct,
+                }
+                cost_rate = 0.0
 
             with self._lock:
                 if job.status == JobStatus.CANCELLED:
@@ -336,6 +373,7 @@ class BacktestJobManager:
                 quantity=quantity,
                 transaction_cost_rate=cost_rate,
                 execution_model=exec_model,
+                cost_config=cost_config,
             )
 
             # Checkpoint 5: Check cancellation before formatting & persisting results
@@ -388,6 +426,7 @@ class BacktestJobManager:
                     "total_candles": total_candles,
                 },
                 "execution_model": exec_model,
+                "cost_model": cost_model_meta,
                 "metrics": {
                     "total_trades": metrics.total_trades,
                     "winning_trades": metrics.winning_trades,

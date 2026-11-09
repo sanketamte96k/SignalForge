@@ -2,6 +2,12 @@
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
+
+from src.backtest.indian_market_costs import (
+    IntradayCostConfig,
+    calculate_trade_transaction_costs,
+)
 
 
 class Position(str, Enum):
@@ -111,6 +117,7 @@ def simulate_trade(
     stop_distance: float = 0.0,
     risk_based_quantity: int = 0,
     max_allowed_quantity: int = 0,
+    cost_config: Optional[IntradayCostConfig] = None,
 ) -> Trade:
     """
     Simulate one completed trade.
@@ -218,21 +225,36 @@ def simulate_trade(
 
     total_turnover = entry_value + exit_value
 
-    slippage_cost = total_turnover * slippage_rate
-    statutory_fee_cost = total_turnover * statutory_fee_rate
-    brokerage_cost = float(brokerage)
-    generic_cost = total_turnover * transaction_cost_rate
+    if cost_config is not None:
+        canonical = calculate_trade_transaction_costs(
+            side=position.value,
+            entry_price=entry_price,
+            exit_price=exit_price,
+            quantity=int(quantity),
+            config=cost_config,
+        )
+        gross_pnl = canonical.gross_pnl
+        brokerage_cost = canonical.brokerage
+        statutory_fee_cost = canonical.statutory_charges
+        slippage_cost = round(canonical.slippage + canonical.spread_cost, 4)
+        transaction_cost = canonical.total_costs
+        net_pnl = canonical.net_pnl
+    else:
+        slippage_cost = total_turnover * slippage_rate
+        statutory_fee_cost = total_turnover * statutory_fee_rate
+        brokerage_cost = float(brokerage)
+        generic_cost = total_turnover * transaction_cost_rate
 
-    transaction_cost = (
-        brokerage_cost
-        + slippage_cost
-        + statutory_fee_cost
-        + generic_cost
-    )
+        transaction_cost = (
+            brokerage_cost
+            + slippage_cost
+            + statutory_fee_cost
+            + generic_cost
+        )
 
-    net_pnl = (
-        gross_pnl - transaction_cost
-    )
+        net_pnl = (
+            gross_pnl - transaction_cost
+        )
 
     # --------------------------------------------------------
     # Return percentage

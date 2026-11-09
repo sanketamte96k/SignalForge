@@ -20,6 +20,12 @@ import math
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from src.backtest.indian_market_costs import (
+    DISCOUNT_BROKER_REALISTIC_CONFIG,
+    IntradayCostConfig,
+    calculate_trade_transaction_costs,
+)
+
 
 @dataclass(frozen=True)
 class CostModel:
@@ -42,7 +48,7 @@ class CostModel:
     slippage_bps: float = 1.0  # Default 1.0 bps per leg if entry/exit not specified
     entry_slippage_bps: float | None = None
     exit_slippage_bps: float | None = None
-    spread_penalty_bps: float = 0.0
+    spread_penalty_bps: float = 0.5  # Default 0.5 bps to match DISCOUNT_BROKER_REALISTIC_CONFIG
 
     def __post_init__(self) -> None:
         for field_name in [
@@ -91,6 +97,42 @@ class CostModel:
             entry_slippage_bps=0.0,
             exit_slippage_bps=0.0,
             spread_penalty_bps=0.0,
+        )
+
+    @classmethod
+    def from_intraday_config(cls, config: IntradayCostConfig) -> CostModel:
+        """Create a CostModel matching an IntradayCostConfig specification."""
+        return cls(
+            config_id=config.name,
+            brokerage_per_order=config.brokerage_max_per_leg_inr,
+            brokerage_rate=config.brokerage_rate_pct,
+            use_min_brokerage=True,
+            stt_rate=config.stt_rate_sell_pct,
+            exchange_fee_rate=config.exchange_charge_rate_pct,
+            sebi_fee_rate=config.sebi_charge_rate_pct,
+            gst_rate=config.gst_rate_pct,
+            stamp_duty_rate=config.stamp_duty_rate_buy_pct,
+            slippage_bps=config.slippage_rate_pct * 10000.0,
+            entry_slippage_bps=config.slippage_rate_pct * 10000.0,
+            exit_slippage_bps=config.slippage_rate_pct * 10000.0,
+            spread_penalty_bps=config.spread_rate_pct * 10000.0,
+        )
+
+    def to_intraday_cost_config(self) -> IntradayCostConfig:
+        """Convert this CostModel to the canonical IntradayCostConfig."""
+        return IntradayCostConfig(
+            name=self.config_id,
+            description="Unified paper trading cost configuration",
+            brokerage_rate_pct=self.brokerage_rate,
+            brokerage_max_per_leg_inr=self.brokerage_per_order,
+            stt_rate_sell_pct=self.stt_rate,
+            exchange_charge_rate_pct=self.exchange_fee_rate,
+            sebi_charge_rate_pct=self.sebi_fee_rate,
+            stamp_duty_rate_buy_pct=self.stamp_duty_rate,
+            gst_rate_pct=self.gst_rate,
+            slippage_rate_pct=self.resolved_entry_slippage_bps / 10000.0,
+            spread_rate_pct=self.spread_penalty_bps / 10000.0,
+            is_illustrative=False,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -181,7 +223,8 @@ def calculate_trade_costs(
     cost_model: CostModel | None = None,
 ) -> TradeCostBreakdown:
     """
-    Compute complete deterministic cost, slippage, gross P&L, and net P&L breakdown.
+    Compute complete deterministic cost, slippage, gross P&L, and net P&L breakdown
+    using the canonical Indian Equity Intraday Transaction Cost Engine.
     """
     model = cost_model or CostModel()
 
@@ -196,46 +239,14 @@ def calculate_trade_costs(
     actual_entry = compute_entry_execution_price(entry_signal_price, norm_side, model)
     actual_exit = compute_exit_execution_price(exit_signal_price, norm_side, model)
 
-    # Gross P&L based on unadjusted strategy signal prices
-    if is_long:
-        gross_pnl = (exit_signal_price - entry_signal_price) * quantity
-        buy_turnover = actual_entry * quantity
-        sell_turnover = actual_exit * quantity
-    else:
-        gross_pnl = (entry_signal_price - exit_signal_price) * quantity
-        sell_turnover = actual_entry * quantity
-        buy_turnover = actual_exit * quantity
-
-    total_turnover = buy_turnover + sell_turnover
-
-    # Slippage cost (entry + exit price degradation * quantity)
-    entry_slip_cost = abs(actual_entry - entry_signal_price) * quantity
-    exit_slip_cost = abs(exit_signal_price - actual_exit) * quantity
-    slippage_cost = entry_slip_cost + exit_slip_cost
-
-    # Optional spread penalty on total turnover
-    spread_penalty = total_turnover * (model.spread_penalty_bps / 10000.0)
-
-    # Brokerage per leg (entry order + exit order)
-    if model.use_min_brokerage:
-        entry_brok = min(model.brokerage_per_order, buy_turnover * model.brokerage_rate) if is_long else min(model.brokerage_per_order, sell_turnover * model.brokerage_rate)
-        exit_brok = min(model.brokerage_per_order, sell_turnover * model.brokerage_rate) if is_long else min(model.brokerage_per_order, buy_turnover * model.brokerage_rate)
-    else:
-        entry_brok = model.brokerage_per_order + (buy_turnover if is_long else sell_turnover) * model.brokerage_rate
-        exit_brok = model.brokerage_per_order + (sell_turnover if is_long else buy_turnover) * model.brokerage_rate
-
-    brokerage = entry_brok + exit_brok
-
-    # Statutory taxes and exchange fees
-    stt = sell_turnover * model.stt_rate
-    exchange_fee = total_turnover * model.exchange_fee_rate
-    sebi_fee = total_turnover * model.sebi_fee_rate
-    stamp_duty = buy_turnover * model.stamp_duty_rate
-    gst = (brokerage + exchange_fee + sebi_fee) * model.gst_rate
-
-    taxes_and_fees = stt + exchange_fee + sebi_fee + stamp_duty + gst
-    total_cost = brokerage + taxes_and_fees + slippage_cost + spread_penalty
-    net_pnl = gross_pnl - total_cost
+    intraday_cfg = model.to_intraday_cost_config()
+    canonical = calculate_trade_transaction_costs(
+        side="LONG" if is_long else "SHORT",
+        entry_price=entry_signal_price,
+        exit_price=exit_signal_price,
+        quantity=quantity,
+        config=intraday_cfg,
+    )
 
     return TradeCostBreakdown(
         entry_signal_price=round(entry_signal_price, 4),
@@ -244,17 +255,17 @@ def calculate_trade_costs(
         actual_exit_price=round(actual_exit, 4),
         quantity=int(quantity),
         side="LONG" if is_long else "SHORT",
-        gross_pnl=round(gross_pnl, 4),
-        brokerage=round(brokerage, 4),
-        stt=round(stt, 4),
-        exchange_fee=round(exchange_fee, 4),
-        sebi_fee=round(sebi_fee, 4),
-        gst=round(gst, 4),
-        stamp_duty=round(stamp_duty, 4),
-        taxes_and_fees=round(taxes_and_fees, 4),
-        slippage_cost=round(slippage_cost, 4),
-        spread_penalty=round(spread_penalty, 4),
-        total_cost=round(total_cost, 4),
-        net_pnl=round(net_pnl, 4),
+        gross_pnl=round(canonical.gross_pnl, 4),
+        brokerage=round(canonical.brokerage, 4),
+        stt=round(canonical.stt, 4),
+        exchange_fee=round(canonical.exchange_charges, 4),
+        sebi_fee=round(canonical.sebi_charges, 4),
+        gst=round(canonical.gst, 4),
+        stamp_duty=round(canonical.stamp_duty, 4),
+        taxes_and_fees=round(canonical.statutory_charges, 4),
+        slippage_cost=round(canonical.slippage, 4),
+        spread_penalty=round(canonical.spread_cost, 4),
+        total_cost=round(canonical.total_costs, 4),
+        net_pnl=round(canonical.net_pnl, 4),
         config_id=model.config_id,
     )

@@ -764,9 +764,18 @@ class PipelineBatchIngestRequest(BaseModel):
 
 
 class BacktestRunRequest(BaseModel):
-    """Request payload to initiate an asynchronous backtest."""
+    """
+    Request payload to initiate an asynchronous backtest simulation.
 
-    model_config = ConfigDict(extra="ignore")
+    Cost Model Configuration:
+    - cost_profile: Selects the transaction cost schedule. Allowed values:
+      'DISCOUNT_BROKER_REALISTIC' (default, canonical Indian market schedule),
+      'STATUTORY_ONLY', 'CONSERVATIVE_STRESS', 'ZERO_COST', 'LEGACY_LINEAR'.
+    - transaction_cost_rate: Single linear turnover multiplier, active ONLY when
+      cost_profile is explicitly set to 'LEGACY_LINEAR' (default: 0.0001).
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     symbol: str = "NIFTY 50"
     start_date: str | None = None
@@ -774,6 +783,7 @@ class BacktestRunRequest(BaseModel):
     initial_capital: float = 100_000.0
     quantity: int = 1
     transaction_cost_rate: float = 0.0001
+    cost_profile: str = "DISCOUNT_BROKER_REALISTIC"
     execution_model: str = "next_open"
 
     # Optional strategy parameter overrides (frozen defaults)
@@ -815,6 +825,15 @@ class BacktestRunRequest(BaseModel):
         if v < 0:
             raise ValueError("transaction_cost_rate cannot be negative.")
         return v
+
+    @field_validator("cost_profile")
+    @classmethod
+    def validate_cost_profile_field(cls, v: str) -> str:
+        s = v.strip().upper()
+        allowed = {"DISCOUNT_BROKER_REALISTIC", "STATUTORY_ONLY", "CONSERVATIVE_STRESS", "ZERO_COST", "LEGACY_LINEAR"}
+        if s not in allowed:
+            raise ValueError(f"Unsupported cost_profile: '{v}'. Supported profiles: {sorted(allowed)}")
+        return s
 
     @field_validator("execution_model")
     @classmethod

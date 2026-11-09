@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from datetime import time
-from typing import Callable
+from typing import Any, Callable, Optional
 
 import numpy as np
 import pandas as pd
 
+from src.backtest.indian_market_costs import IntradayCostConfig
 from src.backtest.metrics import (
     PerformanceMetrics,
     calculate_metrics,
@@ -25,6 +26,7 @@ class BacktestResult:
     portfolio: Portfolio
     metrics: PerformanceMetrics
     bankruptcy_reason: str | None = None
+    cost_model_info: dict[str, Any] | None = None
 
 
 SignalFunction = Callable[
@@ -144,6 +146,7 @@ def _close_position(
     exit_price: float,
     quantity: int,
     transaction_cost_rate: float,
+    cost_config: Optional[IntradayCostConfig] = None,
 ) -> None:
     """Close an open position and record the completed trade."""
 
@@ -155,6 +158,7 @@ def _close_position(
         exit_price=exit_price,
         quantity=quantity,
         transaction_cost_rate=transaction_cost_rate,
+        cost_config=cost_config,
     )
 
     portfolio.apply_trade(trade)
@@ -169,6 +173,7 @@ def run_backtest(
     quantity: int = 1,
     transaction_cost_rate: float = 0.0,
     execution_model: str = "same_close",
+    cost_config: Optional[IntradayCostConfig] = None,
 ) -> BacktestResult:
     """
     Run a sequential intraday backtest.
@@ -267,6 +272,7 @@ def run_backtest(
                     transaction_cost_rate=(
                         transaction_cost_rate
                     ),
+                    cost_config=cost_config,
                 )
 
                 current_position = None
@@ -298,6 +304,7 @@ def run_backtest(
                         exit_price=fill_price,
                         quantity=quantity,
                         transaction_cost_rate=transaction_cost_rate,
+                        cost_config=cost_config,
                     )
                     current_position = pending_signal
                     entry_time = current_time
@@ -384,6 +391,7 @@ def run_backtest(
             transaction_cost_rate=(
                 transaction_cost_rate
             ),
+            cost_config=cost_config,
         )
 
         # ----------------------------------------------------
@@ -417,6 +425,7 @@ def run_backtest(
             transaction_cost_rate=(
                 transaction_cost_rate
             ),
+            cost_config=cost_config,
         )
 
     metrics = calculate_metrics(
@@ -427,10 +436,33 @@ def run_backtest(
         ),
     )
 
+    if cost_config is not None:
+        cost_model_info = {
+            "mode": "CANONICAL",
+            "profile_name": cost_config.name,
+            "description": cost_config.description,
+            "brokerage_rate_pct": cost_config.brokerage_rate_pct,
+            "brokerage_max_per_leg_inr": cost_config.brokerage_max_per_leg_inr,
+            "stt_rate_sell_pct": cost_config.stt_rate_sell_pct,
+            "exchange_charge_rate_pct": cost_config.exchange_charge_rate_pct,
+            "sebi_charge_rate_pct": cost_config.sebi_charge_rate_pct,
+            "stamp_duty_rate_buy_pct": cost_config.stamp_duty_rate_buy_pct,
+            "gst_rate_pct": cost_config.gst_rate_pct,
+            "slippage_rate_pct": cost_config.slippage_rate_pct,
+            "spread_rate_pct": cost_config.spread_rate_pct,
+        }
+    else:
+        cost_model_info = {
+            "mode": "LEGACY_LINEAR",
+            "transaction_cost_rate": transaction_cost_rate,
+            "description": "Legacy linear turnover multiplier",
+        }
+
     return BacktestResult(
         trades=trades,
         portfolio=portfolio,
         metrics=metrics,
+        cost_model_info=cost_model_info,
     )
 
 
@@ -455,6 +487,7 @@ class IntradayEngineConfig:
     gap_execution: bool = True
     conservative_same_candle: bool = True
     execution_model: str = "same_close"
+    cost_config: Optional[IntradayCostConfig] = None
 
 
 def run_intraday_backtest(
@@ -589,6 +622,7 @@ def run_intraday_backtest(
                     brokerage=config.brokerage_per_trade,
                     slippage_rate=config.slippage_rate,
                     statutory_fee_rate=config.statutory_fee_rate,
+                    cost_config=config.cost_config,
                     exit_reason="EOD",
                     capital_before=position["capital_before"],
                     capital_after=capital,
@@ -737,6 +771,7 @@ def run_intraday_backtest(
                     brokerage=config.brokerage_per_trade,
                     slippage_rate=config.slippage_rate,
                     statutory_fee_rate=config.statutory_fee_rate,
+                    cost_config=config.cost_config,
                     exit_reason=exit_reason,
                     capital_before=position["capital_before"],
                     capital_after=capital,
@@ -855,6 +890,7 @@ def run_intraday_backtest(
             brokerage=config.brokerage_per_trade,
             slippage_rate=config.slippage_rate,
             statutory_fee_rate=config.statutory_fee_rate,
+            cost_config=config.cost_config,
             exit_reason="EOD",
             capital_before=position["capital_before"],
             capital_after=capital,
@@ -874,9 +910,34 @@ def run_intraday_backtest(
         max_drawdown_pct=portfolio.max_drawdown,
     )
 
+    if config.cost_config is not None:
+        cost_model_info = {
+            "mode": "CANONICAL",
+            "profile_name": config.cost_config.name,
+            "description": config.cost_config.description,
+            "brokerage_rate_pct": config.cost_config.brokerage_rate_pct,
+            "brokerage_max_per_leg_inr": config.cost_config.brokerage_max_per_leg_inr,
+            "stt_rate_sell_pct": config.cost_config.stt_rate_sell_pct,
+            "exchange_charge_rate_pct": config.cost_config.exchange_charge_rate_pct,
+            "sebi_charge_rate_pct": config.cost_config.sebi_charge_rate_pct,
+            "stamp_duty_rate_buy_pct": config.cost_config.stamp_duty_rate_buy_pct,
+            "gst_rate_pct": config.cost_config.gst_rate_pct,
+            "slippage_rate_pct": config.cost_config.slippage_rate_pct,
+            "spread_rate_pct": config.cost_config.spread_rate_pct,
+        }
+    else:
+        cost_model_info = {
+            "mode": "LEGACY_LINEAR",
+            "brokerage": config.brokerage_per_trade,
+            "slippage_rate": config.slippage_rate,
+            "statutory_fee_rate": config.statutory_fee_rate,
+            "description": "Legacy linear/flat cost model",
+        }
+
     return BacktestResult(
         trades=trades,
         portfolio=portfolio,
         metrics=metrics,
         bankruptcy_reason=bankruptcy_reason,
+        cost_model_info=cost_model_info,
     )

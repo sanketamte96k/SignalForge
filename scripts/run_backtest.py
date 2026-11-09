@@ -6,6 +6,11 @@ from pathlib import Path
 import pandas as pd
 
 from src.backtest.engine import run_backtest
+from src.backtest.indian_market_costs import (
+    COST_PROFILES,
+    DISCOUNT_BROKER_REALISTIC_CONFIG,
+    get_cost_config,
+)
 from src.backtest.report import build_report
 from src.strategy.backtest_strategy import (
     StrategyConfig,
@@ -40,6 +45,14 @@ def parse_args() -> argparse.Namespace:
             "Path to the historical CSV dataset. "
             f"Default: {DEFAULT_DATA_PATH}"
         ),
+    )
+
+    parser.add_argument(
+        "--cost-profile",
+        type=str,
+        default="DISCOUNT_BROKER_REALISTIC",
+        choices=["DISCOUNT_BROKER_REALISTIC", "STATUTORY_ONLY", "CONSERVATIVE_STRESS", "ZERO_COST", "LEGACY_LINEAR"],
+        help="Transaction cost profile to apply (default: DISCOUNT_BROKER_REALISTIC).",
     )
 
     return parser.parse_args()
@@ -147,6 +160,16 @@ def main() -> None:
     # Run backtest
     # --------------------------------------------------------
 
+    cost_profile_name = str(args.cost_profile).strip().upper()
+    if cost_profile_name == "LEGACY_LINEAR":
+        cost_config = None
+        cost_rate = TRANSACTION_COST_RATE
+        print(f"Transaction Cost Mode: LEGACY_LINEAR (rate={cost_rate})")
+    else:
+        cost_config = get_cost_config(cost_profile_name)
+        cost_rate = 0.0
+        print(f"Transaction Cost Profile: {cost_config.name} ({cost_config.description})")
+
     print("Running backtest...")
 
     result = run_backtest(
@@ -154,7 +177,8 @@ def main() -> None:
         signal_function=signal_function,
         initial_capital=INITIAL_CAPITAL,
         quantity=QUANTITY,
-        transaction_cost_rate=TRANSACTION_COST_RATE,
+        transaction_cost_rate=cost_rate,
+        cost_config=cost_config,
     )
 
     report = build_report(result)
