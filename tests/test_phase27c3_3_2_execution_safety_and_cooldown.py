@@ -32,12 +32,20 @@ Part B — Opening Market Cooldown Strategy (All 15 Required Scenarios):
 """
 
 from datetime import datetime, time
+from zoneinfo import ZoneInfo
 import pytest
 import pandas as pd
 import numpy as np
 
 from src.backtest.capital_allocator import TradeOpportunity
-from src.backtest.engine import IntradayEngineConfig, run_intraday_backtest
+from src.backtest.engine import (
+    IntradayEngineConfig,
+    run_intraday_backtest,
+    is_in_opening_cooldown,
+    IST_TIMEZONE,
+)
+from src.strategy.job_manager import get_job_manager, JobStatus
+from src.api.models import BacktestRunRequest
 from src.backtest.indian_market_costs import DISCOUNT_BROKER_REALISTIC_CONFIG
 from src.backtest.multi_asset_engine import (
     MultiAssetEngineConfig,
@@ -397,65 +405,65 @@ def test_06_multi_asset_accounting_reconciliation_3_positions():
     Verify complete mathematical reconciliation of portfolio accounting with 3 positions:
     - Pos 1: Valid active candle (MTM unrealized gain).
     - Pos 2: Missing/stale candle (uses last known mark, stale logged, margin encumbered).
-    - Pos 3: Adverse opening gap (gaps down through stop at Open, exits immediately).
+    - Pos 3: Adverse opening gap (enters bar 1, gaps down through stop at bar 2 Open, exits immediately).
     """
-    dates = pd.date_range("2024-01-02 09:15:00", periods=3, freq="min")
+    dates = pd.date_range("2024-01-02 09:15:00", periods=4, freq="min")
 
-    # Pos 1 (ACTIVE_SYM): Open 100, Bar 1 Close 105 (+5 MTM gain)
+    # Pos 1 (ACTIVE_SYM): Open 100, Bar 1 enters, Bar 2 Close 102.5 (+2.5 MTM gain)
     df_act = pd.DataFrame(
         {
-            "Open": [100.0, 102.0, 105.0],
-            "High": [101.0, 106.0, 106.0],
-            "Low": [99.0, 101.0, 104.0],
-            "Close": [100.0, 105.0, 105.0],
-            "Volume": [1000.0] * 3,
-            "ATR": [2.0] * 3,
+            "Open": [100.0, 100.0, 102.0, 102.0],
+            "High": [100.5, 101.5, 103.0, 103.0],
+            "Low": [99.5, 99.5, 101.5, 101.5],
+            "Close": [100.0, 101.0, 102.5, 102.5],
+            "Volume": [1000.0] * 4,
+            "ATR": [2.0] * 4,
         },
         index=dates,
     )
 
-    # Pos 2 (STALE_SYM): Missing at bar 1!
-    dates_stale = dates.drop(dates[1])
+    # Pos 2 (STALE_SYM): Enters bar 1, missing at bar 2!
+    dates_stale = dates.drop(dates[2])
     df_stl = pd.DataFrame(
         {
-            "Open": [200.0, 200.0],
-            "High": [201.0, 201.0],
-            "Low": [199.0, 199.0],
-            "Close": [200.0, 200.0],
-            "Volume": [1000.0] * 2,
-            "ATR": [4.0] * 2,
+            "Open": [200.0, 200.0, 200.0],
+            "High": [200.5, 201.0, 201.0],
+            "Low": [199.5, 199.0, 199.0],
+            "Close": [200.0, 200.0, 200.0],
+            "Volume": [1000.0] * 3,
+            "ATR": [4.0] * 3,
         },
         index=dates_stale,
     )
 
-    # Pos 3 (GAP_SYM): Bar 1 Open gaps down to 280 (below stop 294) -> exits at 280
+    # Pos 3 (GAP_SYM): Enters bar 1 at 300 (stop 294). Bar 2 Open gaps down to 280 (below stop 294) -> exits at 280
     df_gap = pd.DataFrame(
         {
-            "Open": [300.0, 280.0, 280.0],
-            "High": [301.0, 282.0, 282.0],
-            "Low": [299.0, 278.0, 278.0],
-            "Close": [300.0, 280.0, 280.0],
-            "Volume": [1000.0] * 3,
-            "ATR": [4.0] * 3,
+            "Open": [300.0, 300.0, 280.0, 280.0],
+            "High": [300.5, 301.0, 282.0, 282.0],
+            "Low": [299.5, 299.0, 278.0, 278.0],
+            "Close": [300.0, 300.0, 280.0, 280.0],
+            "Volume": [1000.0] * 4,
+            "ATR": [4.0] * 4,
         },
         index=dates,
     )
 
     cfg = MultiAssetEngineConfig(
-        initial_capital=50_000.0,
+        initial_capital=100_000.0,
         reserve_capital_pct=0.10,
         risk_per_trade_pct=0.01,
         max_portfolio_risk_pct=0.05,
-        max_stock_allocation_pct=0.50,
+        max_stock_allocation_pct=0.40,
         execution_model="next_open",
         opening_cooldown_minutes=0,
     )
 
     # Signal all 3 at bar 0 close -> enter at bar 1 open
     signals = {
-        "ACTIVE_SYM": [Position.LONG, None, None],
-        "STALE_SYM": [Position.LONG, None],
-        "GAP_SYM": [Position.LONG, None, None],
+        "ACTIVE_SYM": [Position.LONG, None, None, None],
+        "STALE_SYM": [Position.LONG, None, None],
+        "GAP_SYM": [Position.LONG, None, None, None],
     }
 
     res = run_multi_asset_backtest(
@@ -464,25 +472,33 @@ def test_06_multi_asset_accounting_reconciliation_3_positions():
         cfg,
     )
 
-    # GAP_SYM must have exited at bar 1 Open with reason STOP
+    # GAP_SYM must have exited at bar 2 Open with reason STOP
     gap_trades = [t for t in res.trades if t.symbol == "GAP_SYM"]
     assert len(gap_trades) == 1
     assert gap_trades[0].exit_reason == "STOP"
     assert gap_trades[0].exit_price == 280.0
-    assert gap_trades[0].exit_time == dates[1]
+    assert gap_trades[0].exit_time == dates[2]
 
-    # STALE_SYM was missing at bar 1 -> stale price event recorded
+    # STALE_SYM was missing at bar 2 -> stale price event recorded
     assert res.missing_candle_stats["STALE_SYM"] == 1
     assert res.stale_price_events >= 1
 
-    # At bar 1 snapshot:
-    # Cash = Initial capital (50,000) + GAP_SYM net P&L
-    snap_1 = res.equity_curve.loc[dates[1]]
-    expected_cash = 50_000.0 + gap_trades[0].net_pnl
-    assert snap_1["cash"] == pytest.approx(expected_cash, abs=1e-2)
+    # At bar 2 snapshot:
+    # Cash = Initial capital (100,000) + GAP_SYM net P&L
+    snap_2 = res.equity_curve.loc[dates[2]]
+    expected_cash = 100_000.0 + gap_trades[0].net_pnl
+    assert snap_2["cash"] == pytest.approx(expected_cash, abs=1e-2)
 
     # Equity = Cash + ACTIVE_SYM unrealized P&L + STALE_SYM unrealized P&L
-    assert snap_1["equity"] == pytest.approx(snap_1["cash"] + snap_1["unrealized_pnl"], abs=1e-2)
+    assert snap_2["equity"] == pytest.approx(snap_2["cash"] + snap_2["unrealized_pnl"], abs=1e-2)
+    assert snap_2["unrealized_pnl"] > 0
+    assert snap_2["open_positions_count"] == 2
+
+    # Margin and reserve accounting
+    assert snap_2["allocated_margin"] > 0
+    assert snap_2["reserved_capital"] == pytest.approx(snap_2["equity"] * 0.10, abs=1e-2)
+    expected_avail_margin = snap_2["equity"] - snap_2["allocated_margin"] - snap_2["reserved_capital"]
+    assert snap_2["available_margin"] == pytest.approx(expected_avail_margin, abs=1e-2)
 
 
 # ============================================================================
@@ -515,6 +531,8 @@ def test_07_single_stock_parity_consecutive_trades():
         target_atr_multiplier=3.0,
         execution_model="same_close",
         cost_config=DISCOUNT_BROKER_REALISTIC_CONFIG,
+        include_estimated_round_trip_costs_in_sizing=False,
+        opening_cooldown_minutes=0,
     )
     res_s = run_intraday_backtest(df, sigs, cfg_s)
 
@@ -777,4 +795,195 @@ def test_22_no_lookahead_or_timestamp_manipulation():
     res = run_multi_asset_backtest({"TEST": df}, {"TEST": sigs}, cfg)
     assert len(res.trades) == 1
     assert res.trades[0].entry_time == dates[10]  # Exact timestamp 09:25:00, no shifts
+
+
+# ============================================================================
+# PART C: Production Single-Stock Cooldown & Parity Integration Tests
+# ============================================================================
+
+def test_23_single_stock_cooldown_enforcement():
+    """Verify production single-stock engine enforces opening market cooldown identical to multi-asset engine."""
+    # Verify default alignment across all SignalForge configuration classes
+    assert IntradayEngineConfig().opening_cooldown_minutes == 10
+    assert MultiAssetEngineConfig().opening_cooldown_minutes == 10
+    assert BacktestRunRequest().opening_cooldown_minutes == 10
+
+    dates = pd.date_range("2024-01-02 09:15:00", periods=20, freq="min")
+    df = _make_df([100.0] * 20, dates=dates)
+
+    # 1. Test next_open model: signal at 09:15 close attempts to enter at 09:16 (in cooldown -> blocked)
+    # Signal at 09:24 close enters at 09:25 open (cooldown expired -> accepted)
+    # Using default opening_cooldown_minutes (10)
+    sigs = [None] * 20
+    sigs[0] = Position.LONG  # attempts entry at 09:16 Open (blocked)
+    sigs[9] = Position.LONG  # attempts entry at 09:25 Open (accepted)
+
+    cfg = IntradayEngineConfig(
+        execution_model="next_open",
+        cost_config=DISCOUNT_BROKER_REALISTIC_CONFIG,
+    )
+    res = run_intraday_backtest(df, sigs, cfg)
+    assert len(res.trades) == 1
+    assert res.trades[0].entry_time == dates[10]  # 09:25:00
+    assert res.opening_cooldown_minutes == 10
+
+    # 2. Test same_close model: signal at 09:20 close (blocked) vs 09:25 close (accepted)
+    # Using default opening_cooldown_minutes (10)
+    sigs_sc = [None] * 20
+    sigs_sc[5] = Position.LONG   # 09:20:00 (blocked)
+    sigs_sc[10] = Position.LONG  # 09:25:00 (accepted)
+
+    cfg_sc = IntradayEngineConfig(
+        execution_model="same_close",
+        cost_config=DISCOUNT_BROKER_REALISTIC_CONFIG,
+    )
+    res_sc = run_intraday_backtest(df, sigs_sc, cfg_sc)
+    assert len(res_sc.trades) == 1
+    assert res_sc.trades[0].entry_time == dates[10]  # 09:25:00
+
+
+def test_24_production_job_manager_cooldown_integration():
+    """Verify JobManager passes opening cooldown configurations to single-stock backtest jobs and records in metadata."""
+    mgr = get_job_manager()
+
+    # Submit job with custom 15-minute cooldown
+    req = BacktestRunRequest(
+        symbol="NIFTY 50",
+        start_date="2024-01-01",
+        end_date="2024-01-15",
+        opening_cooldown_minutes=15,
+        execution_model="next_open",
+    )
+    job = mgr.submit_job(req.model_dump())
+
+    # Wait for completion (max 20s)
+    import time as pytime
+    deadline = pytime.time() + 20.0
+    completed = False
+    while pytime.time() < deadline:
+        st = mgr.get_job_status(job.job_id)
+        assert st is not None
+        if st.status in (JobStatus.COMPLETED, JobStatus.FAILED):
+            completed = True
+            break
+        pytime.sleep(0.1)
+
+    assert completed, "Job did not complete in time"
+    final_job = mgr.get_job(job.job_id)
+    assert final_job.status == JobStatus.COMPLETED
+    assert final_job.result is not None
+    assert "risk_config" in final_job.result
+    assert final_job.result["risk_config"]["opening_cooldown_minutes"] == 15
+    assert final_job.result["risk_config"]["market_open_time"] == "09:15"
+
+
+def test_25_ist_timezone_normalization_and_boundaries():
+    """
+    Verify strict IST (Asia/Kolkata) timezone handling:
+    - Timezone-aware UTC timestamps correctly converted to IST.
+    - Timezone-aware IST timestamps matched.
+    - Naive timestamps defined as local exchange time.
+    - Rejection of invalid/ambiguous timestamps.
+    """
+    # 09:15:00 IST = 03:45:00 UTC
+    utc_open = pd.Timestamp("2024-01-02 03:45:00", tz="UTC")
+    assert is_in_opening_cooldown(utc_open, opening_cooldown_minutes=10) is True
+
+    # 09:24:59 IST = 03:54:59 UTC
+    utc_late = pd.Timestamp("2024-01-02 03:54:59", tz="UTC")
+    assert is_in_opening_cooldown(utc_late, opening_cooldown_minutes=10) is True
+
+    # 09:25:00 IST = 03:55:00 UTC (cooldown expired)
+    utc_exp = pd.Timestamp("2024-01-02 03:55:00", tz="UTC")
+    assert is_in_opening_cooldown(utc_exp, opening_cooldown_minutes=10) is False
+
+    # IST timezone-aware
+    ist_open = pd.Timestamp("2024-01-02 09:15:00", tz="Asia/Kolkata")
+    assert is_in_opening_cooldown(ist_open, opening_cooldown_minutes=10) is True
+
+    ist_exp = pd.Timestamp("2024-01-02 09:25:00", tz="Asia/Kolkata")
+    assert is_in_opening_cooldown(ist_exp, opening_cooldown_minutes=10) is False
+
+    # Naive timestamp (treated as local IST)
+    naive_open = pd.Timestamp("2024-01-02 09:15:00")
+    assert is_in_opening_cooldown(naive_open, opening_cooldown_minutes=10) is True
+
+    naive_exp = pd.Timestamp("2024-01-02 09:25:00")
+    assert is_in_opening_cooldown(naive_exp, opening_cooldown_minutes=10) is False
+
+    # Invalid timestamp type raises TypeError
+    with pytest.raises(TypeError):
+        is_in_opening_cooldown("2024-01-02 09:15:00")  # string instead of Timestamp/datetime
+
+    with pytest.raises(TypeError):
+        is_in_opening_cooldown(123456789)
+
+    # NaT raises ValueError
+    with pytest.raises(ValueError, match="NaT"):
+        is_in_opening_cooldown(pd.NaT)
+
+
+def test_26_trade_by_trade_parity_same_candle_exit_entry():
+    """
+    Verify complete trade-by-trade parity between single-stock and multi-asset engines
+    when an existing position exits during a candle and a new signal enters at candle close.
+    """
+    dates = pd.date_range("2024-01-02 09:15:00", periods=8, freq="min")
+    df = pd.DataFrame(
+        {
+            "open": [100.0, 100.0, 106.0, 106.0, 106.0, 100.0, 100.0, 100.0],
+            "high": [100.5, 106.5, 106.5, 106.5, 106.5, 100.5, 100.5, 100.5],
+            "low": [99.5, 99.5, 105.5, 105.5, 99.5, 99.5, 96.0, 99.5],
+            "close": [100.0, 106.0, 106.0, 106.0, 100.0, 100.0, 96.5, 100.0],
+            "volume": [1000.0] * 8,
+            "atr": [2.0] * 8,
+        },
+        index=dates,
+    )
+
+    # Trade 1 enters bar 1 (09:16), exits bar 4 (09:19) on STOP.
+    # Same candle bar 4 has Position.LONG signal at close -> enters Trade 2 at bar 4 close (09:19).
+    # Trade 2 exits bar 6 (09:21) on STOP.
+    sigs = [None, Position.LONG, None, None, Position.LONG, None, None, None]
+
+    cfg_s = IntradayEngineConfig(
+        initial_capital=100_000.0,
+        risk_per_trade=0.01,
+        max_leverage=5.0,
+        stop_atr_multiplier=1.5,
+        target_atr_multiplier=3.0,
+        execution_model="same_close",
+        cost_config=DISCOUNT_BROKER_REALISTIC_CONFIG,
+        include_estimated_round_trip_costs_in_sizing=False,
+        opening_cooldown_minutes=0,
+    )
+    res_s = run_intraday_backtest(df, sigs, cfg_s)
+
+    cfg_m = MultiAssetEngineConfig(
+        initial_capital=100_000.0,
+        risk_per_trade_pct=0.01,
+        max_leverage=5.0,
+        stop_loss_atr=1.5,
+        take_profit_atr=3.0,
+        execution_model="same_close",
+        cost_config=DISCOUNT_BROKER_REALISTIC_CONFIG,
+        max_stock_allocation_pct=1.0,
+        reserve_capital_pct=0.0,
+        include_estimated_round_trip_costs_in_sizing=False,
+        opening_cooldown_minutes=0,
+    )
+    res_m = run_multi_asset_backtest({"TEST": df}, {"TEST": sigs}, cfg_m)
+
+    assert len(res_s.trades) == 2
+    assert len(res_m.trades) == 2
+
+    for idx, (t_s, t_m) in enumerate(zip(res_s.trades, res_m.trades)):
+        assert t_s.entry_time == t_m.entry_time, f"Trade {idx} entry_time mismatch"
+        assert t_s.exit_time == t_m.exit_time, f"Trade {idx} exit_time mismatch"
+        assert t_s.entry_price == t_m.entry_price, f"Trade {idx} entry_price mismatch"
+        assert t_s.exit_price == t_m.exit_price, f"Trade {idx} exit_price mismatch"
+        assert t_s.quantity == t_m.quantity, f"Trade {idx} quantity mismatch"
+        assert t_s.exit_reason == t_m.exit_reason, f"Trade {idx} exit_reason mismatch"
+        assert pytest.approx(t_s.net_pnl, abs=1e-2) == t_m.net_pnl, f"Trade {idx} net_pnl mismatch"
+
 

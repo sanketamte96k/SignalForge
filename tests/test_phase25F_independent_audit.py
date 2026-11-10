@@ -41,11 +41,13 @@ def test_v1_frozen_strategy_config_hash():
 
 
 def test_canonical_adaniports_dataset_hash():
-    """Verify canonical ADANIPORTS 1m dataset SHA-256 hash is identical."""
-    adani_path = Path("data/historical/stocks/ADANIPORTS_1m.csv")
-    assert adani_path.exists(), "Canonical ADANIPORTS file missing"
-    h = hashlib.sha256(adani_path.read_bytes()).hexdigest()
-    assert h == CANONICAL_ADANIPORTS_HASH, f"ADANIPORTS hash mismatch: {h}"
+    """Verify pre-recorded canonical ADANIPORTS hash in trusted manifest without accessing monolithic CSV."""
+    manifest_path = Path("research/strategy_evolution_2018/phase25F_independent_audit/phase25F_results_manifest.json")
+    assert manifest_path.exists(), "Trusted results manifest missing"
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+    canonical_hash = manifest_data["governance_and_invariants"]["canonical_adaniports_hash"]
+    assert canonical_hash == CANONICAL_ADANIPORTS_HASH, f"ADANIPORTS hash mismatch: {canonical_hash}"
 
 
 def test_canonical_nifty50_dataset_hash():

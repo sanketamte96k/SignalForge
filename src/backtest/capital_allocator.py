@@ -28,6 +28,114 @@ from src.backtest.indian_market_costs import (
 )
 
 
+def calculate_cost_aware_position_size(
+    entry_price: float,
+    stop_loss: float,
+    capital: float,
+    risk_per_trade_pct: float,
+    max_leverage: float,
+    side: Position | str = Position.LONG,
+    cost_config: Optional[IntradayCostConfig] = None,
+    max_exposure: Optional[float] = None,
+    max_stock_allocation_pct: float = 1.0,
+    available_margin: Optional[float] = None,
+    min_trade_quantity: int = 1,
+    include_costs_in_sizing: bool = True,
+    conservative_cost_buffer_rate: float = 0.0,
+) -> tuple[int, int, int]:
+    """
+    Compute integer position size aligning single-stock and multi-asset risk rules.
+
+    Parameters
+    ----------
+    entry_price: Proposed entry execution price.
+    stop_loss: Planned stop-loss price.
+    capital: Total equity or account cash before entry.
+    risk_per_trade_pct: Fraction of capital to risk (e.g. 0.01 for 1%).
+    max_leverage: Leverage multiplier ceiling (e.g. 5.0).
+    side: Trade direction (Position.LONG or Position.SHORT).
+    cost_config: Canonical Phase 27B IntradayCostConfig schedule.
+    max_exposure: Optional rupee cap on gross notional exposure.
+    max_stock_allocation_pct: Maximum stock allocation limit (1.0 for single-stock, 0.35 for multi-asset).
+    available_margin: Optional unencumbered margin collateral. If provided, constrains position size.
+    min_trade_quantity: Minimum allowable trade quantity (default 1).
+    include_costs_in_sizing: If True and cost_config is present, solve via binary search so
+                             Gross Risk + Estimated Round-Trip Cost <= Risk Budget.
+    conservative_cost_buffer_rate: Optional additional safety buffer per rupee.
+
+    Returns
+    -------
+    (final_quantity, risk_based_quantity, max_allowed_quantity)
+    """
+    if (
+        entry_price <= 0
+        or stop_loss <= 0
+        or capital <= 0
+        or risk_per_trade_pct <= 0
+        or max_leverage <= 0
+    ):
+        return 0, 0, 0
+
+    base_dist = abs(entry_price - stop_loss)
+    stop_dist = base_dist + (entry_price * conservative_cost_buffer_rate)
+    if stop_dist <= 0:
+        return 0, 0, 0
+
+    risk_amount = capital * risk_per_trade_pct
+    risk_qty = int(risk_amount / stop_dist)
+
+    max_notional = capital * max_leverage * max_stock_allocation_pct
+    if max_exposure is not None:
+        max_notional = min(max_notional, max_exposure)
+
+    max_allowed_qty = int(max_notional / entry_price)
+    if available_margin is not None:
+        margin_per_share = entry_price / max_leverage
+        if margin_per_share > 0:
+            q_margin = int(available_margin / margin_per_share)
+            max_allowed_qty = min(max_allowed_qty, q_margin)
+
+    upper_bound = min(risk_qty, max_allowed_qty)
+    if upper_bound < min_trade_quantity:
+        return 0, risk_qty, max_allowed_qty
+
+    if not include_costs_in_sizing or cost_config is None:
+        return upper_bound, risk_qty, max_allowed_qty
+
+    # Binary search for highest integer quantity within cost-inclusive risk budget
+    low = 0
+    high = upper_bound
+    best_q = 0
+    side_str = side.value if isinstance(side, Position) else str(side).upper()
+
+    while low <= high:
+        mid = (low + high) // 2
+        if mid == 0:
+            low = mid + 1
+            continue
+
+        gross_risk = mid * stop_dist
+        cost_breakdown = calculate_trade_transaction_costs(
+            side=side_str,
+            entry_price=entry_price,
+            exit_price=stop_loss,
+            quantity=mid,
+            config=cost_config,
+        )
+        total_risk = gross_risk + float(cost_breakdown.total_costs)
+
+        if total_risk <= risk_amount:
+            best_q = mid
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    if best_q < min_trade_quantity:
+        return 0, risk_qty, max_allowed_qty
+
+    return best_q, risk_qty, max_allowed_qty
+
+
 @dataclass(frozen=True)
 class CapitalAllocationConfig:
     """

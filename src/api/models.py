@@ -832,6 +832,10 @@ class BacktestRunRequest(BaseModel):
     capital_protection_floor: float | None = None
     overall_loss_limit: float | None = None
 
+    # Production Opening Market Cooldown (Phase 27C.3.4)
+    opening_cooldown_minutes: int = 10
+    market_open_time: str = "09:15"
+
     @field_validator("symbol")
     @classmethod
     def validate_symbol_field(cls, v: str) -> str:
@@ -932,6 +936,15 @@ class BacktestRunRequest(BaseModel):
     def validate_max_exposure_field(cls, v: float | None) -> float | None:
         if v is not None and v <= 0:
             raise ValueError("max_exposure must be greater than zero.")
+        return v
+
+    @field_validator("opening_cooldown_minutes")
+    @classmethod
+    def validate_opening_cooldown_minutes_field(cls, v: int) -> int:
+        if isinstance(v, bool) or not isinstance(v, int):
+            raise ValueError("opening_cooldown_minutes must be an integer.")
+        if v < 0:
+            raise ValueError("opening_cooldown_minutes cannot be negative.")
         return v
 
 

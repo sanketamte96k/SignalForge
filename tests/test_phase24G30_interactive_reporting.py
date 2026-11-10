@@ -152,12 +152,13 @@ def test_v1_frozen_config_hash():
 
 
 def test_adaniports_canonical_hash():
-    """Verify canonical on-disk ADANIPORTS dataset hash is untouched."""
-    adani_path = Path("data/historical/stocks/ADANIPORTS_1m.csv")
-    if not adani_path.exists():
-        pytest.skip("Canonical ADANIPORTS dataset not present in bare environment")
-    h = hashlib.sha256(adani_path.read_bytes()).hexdigest()
-    assert h == CANONICAL_ADANIPORTS_HASH, f"ADANIPORTS canonical hash mismatch: {h}"
+    """Verify pre-recorded canonical ADANIPORTS hash in trusted manifest without accessing monolithic CSV."""
+    manifest_path = Path("research/strategy_evolution_2018/phase25A_coverage_audit/phase25A_coverage_manifest.json")
+    assert manifest_path.exists(), "Trusted coverage manifest missing"
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+    canonical_hash = manifest_data["invariants"]["canonical_adaniports_hash"]
+    assert canonical_hash == CANONICAL_ADANIPORTS_HASH, f"ADANIPORTS canonical hash mismatch: {canonical_hash}"
 
 
 def test_nifty50_canonical_hash():

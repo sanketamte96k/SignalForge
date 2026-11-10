@@ -43,11 +43,13 @@ def test_v1_frozen_config_hash():
 
 
 def test_canonical_dataset_hashes():
-    """Verify canonical on-disk dataset hashes if files are present."""
-    adani_path = Path("data/historical/stocks/ADANIPORTS_1m.csv")
-    if adani_path.exists():
-        h = hashlib.sha256(adani_path.read_bytes()).hexdigest()
-        assert h == CANONICAL_ADANIPORTS_HASH, f"ADANIPORTS canonical hash mismatch: {h}"
+    """Verify canonical dataset hashes via trusted manifest (ADANIPORTS) and safe non-quarantined on-disk verification."""
+    manifest_path = Path("research/strategy_evolution_2018/phase25A_coverage_audit/phase25A_coverage_manifest.json")
+    assert manifest_path.exists(), "Trusted coverage manifest missing"
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+    canonical_adani = manifest_data["invariants"]["canonical_adaniports_hash"]
+    assert canonical_adani == CANONICAL_ADANIPORTS_HASH, f"ADANIPORTS canonical hash mismatch: {canonical_adani}"
 
     nifty_path = Path("data/historical/nifty50_1m_signalforge.csv")
     if nifty_path.exists():

@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from datetime import time
-from typing import Any, Callable, Optional
+from datetime import datetime, time, timedelta
+from typing import Any, Callable, Optional, Union
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
 
+from src.backtest.capital_allocator import calculate_cost_aware_position_size
 from src.backtest.indian_market_costs import IntradayCostConfig
 from src.backtest.metrics import (
     PerformanceMetrics,
@@ -17,6 +19,53 @@ from src.backtest.simulator import (
     simulate_trade,
 )
 
+IST_TIMEZONE = ZoneInfo("Asia/Kolkata")
+
+
+def is_in_opening_cooldown(
+    current_time: Union[pd.Timestamp, datetime],
+    opening_cooldown_minutes: int = 10,
+    market_open_time: str = "09:15",
+) -> bool:
+    """
+    Deterministic check for whether a timestamp falls strictly within the opening market cooldown.
+
+    Session Semantics:
+    - Standard Indian equity market opens at 09:15 IST (Asia/Kolkata).
+    - Opening cooldown window: [market_open_time, market_open_time + opening_cooldown_minutes)
+    - Timezone handling:
+      * Naive timestamps are defined by Indian market convention as local exchange time (IST).
+      * Timezone-aware timestamps are strictly normalized to Asia/Kolkata.
+      * Invalid or ambiguous timestamps raise TypeError or ValueError.
+    """
+    if opening_cooldown_minutes <= 0:
+        return False
+
+    if not isinstance(current_time, (pd.Timestamp, datetime)):
+        raise TypeError(
+            f"current_time must be a pd.Timestamp or datetime, got {type(current_time).__name__}"
+        )
+
+    ts = pd.Timestamp(current_time)
+    if pd.isna(ts):
+        raise ValueError("current_time cannot be NaT or invalid timestamp.")
+
+    if ts.tzinfo is None:
+        ts_ist = ts
+    else:
+        try:
+            ts_ist = ts.tz_convert(IST_TIMEZONE)
+        except Exception as exc:
+            raise ValueError(f"Unable to convert timestamp {current_time} to IST: {exc}") from exc
+
+    t = ts_ist.time()
+    open_t = pd.Timestamp(market_open_time).time()
+    cooldown_end_dt = datetime.combine(ts_ist.date(), open_t) + timedelta(
+        minutes=opening_cooldown_minutes
+    )
+    cooldown_end_t = cooldown_end_dt.time()
+    return open_t <= t < cooldown_end_t
+
 
 @dataclass(frozen=True)
 class BacktestResult:
@@ -27,6 +76,7 @@ class BacktestResult:
     metrics: PerformanceMetrics
     bankruptcy_reason: str | None = None
     cost_model_info: dict[str, Any] | None = None
+    opening_cooldown_minutes: int = 10
 
 
 SignalFunction = Callable[
@@ -492,6 +542,64 @@ class IntradayEngineConfig:
     conservative_same_candle: bool = True
     execution_model: str = "same_close"
     cost_config: Optional[IntradayCostConfig] = None
+    opening_cooldown_minutes: int = 10
+    market_open_time: str = "09:15"
+    include_estimated_round_trip_costs_in_sizing: bool = True
+    min_trade_quantity: int = 1
+    conservative_cost_buffer_rate: float = 0.0
+    max_stock_allocation_pct: float = 1.0
+
+    @property
+    def risk_per_trade_pct(self) -> float:
+        """Alias for risk_per_trade for multi-asset parity."""
+        return self.risk_per_trade
+
+    @property
+    def stop_loss_atr(self) -> float:
+        """Alias for stop_atr_multiplier for multi-asset parity."""
+        return self.stop_atr_multiplier
+
+    @property
+    def take_profit_atr(self) -> float:
+        """Alias for target_atr_multiplier for multi-asset parity."""
+        return self.target_atr_multiplier
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.opening_cooldown_minutes, int) or isinstance(
+            self.opening_cooldown_minutes, bool
+        ):
+            raise ValueError(
+                f"opening_cooldown_minutes must be an integer, got {type(self.opening_cooldown_minutes).__name__}"
+            )
+        if self.opening_cooldown_minutes < 0:
+            raise ValueError(
+                f"opening_cooldown_minutes must be non-negative, got {self.opening_cooldown_minutes}"
+            )
+        try:
+            open_t = pd.Timestamp(self.market_open_time).time()
+        except Exception as e:
+            raise ValueError(f"Invalid market_open_time format: {self.market_open_time}") from e
+        try:
+            session_end_t = pd.Timestamp(self.session_end_time).time()
+        except Exception as e:
+            raise ValueError(f"Invalid session_end_time format: {self.session_end_time}") from e
+
+        if open_t >= session_end_t:
+            raise ValueError("market_open_time must precede session_end_time.")
+
+        cooldown_end_dt = datetime.combine(datetime.today().date(), open_t) + timedelta(
+            minutes=self.opening_cooldown_minutes
+        )
+        if cooldown_end_dt.time() > session_end_t:
+            raise ValueError("opening_cooldown_minutes cannot extend past session_end_time.")
+
+    def is_in_opening_cooldown(self, current_time: Union[pd.Timestamp, datetime]) -> bool:
+        """Check if timestamp falls strictly within the opening market cooldown period."""
+        return is_in_opening_cooldown(
+            current_time,
+            self.opening_cooldown_minutes,
+            self.market_open_time,
+        )
 
 
 def run_intraday_backtest(
@@ -685,7 +793,10 @@ def run_intraday_backtest(
                 pending_entry = None
                 break
 
-            if not (
+            if config.is_in_opening_cooldown(current_time):
+                # Discard signals queued during cooldown; do not execute forced entry at expiration
+                pending_entry = None
+            elif not (
                 config.enforce_eod_square_off
                 and current_time.time() >= session_end_t
             ):
@@ -693,23 +804,31 @@ def run_intraday_backtest(
                 pending_atr = pending_entry["atr"]
                 entry_p = bar_open
                 if entry_p > 0 and pending_atr > 0:
-                    risk_amount = capital * config.risk_per_trade
                     stop_dist = pending_atr * config.stop_atr_multiplier
                     if stop_dist > 0:
-                        risk_qty = int(risk_amount / stop_dist)
-                        max_notional = capital * config.max_leverage
-                        if config.max_exposure is not None:
-                            max_notional = min(max_notional, config.max_exposure)
-                        max_allowed_qty = int(max_notional / entry_p)
-                        final_qty = min(risk_qty, max_allowed_qty)
-                        if final_qty > 0:
-                            if pending_side == "LONG":
-                                stop_p = entry_p - stop_dist
-                                target_p = entry_p + (pending_atr * config.target_atr_multiplier)
-                            else:
-                                stop_p = entry_p + stop_dist
-                                target_p = entry_p - (pending_atr * config.target_atr_multiplier)
+                        if pending_side == "LONG":
+                            stop_p = entry_p - stop_dist
+                            target_p = entry_p + (pending_atr * config.target_atr_multiplier)
+                        else:
+                            stop_p = entry_p + stop_dist
+                            target_p = entry_p - (pending_atr * config.target_atr_multiplier)
 
+                        final_qty, risk_qty, max_allowed_qty = calculate_cost_aware_position_size(
+                            entry_price=entry_p,
+                            stop_loss=stop_p,
+                            capital=capital,
+                            risk_per_trade_pct=config.risk_per_trade,
+                            max_leverage=config.max_leverage,
+                            side=pending_side,
+                            cost_config=config.cost_config,
+                            max_exposure=config.max_exposure,
+                            max_stock_allocation_pct=config.max_stock_allocation_pct,
+                            min_trade_quantity=config.min_trade_quantity,
+                            include_costs_in_sizing=config.include_estimated_round_trip_costs_in_sizing,
+                            conservative_cost_buffer_rate=config.conservative_cost_buffer_rate,
+                        )
+
+                        if final_qty > 0:
                             position = {
                                 "side": pending_side,
                                 "entry_time": current_time,
@@ -718,7 +837,7 @@ def run_intraday_backtest(
                                 "target_price": target_p,
                                 "quantity": final_qty,
                                 "capital_before": capital,
-                                "risk_amount": risk_amount,
+                                "risk_amount": capital * config.risk_per_trade,
                                 "atr": pending_atr,
                                 "stop_distance": stop_dist,
                                 "risk_based_quantity": risk_qty,
@@ -747,70 +866,62 @@ def run_intraday_backtest(
                     floor_p = entry_p - (effective_floor - capital) / position["quantity"]
 
             if side == "LONG":
-                # A. Gap down through stop at Open
-                if config.gap_execution and bar_open <= stop_p:
+                # 1. Opening-gap protection floor breach at Open
+                if floor_p is not None and config.gap_execution and bar_open <= floor_p:
+                    exit_price = bar_open
+                    exit_reason = "PROTECTION_FLOOR"
+                # 2. Opening-gap stop at Open
+                elif config.gap_execution and bar_open <= stop_p:
                     exit_price = bar_open
                     exit_reason = "STOP"
-                # B. Same-candle hit: both stop and target touched
-                elif bar_low <= stop_p and bar_high >= target_p:
-                    if config.conservative_same_candle:
-                        exit_price = stop_p
-                        exit_reason = "STOP"
-                    else:
-                        exit_price = target_p
-                        exit_reason = "TARGET"
-                # C. Intrabar stop hit
-                elif bar_low <= stop_p:
-                    exit_price = stop_p
-                    exit_reason = "STOP"
-                # D. Gap up through target at Open
+                # 2B. Opening-gap target at Open
                 elif config.gap_execution and bar_open >= target_p:
                     exit_price = bar_open
                     exit_reason = "TARGET"
-                # E. Intrabar target hit
+                # 3. Intrabar stop hit
+                elif bar_low <= stop_p and bar_high >= target_p and config.conservative_same_candle:
+                    exit_price = stop_p
+                    exit_reason = "STOP"
+                elif bar_low <= stop_p:
+                    exit_price = stop_p
+                    exit_reason = "STOP"
+                # 4. Intrabar protection floor breach (executed at authentic bar_low, never theoretical floor_p)
+                elif floor_p is not None and bar_low <= floor_p:
+                    exit_price = bar_low
+                    exit_reason = "PROTECTION_FLOOR"
+                # 5. Intrabar target hit (only awarded if protection floor not breached)
                 elif bar_high >= target_p:
                     exit_price = target_p
                     exit_reason = "TARGET"
-                # F. Protection floor breach
-                elif floor_p is not None and bar_low <= floor_p:
-                    if config.gap_execution and bar_open <= floor_p:
-                        exit_price = bar_open
-                    else:
-                        exit_price = floor_p
-                    exit_reason = "PROTECTION_FLOOR"
 
             elif side == "SHORT":
-                # A. Gap up through stop at Open
-                if config.gap_execution and bar_open >= stop_p:
+                # 1. Opening-gap protection floor breach at Open
+                if floor_p is not None and config.gap_execution and bar_open >= floor_p:
+                    exit_price = bar_open
+                    exit_reason = "PROTECTION_FLOOR"
+                # 2. Opening-gap stop at Open
+                elif config.gap_execution and bar_open >= stop_p:
                     exit_price = bar_open
                     exit_reason = "STOP"
-                # B. Same-candle hit
-                elif bar_high >= stop_p and bar_low <= target_p:
-                    if config.conservative_same_candle:
-                        exit_price = stop_p
-                        exit_reason = "STOP"
-                    else:
-                        exit_price = target_p
-                        exit_reason = "TARGET"
-                # C. Intrabar stop hit
-                elif bar_high >= stop_p:
-                    exit_price = stop_p
-                    exit_reason = "STOP"
-                # D. Gap down through target at Open
+                # 2B. Opening-gap target at Open
                 elif config.gap_execution and bar_open <= target_p:
                     exit_price = bar_open
                     exit_reason = "TARGET"
-                # E. Intrabar target hit
+                # 3. Intrabar stop hit
+                elif bar_high >= stop_p and bar_low <= target_p and config.conservative_same_candle:
+                    exit_price = stop_p
+                    exit_reason = "STOP"
+                elif bar_high >= stop_p:
+                    exit_price = stop_p
+                    exit_reason = "STOP"
+                # 4. Intrabar protection floor breach (executed at authentic bar_high, never theoretical floor_p)
+                elif floor_p is not None and bar_high >= floor_p:
+                    exit_price = bar_high
+                    exit_reason = "PROTECTION_FLOOR"
+                # 5. Intrabar target hit (only awarded if protection floor not breached)
                 elif bar_low <= target_p:
                     exit_price = target_p
                     exit_reason = "TARGET"
-                # F. Protection floor breach
-                elif floor_p is not None and bar_high >= floor_p:
-                    if config.gap_execution and bar_open >= floor_p:
-                        exit_price = bar_open
-                    else:
-                        exit_price = floor_p
-                    exit_reason = "PROTECTION_FLOOR"
 
             # G. End of Day Square-Off if neither stop, target, nor floor hit
             if (
@@ -863,7 +974,10 @@ def run_intraday_backtest(
                         f"(protection floor: {effective_floor:.2f})"
                     )
                     break
-                continue
+
+                # Position exited and settled on candle i.
+                # Allow loop to proceed to Step 3 below so new signals formed at
+                # candle close (same_close) or for next open (next_open) can be evaluated.
 
         # ----------------------------------------------------
         # 3. OPEN NEW POSITION
@@ -886,6 +1000,10 @@ def run_intraday_backtest(
 
             # Do not enter at or after session end time
             if config.enforce_eod_square_off and current_time.time() >= session_end_t:
+                continue
+
+            # For same_close, entry occurs at current bar close; block if within opening market cooldown
+            if config.execution_model == "same_close" and config.is_in_opening_cooldown(current_time):
                 continue
 
             if precomputed_signals is not None:
@@ -923,20 +1041,8 @@ def run_intraday_backtest(
             if entry_p <= 0:
                 continue
 
-            # Position Sizing
-            risk_amount = capital * config.risk_per_trade
             stop_dist = atr * config.stop_atr_multiplier
             if stop_dist <= 0:
-                continue
-
-            risk_qty = int(risk_amount / stop_dist)
-            max_notional = capital * config.max_leverage
-            if config.max_exposure is not None:
-                max_notional = min(max_notional, config.max_exposure)
-            max_allowed_qty = int(max_notional / entry_p)
-
-            final_qty = min(risk_qty, max_allowed_qty)
-            if final_qty <= 0:
                 continue
 
             if side == "LONG":
@@ -946,6 +1052,24 @@ def run_intraday_backtest(
                 stop_p = entry_p + stop_dist
                 target_p = entry_p - (atr * config.target_atr_multiplier)
 
+            final_qty, risk_qty, max_allowed_qty = calculate_cost_aware_position_size(
+                entry_price=entry_p,
+                stop_loss=stop_p,
+                capital=capital,
+                risk_per_trade_pct=config.risk_per_trade,
+                max_leverage=config.max_leverage,
+                side=side,
+                cost_config=config.cost_config,
+                max_exposure=config.max_exposure,
+                max_stock_allocation_pct=config.max_stock_allocation_pct,
+                min_trade_quantity=config.min_trade_quantity,
+                include_costs_in_sizing=config.include_estimated_round_trip_costs_in_sizing,
+                conservative_cost_buffer_rate=config.conservative_cost_buffer_rate,
+            )
+
+            if final_qty <= 0:
+                continue
+
             position = {
                 "side": side,
                 "entry_time": current_time,
@@ -954,7 +1078,7 @@ def run_intraday_backtest(
                 "target_price": target_p,
                 "quantity": final_qty,
                 "capital_before": capital,
-                "risk_amount": risk_amount,
+                "risk_amount": capital * config.risk_per_trade,
                 "atr": atr,
                 "stop_distance": stop_dist,
                 "risk_based_quantity": risk_qty,
@@ -1032,4 +1156,5 @@ def run_intraday_backtest(
         metrics=metrics,
         bankruptcy_reason=bankruptcy_reason,
         cost_model_info=cost_model_info,
+        opening_cooldown_minutes=config.opening_cooldown_minutes,
     )

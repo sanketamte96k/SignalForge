@@ -44,6 +44,9 @@ def test_01_api_risk_configuration_defaults():
     assert req.session_end_time == "15:15"
     assert req.cost_profile == "DISCOUNT_BROKER_REALISTIC"
     assert req.execution_model == "next_open"
+    assert req.opening_cooldown_minutes == 10
+    assert req.market_open_time == "09:15"
+    assert IntradayEngineConfig().opening_cooldown_minutes == 10
 
 
 def test_02_api_risk_configuration_validation_errors():
@@ -123,6 +126,7 @@ def test_03_intraday_atr_stop_loss_intrabar_and_gap():
         stop_atr_multiplier=1.5,
         target_atr_multiplier=3.0,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res_intrabar = run_intraday_backtest(df_intrabar, [None, Position.LONG, None, None, None], cfg)
     assert len(res_intrabar.trades) == 1
@@ -175,6 +179,7 @@ def test_04_intraday_take_profit_target_exit():
         stop_atr_multiplier=1.5,
         target_atr_multiplier=3.0,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res = run_intraday_backtest(df, [None, Position.LONG, None, None, None], cfg)
     assert len(res.trades) == 1
@@ -211,6 +216,7 @@ def test_05_intraday_same_candle_conservative_collision():
         target_atr_multiplier=3.0,
         conservative_same_candle=True,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res = run_intraday_backtest(df, [None, Position.LONG, None, None, None], cfg)
     assert len(res.trades) == 1
@@ -291,6 +297,7 @@ def test_07_risk_based_position_sizing_and_5x_leverage_cap():
         max_exposure=50000.0,
         stop_atr_multiplier=1.5,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res = run_intraday_backtest(df, [None, Position.LONG, None, None, None], cfg)
     assert len(res.trades) == 1
@@ -329,6 +336,7 @@ def test_08_equity_protection_floor_blocks_new_entries():
         initial_capital=7950.0,
         capital_protection_floor=8000.0,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res = run_intraday_backtest(df, [None, Position.LONG, None, Position.LONG, None, None, None, None, None, None], cfg)
     # Must immediately block entries
@@ -372,6 +380,7 @@ def test_09_open_position_protection_floor_breach_and_gap_slippage():
         cost_config=cost_cfg,
         gap_execution=True,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res = run_intraday_backtest(df, [None, Position.LONG, None, None, None, None], cfg)
     assert len(res.trades) == 1
@@ -486,6 +495,7 @@ def test_11_canonical_transaction_costs_integrated_in_intraday_exits():
         target_atr_multiplier=3.0,
         cost_config=cost_cfg,
         execution_model="same_close",
+        opening_cooldown_minutes=0,
     )
     res = run_intraday_backtest(df, [None, Position.LONG, None, None, None], cfg)
     assert len(res.trades) == 1

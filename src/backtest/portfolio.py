@@ -207,6 +207,8 @@ class PortfolioManager:
         self.max_drawdown: float = 0.0
         self.is_bankrupt: bool = False
         self.bankruptcy_reason: Optional[str] = None
+        self.has_indeterminate_valuation: bool = False
+        self.indeterminate_valuation_reason: Optional[str] = None
 
         self.open_positions: dict[str, OpenPosition] = {}
         self.trades: list[Trade] = []
@@ -348,6 +350,9 @@ class PortfolioManager:
 
         if self.has_unresolved_liquidations:
             return False, "Portfolio has unresolved emergency liquidations pending valid market data"
+
+        if self.has_indeterminate_valuation:
+            return False, f"Portfolio has indeterminate valuation: {self.indeterminate_valuation_reason}"
 
         if sym in self.open_positions:
             return False, f"Active position already open for symbol '{sym}'"

@@ -28,6 +28,7 @@ from src.backtest.capital_allocator import (
     CapitalAllocator,
     TradeOpportunity,
 )
+from src.backtest.engine import IST_TIMEZONE, is_in_opening_cooldown
 from src.backtest.indian_market_costs import (
     DISCOUNT_BROKER_REALISTIC_CONFIG,
     IntradayCostConfig,
@@ -175,15 +176,13 @@ class MultiAssetEngineConfig:
         if self.cost_config is None:
             self.cost_config = DISCOUNT_BROKER_REALISTIC_CONFIG
 
-    def is_in_opening_cooldown(self, current_time: pd.Timestamp) -> bool:
+    def is_in_opening_cooldown(self, current_time: Union[pd.Timestamp, datetime]) -> bool:
         """Check if timestamp falls strictly within the opening market cooldown period."""
-        if self.opening_cooldown_minutes <= 0:
-            return False
-        t = current_time.time()
-        open_t = pd.Timestamp(self.market_open_time).time()
-        cooldown_end_dt = datetime.combine(current_time.date(), open_t) + pd.Timedelta(minutes=self.opening_cooldown_minutes)
-        cooldown_end_t = cooldown_end_dt.time()
-        return open_t <= t < cooldown_end_t
+        return is_in_opening_cooldown(
+            current_time,
+            self.opening_cooldown_minutes,
+            self.market_open_time,
+        )
 
     @property
     def effective_protection_floor(self) -> Optional[float]:
@@ -227,6 +226,7 @@ class MultiAssetBacktestResult:
     opening_cooldown_minutes: int = 10
     bankruptcy_reason: Optional[str] = None
     cost_model_info: Optional[dict[str, Any]] = None
+    indeterminate_valuation_events: int = 0
 
 
 def _normalize_symbol_dataframe(symbol: str, data: pd.DataFrame) -> pd.DataFrame:
@@ -460,6 +460,7 @@ def run_multi_asset_backtest(
     missing_candle_stats: dict[str, int] = {s: 0 for s in symbols}
     stale_price_events: int = 0
     stale_notional_exposure: float = 0.0
+    indeterminate_events: int = 0
     equity_snapshots: list[dict[str, Any]] = []
 
     # Pending signals for next_open execution model
@@ -503,6 +504,7 @@ def run_multi_asset_backtest(
         # 2. LOAD ACTIVE MARKET EVENTS & DETECT MISSING CANDLES
         # --------------------------------------------------------------------
         active_bars: dict[str, pd.Series] = {}
+        missing_syms_with_positions: list[str] = []
         for sym in symbols:
             if current_time in symbol_index_map[sym]:
                 active_bars[sym] = normalized_data[sym].loc[current_time]
@@ -513,6 +515,25 @@ def run_multi_asset_backtest(
                     stale_price_events += 1
                     pos = portfolio.open_positions[sym]
                     stale_notional_exposure += pos.notional_value
+                    missing_syms_with_positions.append(sym)
+
+        if missing_syms_with_positions:
+            indeterminate_events += 1
+            cannot_form_mark = any(
+                portfolio.open_positions[s].current_price is None or portfolio.open_positions[s].current_price <= 0
+                for s in missing_syms_with_positions
+            )
+            if cannot_form_mark:
+                portfolio.has_indeterminate_valuation = True
+                portfolio.indeterminate_valuation_reason = (
+                    f"Current mark cannot be formed from authentic data for: {', '.join(sorted(missing_syms_with_positions))} at {current_time}"
+                )
+            else:
+                portfolio.has_indeterminate_valuation = False
+                portfolio.indeterminate_valuation_reason = None
+        elif not portfolio.has_unresolved_liquidations:
+            portfolio.has_indeterminate_valuation = False
+            portfolio.indeterminate_valuation_reason = None
 
         # --------------------------------------------------------------------
         # 3. PROCESS PENDING LIQUIDATIONS (Authentic executable bar arrival)
@@ -548,50 +569,24 @@ def run_multi_asset_backtest(
             # MODEL: NEXT_OPEN (Causal execution at bar Open)
             # ================================================================
 
-            # 4A. Evaluate Opening-Gap Exits at t Open
-            # Positions exiting at bar_open release margin IMMEDIATELY at t Open.
-            open_syms = sorted(list(portfolio.open_positions.keys()))
-            for sym in open_syms:
-                if sym not in portfolio.open_positions or sym not in active_bars:
-                    continue
-                pos = portfolio.open_positions[sym]
-                if pos.pending_liquidation:
-                    continue
+            # 4A. Evaluate Opening-Gap Protection at t Open (Priority 1)
+            eff_floor = portfolio.effective_protection_floor
+            if eff_floor is not None and portfolio.open_positions:
+                open_unrealized = 0.0
+                for sym, pos in portfolio.open_positions.items():
+                    # Include every open position, including pending_liquidation, using authentic mark
+                    p_mark = float(active_bars[sym]["Open"]) if sym in active_bars else pos.current_price
+                    if pos.side == Position.LONG:
+                        open_unrealized += (p_mark - pos.entry_price) * pos.quantity
+                    else:
+                        open_unrealized += (pos.entry_price - p_mark) * pos.quantity
+                open_equity = portfolio.cash + open_unrealized
+                if open_equity <= eff_floor or open_equity <= 0:
+                    portfolio.is_bankrupt = True
+                    if portfolio.bankruptcy_reason is None:
+                        portfolio.bankruptcy_reason = "CAPITAL_EXHAUSTED" if open_equity <= 0 else "PROTECTION_FLOOR"
 
-                bar = active_bars[sym]
-                bar_open = float(bar["Open"])
-                gap_exit_price = None
-                gap_exit_reason = None
-
-                if pos.side == Position.LONG:
-                    if config.gap_execution and bar_open <= pos.stop_price:
-                        gap_exit_price = bar_open
-                        gap_exit_reason = "STOP"
-                    elif config.gap_execution and bar_open >= pos.target_price:
-                        gap_exit_price = bar_open
-                        gap_exit_reason = "TARGET"
-                elif pos.side == Position.SHORT:
-                    if config.gap_execution and bar_open >= pos.stop_price:
-                        gap_exit_price = bar_open
-                        gap_exit_reason = "STOP"
-                    elif config.gap_execution and bar_open <= pos.target_price:
-                        gap_exit_price = bar_open
-                        gap_exit_reason = "TARGET"
-
-                if gap_exit_price is not None and gap_exit_reason is not None:
-                    portfolio.close_position(
-                        symbol=sym,
-                        exit_time=current_time,
-                        exit_price=gap_exit_price,
-                        exit_reason=gap_exit_reason,
-                        cost_config=config.cost_config,
-                        brokerage=config.brokerage_per_trade,
-                        slippage_rate=config.slippage_rate,
-                        statutory_fee_rate=config.statutory_fee_rate,
-                        transaction_cost_rate=config.transaction_cost_rate,
-                    )
-
-            # 4B. Emergency Liquidation at t Open (Floor breach / Bankruptcy)
+            # Emergency Liquidation at t Open if Opening-Gap breached protection
             if portfolio.is_bankrupt:
                 open_syms = sorted(list(portfolio.open_positions.keys()))
                 for sym in open_syms:
@@ -602,7 +597,7 @@ def run_multi_asset_backtest(
                             symbol=sym,
                             exit_time=current_time,
                             exit_price=float(active_bars[sym]["Open"]),
-                            exit_reason=portfolio.bankruptcy_reason or "BANKRUPTCY",
+                            exit_reason=portfolio.bankruptcy_reason or "PROTECTION_FLOOR",
                             cost_config=config.cost_config,
                             brokerage=config.brokerage_per_trade,
                             slippage_rate=config.slippage_rate,
@@ -610,8 +605,51 @@ def run_multi_asset_backtest(
                             transaction_cost_rate=config.transaction_cost_rate,
                         )
                     else:
-                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "BANKRUPTCY")
+                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "PROTECTION_FLOOR")
                 pending_next_open_signals.clear()
+
+            # 4B. Evaluate Opening-Gap Stop/Target Exits at t Open (Priority 2)
+            if not portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions or sym not in active_bars:
+                        continue
+                    pos = portfolio.open_positions[sym]
+                    if pos.pending_liquidation:
+                        continue
+
+                    bar = active_bars[sym]
+                    bar_open = float(bar["Open"])
+                    gap_exit_price = None
+                    gap_exit_reason = None
+
+                    if pos.side == Position.LONG:
+                        if config.gap_execution and bar_open <= pos.stop_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "STOP"
+                        elif config.gap_execution and bar_open >= pos.target_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "TARGET"
+                    elif pos.side == Position.SHORT:
+                        if config.gap_execution and bar_open >= pos.stop_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "STOP"
+                        elif config.gap_execution and bar_open <= pos.target_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "TARGET"
+
+                    if gap_exit_price is not None and gap_exit_reason is not None:
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=gap_exit_price,
+                            exit_reason=gap_exit_reason,
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
 
             # 4C. Execute New Entries at t Open (from pending t-1 signals)
             # Available margin includes margin released by Opening-Gap exits,
@@ -620,6 +658,7 @@ def run_multi_asset_backtest(
             is_trading_active = (
                 not portfolio.is_bankrupt
                 and not portfolio.has_unresolved_liquidations
+                and not portfolio.has_indeterminate_valuation
                 and not (config.enforce_eod_square_off and current_time.time() >= session_end_t)
             )
 
@@ -688,6 +727,8 @@ def run_multi_asset_backtest(
 
             # 4D. Evaluate Intrabar & Close Exits for Bar t
             # Intrabar exits release margin for FUTURE bars (t+1 Open), NOT retroactively at t Open.
+
+            # Step 4D-1: Intrabar Individual Stop-Loss Exits (Priority 3)
             open_syms = sorted(list(portfolio.open_positions.keys()))
             for sym in open_syms:
                 if sym not in portfolio.open_positions or sym not in active_bars:
@@ -697,43 +738,27 @@ def run_multi_asset_backtest(
                     continue
 
                 bar = active_bars[sym]
-                bar_high = float(bar["High"])
                 bar_low = float(bar["Low"])
-                bar_close = float(bar["Close"])
+                bar_high = float(bar["High"])
 
-                exit_price = None
-                exit_reason = None
-
-                if config.enforce_eod_square_off and current_time.time() >= session_end_t:
-                    exit_price = bar_close
-                    exit_reason = "EOD"
-                elif pos.side == Position.LONG:
-                    if bar_low <= pos.stop_price and bar_high >= pos.target_price:
-                        exit_price = pos.stop_price if config.conservative_same_candle else pos.target_price
-                        exit_reason = "STOP" if config.conservative_same_candle else "TARGET"
+                stop_hit = False
+                if pos.side == Position.LONG:
+                    if bar_low <= pos.stop_price and bar_high >= pos.target_price and config.conservative_same_candle:
+                        stop_hit = True
                     elif bar_low <= pos.stop_price:
-                        exit_price = pos.stop_price
-                        exit_reason = "STOP"
-                    elif bar_high >= pos.target_price:
-                        exit_price = pos.target_price
-                        exit_reason = "TARGET"
+                        stop_hit = True
                 elif pos.side == Position.SHORT:
-                    if bar_high >= pos.stop_price and bar_low <= pos.target_price:
-                        exit_price = pos.stop_price if config.conservative_same_candle else pos.target_price
-                        exit_reason = "STOP" if config.conservative_same_candle else "TARGET"
+                    if bar_high >= pos.stop_price and bar_low <= pos.target_price and config.conservative_same_candle:
+                        stop_hit = True
                     elif bar_high >= pos.stop_price:
-                        exit_price = pos.stop_price
-                        exit_reason = "STOP"
-                    elif bar_low <= pos.target_price:
-                        exit_price = pos.target_price
-                        exit_reason = "TARGET"
+                        stop_hit = True
 
-                if exit_price is not None and exit_reason is not None:
+                if stop_hit:
                     portfolio.close_position(
                         symbol=sym,
                         exit_time=current_time,
-                        exit_price=exit_price,
-                        exit_reason=exit_reason,
+                        exit_price=pos.stop_price,
+                        exit_reason="STOP",
                         cost_config=config.cost_config,
                         brokerage=config.brokerage_per_trade,
                         slippage_rate=config.slippage_rate,
@@ -741,14 +766,103 @@ def run_multi_asset_backtest(
                         transaction_cost_rate=config.transaction_cost_rate,
                     )
 
-            # 4E. Update MTM Prices & Drawdown at Bar t Close
-            current_prices = {}
-            for sym, bar in active_bars.items():
-                current_prices[sym] = float(bar["Close"])
-            portfolio.update_market_prices(current_prices)
+            # Step 4D-2: Aggregate Portfolio Protection (Intrabar & Close) (Priority 4)
+            eff_floor = portfolio.effective_protection_floor
+            if eff_floor is not None and portfolio.open_positions:
+                # 1. Adverse intrabar excursion across all remaining open positions (including pending_liquidation)
+                adv_unrealized = 0.0
+                for s, p in portfolio.open_positions.items():
+                    if s in active_bars:
+                        p_adv = float(active_bars[s]["Low"]) if p.side == Position.LONG else float(active_bars[s]["High"])
+                    else:
+                        p_adv = p.current_price
+                    if p.side == Position.LONG:
+                        adv_unrealized += (p_adv - p.entry_price) * p.quantity
+                    else:
+                        adv_unrealized += (p.entry_price - p_adv) * p.quantity
+                adv_equity = portfolio.cash + adv_unrealized
 
-            # 4F. Check Bankruptcy at Bar t Close
+                # 2. Close equity across all remaining open positions
+                close_unrealized = 0.0
+                for s, p in portfolio.open_positions.items():
+                    if s in active_bars:
+                        p_cls = float(active_bars[s]["Close"])
+                    else:
+                        p_cls = p.current_price
+                    if p.side == Position.LONG:
+                        close_unrealized += (p_cls - p.entry_price) * p.quantity
+                    else:
+                        close_unrealized += (p.entry_price - p_cls) * p.quantity
+                close_equity = portfolio.cash + close_unrealized
+
+                if adv_equity <= eff_floor or close_equity <= eff_floor or adv_equity <= 0 or close_equity <= 0:
+                    portfolio.is_bankrupt = True
+                    if portfolio.bankruptcy_reason is None:
+                        portfolio.bankruptcy_reason = "CAPITAL_EXHAUSTED" if (adv_equity <= 0 or close_equity <= 0) else "PROTECTION_FLOOR"
+
+            # Emergency Liquidation if aggregate protection breached
             if portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions:
+                        continue
+                    if sym in active_bars:
+                        pos = portfolio.open_positions[sym]
+                        # Conservative liquidation at authentic adverse price, never awarding post-breach recovery
+                        exit_p = float(active_bars[sym]["Low"]) if pos.side == Position.LONG else float(active_bars[sym]["High"])
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=exit_p,
+                            exit_reason=portfolio.bankruptcy_reason or "PROTECTION_FLOOR",
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+                    else:
+                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "PROTECTION_FLOOR")
+                pending_next_open_signals.clear()
+
+            # Step 4D-3: Intrabar Individual Target Exits (Priority 5)
+            # Only awarded if portfolio did not breach protection floor!
+            if not portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions or sym not in active_bars:
+                        continue
+                    pos = portfolio.open_positions[sym]
+                    if pos.pending_liquidation:
+                        continue
+
+                    bar = active_bars[sym]
+                    bar_high = float(bar["High"])
+                    bar_low = float(bar["Low"])
+
+                    target_hit = False
+                    if pos.side == Position.LONG:
+                        if bar_high >= pos.target_price:
+                            target_hit = True
+                    elif pos.side == Position.SHORT:
+                        if bar_low <= pos.target_price:
+                            target_hit = True
+
+                    if target_hit:
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=pos.target_price,
+                            exit_reason="TARGET",
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+
+            # Step 4D-4: End-of-Day Square-Off (Priority 6)
+            if not portfolio.is_bankrupt and config.enforce_eod_square_off and current_time.time() >= session_end_t:
                 open_syms = sorted(list(portfolio.open_positions.keys()))
                 for sym in open_syms:
                     if sym not in portfolio.open_positions:
@@ -758,7 +872,7 @@ def run_multi_asset_backtest(
                             symbol=sym,
                             exit_time=current_time,
                             exit_price=float(active_bars[sym]["Close"]),
-                            exit_reason=portfolio.bankruptcy_reason or "BANKRUPTCY",
+                            exit_reason="EOD",
                             cost_config=config.cost_config,
                             brokerage=config.brokerage_per_trade,
                             slippage_rate=config.slippage_rate,
@@ -766,11 +880,21 @@ def run_multi_asset_backtest(
                             transaction_cost_rate=config.transaction_cost_rate,
                         )
                     else:
-                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "BANKRUPTCY")
-                pending_next_open_signals.clear()
+                        portfolio.mark_pending_liquidation(sym, "EOD")
 
-            # 4G. Detect New Signals at Bar t Close for t+1 Open
-            if is_trading_active and not portfolio.is_bankrupt and not portfolio.has_unresolved_liquidations:
+            # 4E. Update MTM Prices & Drawdown at Bar t Close
+            current_prices = {}
+            for sym, bar in active_bars.items():
+                current_prices[sym] = float(bar["Close"])
+            portfolio.update_market_prices(current_prices)
+
+            # 4F. Detect New Signals at Bar t Close for t+1 Open
+            if (
+                is_trading_active
+                and not portfolio.is_bankrupt
+                and not portfolio.has_unresolved_liquidations
+                and not portfolio.has_indeterminate_valuation
+            ):
                 for sym, bar in active_bars.items():
                     if sym in portfolio.open_positions:
                         continue
@@ -806,80 +930,23 @@ def run_multi_asset_backtest(
             # MODEL: SAME_CLOSE (Synchronous evaluation and execution at Close)
             # ================================================================
 
-            # 4A. Evaluate Exits for Open Positions during Bar t
-            open_syms = sorted(list(portfolio.open_positions.keys()))
-            for sym in open_syms:
-                if sym not in portfolio.open_positions or sym not in active_bars:
-                    continue
-                pos = portfolio.open_positions[sym]
-                if pos.pending_liquidation:
-                    continue
+            # Step 4A: Opening-Gap Protection at t Open (Priority 1)
+            eff_floor = portfolio.effective_protection_floor
+            if eff_floor is not None and portfolio.open_positions:
+                open_unrealized = 0.0
+                for sym, pos in portfolio.open_positions.items():
+                    p_mark = float(active_bars[sym]["Open"]) if sym in active_bars else pos.current_price
+                    if pos.side == Position.LONG:
+                        open_unrealized += (p_mark - pos.entry_price) * pos.quantity
+                    else:
+                        open_unrealized += (pos.entry_price - p_mark) * pos.quantity
+                open_equity = portfolio.cash + open_unrealized
+                if open_equity <= eff_floor or open_equity <= 0:
+                    portfolio.is_bankrupt = True
+                    if portfolio.bankruptcy_reason is None:
+                        portfolio.bankruptcy_reason = "CAPITAL_EXHAUSTED" if open_equity <= 0 else "PROTECTION_FLOOR"
 
-                bar = active_bars[sym]
-                bar_open = float(bar["Open"])
-                bar_high = float(bar["High"])
-                bar_low = float(bar["Low"])
-                bar_close = float(bar["Close"])
-
-                exit_price = None
-                exit_reason = None
-
-                if config.enforce_eod_square_off and current_time.time() >= session_end_t:
-                    exit_price = bar_close
-                    exit_reason = "EOD"
-                elif pos.side == Position.LONG:
-                    if config.gap_execution and bar_open <= pos.stop_price:
-                        exit_price = bar_open
-                        exit_reason = "STOP"
-                    elif bar_low <= pos.stop_price and bar_high >= pos.target_price:
-                        exit_price = pos.stop_price if config.conservative_same_candle else pos.target_price
-                        exit_reason = "STOP" if config.conservative_same_candle else "TARGET"
-                    elif bar_low <= pos.stop_price:
-                        exit_price = pos.stop_price
-                        exit_reason = "STOP"
-                    elif config.gap_execution and bar_open >= pos.target_price:
-                        exit_price = bar_open
-                        exit_reason = "TARGET"
-                    elif bar_high >= pos.target_price:
-                        exit_price = pos.target_price
-                        exit_reason = "TARGET"
-                elif pos.side == Position.SHORT:
-                    if config.gap_execution and bar_open >= pos.stop_price:
-                        exit_price = bar_open
-                        exit_reason = "STOP"
-                    elif bar_high >= pos.stop_price and bar_low <= pos.target_price:
-                        exit_price = pos.stop_price if config.conservative_same_candle else pos.target_price
-                        exit_reason = "STOP" if config.conservative_same_candle else "TARGET"
-                    elif bar_high >= pos.stop_price:
-                        exit_price = pos.stop_price
-                        exit_reason = "STOP"
-                    elif config.gap_execution and bar_open <= pos.target_price:
-                        exit_price = bar_open
-                        exit_reason = "TARGET"
-                    elif bar_low <= pos.target_price:
-                        exit_price = pos.target_price
-                        exit_reason = "TARGET"
-
-                if exit_price is not None and exit_reason is not None:
-                    portfolio.close_position(
-                        symbol=sym,
-                        exit_time=current_time,
-                        exit_price=exit_price,
-                        exit_reason=exit_reason,
-                        cost_config=config.cost_config,
-                        brokerage=config.brokerage_per_trade,
-                        slippage_rate=config.slippage_rate,
-                        statutory_fee_rate=config.statutory_fee_rate,
-                        transaction_cost_rate=config.transaction_cost_rate,
-                    )
-
-            # 4B. Update MTM Prices with Bar t Close
-            current_prices = {}
-            for sym, bar in active_bars.items():
-                current_prices[sym] = float(bar["Close"])
-            portfolio.update_market_prices(current_prices)
-
-            # 4C. Check Emergency Liquidation at Close
+            # Emergency Liquidation at t Open if Opening-Gap breached protection
             if portfolio.is_bankrupt:
                 open_syms = sorted(list(portfolio.open_positions.keys()))
                 for sym in open_syms:
@@ -889,8 +956,8 @@ def run_multi_asset_backtest(
                         portfolio.close_position(
                             symbol=sym,
                             exit_time=current_time,
-                            exit_price=float(active_bars[sym]["Close"]),
-                            exit_reason=portfolio.bankruptcy_reason or "BANKRUPTCY",
+                            exit_price=float(active_bars[sym]["Open"]),
+                            exit_reason=portfolio.bankruptcy_reason or "PROTECTION_FLOOR",
                             cost_config=config.cost_config,
                             brokerage=config.brokerage_per_trade,
                             slippage_rate=config.slippage_rate,
@@ -898,13 +965,213 @@ def run_multi_asset_backtest(
                             transaction_cost_rate=config.transaction_cost_rate,
                         )
                     else:
-                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "BANKRUPTCY")
+                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "PROTECTION_FLOOR")
 
-            # 4D. Generate & Execute New Candidate Entries at Bar t Close
+            # Step 4B: Opening-Gap Stop/Target Exits at t Open (Priority 2)
+            if not portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions or sym not in active_bars:
+                        continue
+                    pos = portfolio.open_positions[sym]
+                    if pos.pending_liquidation:
+                        continue
+
+                    bar = active_bars[sym]
+                    bar_open = float(bar["Open"])
+                    gap_exit_price = None
+                    gap_exit_reason = None
+
+                    if pos.side == Position.LONG:
+                        if config.gap_execution and bar_open <= pos.stop_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "STOP"
+                        elif config.gap_execution and bar_open >= pos.target_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "TARGET"
+                    elif pos.side == Position.SHORT:
+                        if config.gap_execution and bar_open >= pos.stop_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "STOP"
+                        elif config.gap_execution and bar_open <= pos.target_price:
+                            gap_exit_price = bar_open
+                            gap_exit_reason = "TARGET"
+
+                    if gap_exit_price is not None and gap_exit_reason is not None:
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=gap_exit_price,
+                            exit_reason=gap_exit_reason,
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+
+            # Step 4C: Intrabar Individual Stop-Loss Exits (Priority 3)
+            if not portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions or sym not in active_bars:
+                        continue
+                    pos = portfolio.open_positions[sym]
+                    if pos.pending_liquidation:
+                        continue
+
+                    bar = active_bars[sym]
+                    bar_low = float(bar["Low"])
+                    bar_high = float(bar["High"])
+
+                    stop_hit = False
+                    if pos.side == Position.LONG:
+                        if bar_low <= pos.stop_price and bar_high >= pos.target_price and config.conservative_same_candle:
+                            stop_hit = True
+                        elif bar_low <= pos.stop_price:
+                            stop_hit = True
+                    elif pos.side == Position.SHORT:
+                        if bar_high >= pos.stop_price and bar_low <= pos.target_price and config.conservative_same_candle:
+                            stop_hit = True
+                        elif bar_high >= pos.stop_price:
+                            stop_hit = True
+
+                    if stop_hit:
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=pos.stop_price,
+                            exit_reason="STOP",
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+
+            # Step 4D: Aggregate Portfolio Protection (Intrabar & Close) (Priority 4)
+            eff_floor = portfolio.effective_protection_floor
+            if eff_floor is not None and portfolio.open_positions:
+                adv_unrealized = 0.0
+                for s, p in portfolio.open_positions.items():
+                    if s in active_bars:
+                        p_adv = float(active_bars[s]["Low"]) if p.side == Position.LONG else float(active_bars[s]["High"])
+                    else:
+                        p_adv = p.current_price
+                    if p.side == Position.LONG:
+                        adv_unrealized += (p_adv - p.entry_price) * p.quantity
+                    else:
+                        adv_unrealized += (p.entry_price - p_adv) * p.quantity
+                adv_equity = portfolio.cash + adv_unrealized
+
+                close_unrealized = 0.0
+                for s, p in portfolio.open_positions.items():
+                    if s in active_bars:
+                        p_cls = float(active_bars[s]["Close"])
+                    else:
+                        p_cls = p.current_price
+                    if p.side == Position.LONG:
+                        close_unrealized += (p_cls - p.entry_price) * p.quantity
+                    else:
+                        close_unrealized += (p.entry_price - p_cls) * p.quantity
+                close_equity = portfolio.cash + close_unrealized
+
+                if adv_equity <= eff_floor or close_equity <= eff_floor or adv_equity <= 0 or close_equity <= 0:
+                    portfolio.is_bankrupt = True
+                    if portfolio.bankruptcy_reason is None:
+                        portfolio.bankruptcy_reason = "CAPITAL_EXHAUSTED" if (adv_equity <= 0 or close_equity <= 0) else "PROTECTION_FLOOR"
+
+            # Emergency Liquidation if aggregate protection breached
+            if portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions:
+                        continue
+                    if sym in active_bars:
+                        pos = portfolio.open_positions[sym]
+                        exit_p = float(active_bars[sym]["Low"]) if pos.side == Position.LONG else float(active_bars[sym]["High"])
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=exit_p,
+                            exit_reason=portfolio.bankruptcy_reason or "PROTECTION_FLOOR",
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+                    else:
+                        portfolio.mark_pending_liquidation(sym, portfolio.bankruptcy_reason or "PROTECTION_FLOOR")
+
+            # Step 4E: Intrabar Targets (Priority 5)
+            if not portfolio.is_bankrupt:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions or sym not in active_bars:
+                        continue
+                    pos = portfolio.open_positions[sym]
+                    if pos.pending_liquidation:
+                        continue
+
+                    bar = active_bars[sym]
+                    bar_high = float(bar["High"])
+                    bar_low = float(bar["Low"])
+
+                    target_hit = False
+                    if pos.side == Position.LONG:
+                        if bar_high >= pos.target_price:
+                            target_hit = True
+                    elif pos.side == Position.SHORT:
+                        if bar_low <= pos.target_price:
+                            target_hit = True
+
+                    if target_hit:
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=pos.target_price,
+                            exit_reason="TARGET",
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+
+            # Step 4F: End-of-Day Square-Off (Priority 6)
+            if not portfolio.is_bankrupt and config.enforce_eod_square_off and current_time.time() >= session_end_t:
+                open_syms = sorted(list(portfolio.open_positions.keys()))
+                for sym in open_syms:
+                    if sym not in portfolio.open_positions:
+                        continue
+                    if sym in active_bars:
+                        portfolio.close_position(
+                            symbol=sym,
+                            exit_time=current_time,
+                            exit_price=float(active_bars[sym]["Close"]),
+                            exit_reason="EOD",
+                            cost_config=config.cost_config,
+                            brokerage=config.brokerage_per_trade,
+                            slippage_rate=config.slippage_rate,
+                            statutory_fee_rate=config.statutory_fee_rate,
+                            transaction_cost_rate=config.transaction_cost_rate,
+                        )
+                    else:
+                        portfolio.mark_pending_liquidation(sym, "EOD")
+
+            # Step 4G: Update MTM Prices with Bar t Close
+            current_prices = {}
+            for sym, bar in active_bars.items():
+                current_prices[sym] = float(bar["Close"])
+            portfolio.update_market_prices(current_prices)
+
+            # Step 4H: Generate & Execute New Candidate Entries at Bar t Close
             is_in_cooldown = config.is_in_opening_cooldown(current_time)
             is_trading_active = (
                 not portfolio.is_bankrupt
                 and not portfolio.has_unresolved_liquidations
+                and not portfolio.has_indeterminate_valuation
                 and not (config.enforce_eod_square_off and current_time.time() >= session_end_t)
             )
 
@@ -1060,6 +1327,7 @@ def run_multi_asset_backtest(
         opening_cooldown_minutes=config.opening_cooldown_minutes,
         bankruptcy_reason=portfolio.bankruptcy_reason,
         cost_model_info=cost_model_info,
+        indeterminate_valuation_events=indeterminate_events,
     )
 
 

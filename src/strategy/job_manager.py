@@ -389,6 +389,11 @@ class BacktestJobManager:
                 capital_protection_floor = 8_000.0
                 overall_loss_limit = 2_000.0
 
+            opening_cooldown_minutes = params.get("opening_cooldown_minutes", 10)
+            if opening_cooldown_minutes is not None:
+                opening_cooldown_minutes = int(opening_cooldown_minutes)
+            market_open_time = str(params.get("market_open_time", "09:15"))
+
             risk_config_meta = {
                 "initial_capital": initial_capital,
                 "risk_per_trade_pct": risk_per_trade_pct,
@@ -402,6 +407,8 @@ class BacktestJobManager:
                 "enforce_eod_square_off": True,
                 "gap_execution": True,
                 "conservative_same_candle": True,
+                "opening_cooldown_minutes": opening_cooldown_minutes,
+                "market_open_time": market_open_time,
             }
 
             with self._lock:
@@ -425,6 +432,8 @@ class BacktestJobManager:
                 conservative_same_candle=True,
                 execution_model=exec_model,
                 cost_config=cost_config,
+                opening_cooldown_minutes=opening_cooldown_minutes,
+                market_open_time=market_open_time,
             )
 
             backtest_result = run_intraday_backtest(

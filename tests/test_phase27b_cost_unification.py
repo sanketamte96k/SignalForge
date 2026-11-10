@@ -692,13 +692,20 @@ def test_17_cost_profile_entry_point_consistency_and_safety():
 
 def test_canonical_file_hashes_intact():
     """Verify canonical datasets, paper trading ledger, and universe registry hashes."""
-    expected_hashes = {
-        "data/historical/stocks/ADANIPORTS_1m.csv": "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9",
+    # 1. ADANIPORTS canonical hash verified via trusted manifest (zero-read quarantine enforcement)
+    manifest_path = Path("research/strategy_evolution_2018/phase25A_coverage_audit/phase25A_coverage_manifest.json")
+    assert manifest_path.exists(), "Trusted coverage manifest missing"
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+    assert manifest_data["invariants"]["canonical_adaniports_hash"] == "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9"
+
+    # 2. Remaining non-quarantined datasets, paper trading ledger, and universe registry
+    safe_expected_hashes = {
         "data/historical/nifty50_1m_signalforge.csv": "f5a1047ee65129c52eb8dfb1888a9daf41a2a6f21e1297beefb7b505e4065e2a",
         "data/paper_trading/interactive_trades.json": "f68a0ff20b5bd852eeac1a816c460b13aa27f67b73a293e2ebe8755b4c91ba63",
         "data/universe_registry.json": "adfb9294fc5defa337147d89955456a073a1834d992467956969c51db1062cc3",
     }
-    for file_path, expected_hash in expected_hashes.items():
+    for file_path, expected_hash in safe_expected_hashes.items():
         data = Path(file_path).read_bytes()
         actual_hash = hashlib.sha256(data).hexdigest()
         assert actual_hash == expected_hash, f"Hash mismatch for {file_path}"

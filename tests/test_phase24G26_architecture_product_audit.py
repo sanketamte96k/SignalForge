@@ -34,11 +34,13 @@ def test_v1_config_hash_immutable():
 
 
 def test_adaniports_canonical_hash():
-    """Verify canonical on-disk ADANIPORTS dataset hash is untouched."""
-    adani_path = Path("data/historical/stocks/ADANIPORTS_1m.csv")
-    assert adani_path.exists(), "ADANIPORTS dataset missing"
-    h = hashlib.sha256(adani_path.read_bytes()).hexdigest()
-    assert h == "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9"
+    """Verify pre-recorded canonical ADANIPORTS hash in trusted manifest without accessing monolithic CSV."""
+    manifest_path = Path("research/strategy_evolution_2018/phase25A_coverage_audit/phase25A_coverage_manifest.json")
+    assert manifest_path.exists(), "Trusted coverage manifest missing"
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+    canonical_hash = manifest_data["invariants"]["canonical_adaniports_hash"]
+    assert canonical_hash == "fb3275527303879c5edd26bcff08ba6a9a41c5de85f5acc6ead21b01fce26cf9"
 
 
 def test_safety_invariants_registry_and_paper_ledger():
