@@ -33,6 +33,19 @@ class PortfolioBankruptError(PortfolioError, RuntimeError):
     """Raised when attempting trading actions on a bankrupt portfolio."""
 
 
+class IndeterminateValuationError(PortfolioError, RuntimeError):
+    """Raised when attempting trading actions while portfolio valuation is indeterminate."""
+
+
+class RiskReason:
+    """Standardized portfolio risk blocker reason codes."""
+    STALE_POSITION = "STALE_POSITION"
+    INVALID_MARK = "INVALID_MARK"
+    UNRESOLVED_VALUATION = "UNRESOLVED_VALUATION"
+    GLOBAL_FEED_OUTAGE = "GLOBAL_FEED_OUTAGE"
+    LEGACY_MANUAL = "LEGACY_MANUAL"
+
+
 @dataclass
 class OpenPosition:
     """
@@ -207,11 +220,89 @@ class PortfolioManager:
         self.max_drawdown: float = 0.0
         self.is_bankrupt: bool = False
         self.bankruptcy_reason: Optional[str] = None
-        self.has_indeterminate_valuation: bool = False
-        self.indeterminate_valuation_reason: Optional[str] = None
+        self._risk_blockers: dict[str, str] = {}
+        self._legacy_reason: Optional[str] = None
 
         self.open_positions: dict[str, OpenPosition] = {}
         self.trades: list[Trade] = []
+
+    def add_indeterminate_risk_reason(self, key: str, reason: str) -> None:
+        """
+        Register an independent risk blocker preventing new entries.
+
+        Parameters
+        ----------
+        key : str
+            Unique owner/subsystem key (e.g. 'STALE_POSITION:RELIANCE', 'GLOBAL_FEED_OUTAGE').
+        reason : str
+            Human-readable explanation of the valuation uncertainty.
+        """
+        self._risk_blockers[str(key)] = str(reason)
+
+    def remove_indeterminate_risk_reason(self, key: str) -> bool:
+        """
+        Remove a specific risk blocker by key.
+
+        Returns True if the blocker was present and removed, False otherwise.
+        Clearing one key never affects blockers owned by other keys or subsystems.
+        """
+        return self._risk_blockers.pop(str(key), None) is not None
+
+    def clear_indeterminate_risk_reasons_by_prefix(self, prefix: str) -> int:
+        """
+        Remove all risk blockers matching a specific prefix (e.g. 'STALE_POSITION:').
+
+        Returns count of removed blockers.
+        """
+        removed = 0
+        pref = str(prefix)
+        for k in list(self._risk_blockers.keys()):
+            if k.startswith(pref):
+                del self._risk_blockers[k]
+                removed += 1
+        return removed
+
+    def clear_all_indeterminate_risk_reasons(self) -> None:
+        """Clear all active risk blockers across all subsystems (e.g. on portfolio reset)."""
+        self._risk_blockers.clear()
+        self._legacy_reason = None
+
+    @property
+    def active_risk_reasons(self) -> dict[str, str]:
+        """Return a copy of all currently active independent risk blockers."""
+        return dict(self._risk_blockers)
+
+    @property
+    def has_indeterminate_valuation(self) -> bool:
+        """Return True if any subsystem has an active risk blocker preventing reliable valuation."""
+        return len(self._risk_blockers) > 0
+
+    @has_indeterminate_valuation.setter
+    def has_indeterminate_valuation(self, val: bool) -> None:
+        """Backward-compatible setter for legacy callers and direct tests."""
+        if not val:
+            self._risk_blockers.pop(RiskReason.LEGACY_MANUAL, None)
+            self._legacy_reason = None
+        else:
+            self._risk_blockers[RiskReason.LEGACY_MANUAL] = (
+                self._legacy_reason or "Indeterminate portfolio valuation"
+            )
+
+    @property
+    def indeterminate_valuation_reason(self) -> Optional[str]:
+        """Return human-readable aggregated reasons for valuation uncertainty, or None if clear."""
+        if not self._risk_blockers:
+            return None
+        return "; ".join(self._risk_blockers.values())
+
+    @indeterminate_valuation_reason.setter
+    def indeterminate_valuation_reason(self, val: Optional[str]) -> None:
+        """Backward-compatible setter for legacy callers and direct tests."""
+        self._legacy_reason = val
+        if val is not None:
+            self._risk_blockers[RiskReason.LEGACY_MANUAL] = val
+        else:
+            self._risk_blockers.pop(RiskReason.LEGACY_MANUAL, None)
 
     @property
     def effective_protection_floor(self) -> Optional[float]:
@@ -419,6 +510,11 @@ class PortfolioManager:
                 f"Cannot open position for {sym}: portfolio has unresolved emergency liquidations"
             )
 
+        if self.has_indeterminate_valuation:
+            raise IndeterminateValuationError(
+                f"Cannot open position for {sym}: portfolio has indeterminate valuation ({self.indeterminate_valuation_reason})"
+            )
+
         if sym in self.open_positions:
             raise DuplicatePositionError(
                 f"Duplicate active position: symbol '{sym}' is already open."
@@ -614,6 +710,7 @@ class PortfolioManager:
         self.max_drawdown = 0.0
         self.is_bankrupt = False
         self.bankruptcy_reason = None
+        self.clear_all_indeterminate_risk_reasons()
         self.open_positions.clear()
         self.trades.clear()
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any, List, Union
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import HTMLResponse
 
@@ -11,6 +11,10 @@ from src.api.models import (
     BacktestJobResultResponse,
     BacktestJobStatusResponse,
     BacktestRunRequest,
+    MultiAssetBacktestJobCreatedResponse,
+    MultiAssetBacktestJobResultResponse,
+    MultiAssetBacktestJobStatusResponse,
+    MultiAssetBacktestRunRequest,
     StrategySignalResponse,
 )
 from src.api.routes.nifty import (
@@ -123,6 +127,35 @@ def create_backtest_job(
     )
 
 
+@router.post(
+    "/backtest/multi/run",
+    response_model=MultiAssetBacktestJobCreatedResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def create_multi_asset_backtest_job(
+    request: MultiAssetBacktestRunRequest,
+) -> MultiAssetBacktestJobCreatedResponse:
+    """
+    Validate and queue an asynchronous multi-asset backtest simulation across multiple stocks.
+    """
+    manager = get_job_manager()
+    try:
+        job = manager.submit_job(request.model_dump())
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    return MultiAssetBacktestJobCreatedResponse(
+        job_id=job.job_id,
+        status=job.status.value,
+        symbols=job.symbols,
+        created_at=job.created_at.isoformat(),
+        message="Multi-asset backtest job successfully queued for execution.",
+    )
+
+
 @router.get(
     "/backtest/jobs/{job_id}",
     response_model=BacktestJobStatusResponse,
@@ -131,7 +164,7 @@ def get_backtest_job_status(
     job_id: str,
 ) -> BacktestJobStatusResponse:
     """
-    Query the status and execution progress of a backtest job.
+    Query the status and execution progress of a backtest job (single or multi-asset).
     """
     manager = get_job_manager()
     job = manager.get_job(job_id)
@@ -147,13 +180,13 @@ def get_backtest_job_status(
 
 @router.get(
     "/backtest/jobs/{job_id}/result",
-    response_model=BacktestJobResultResponse,
+    response_model=Union[MultiAssetBacktestJobResultResponse, BacktestJobResultResponse],
 )
 def get_backtest_job_result(
     job_id: str,
-) -> BacktestJobResultResponse:
+) -> Union[MultiAssetBacktestJobResultResponse, BacktestJobResultResponse]:
     """
-    Retrieve the completed quantitative results of a backtest job.
+    Retrieve the completed quantitative results of a backtest job (single or multi-asset).
     """
     manager = get_job_manager()
     job = manager.get_job(job_id)
@@ -188,7 +221,61 @@ def get_backtest_job_result(
             detail=f"Backtest job '{job_id}' completed without result payload.",
         )
 
+    if job.is_multi_asset:
+        return MultiAssetBacktestJobResultResponse(**job.result)
     return BacktestJobResultResponse(**job.result)
+
+
+@router.get(
+    "/backtest/multi/jobs/{job_id}/result",
+    response_model=MultiAssetBacktestJobResultResponse,
+)
+def get_multi_asset_backtest_job_result(
+    job_id: str,
+) -> MultiAssetBacktestJobResultResponse:
+    """
+    Retrieve completed quantitative results specifically for a multi-asset backtest job.
+    """
+    manager = get_job_manager()
+    job = manager.get_job(job_id)
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Backtest job '{job_id}' not found.",
+        )
+
+    if not job.is_multi_asset:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job '{job_id}' is a single-symbol backtest, not a multi-asset backtest.",
+        )
+
+    if job.status in {JobStatus.QUEUED, JobStatus.RUNNING}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Backtest job '{job_id}' is still in progress (status: {job.status.value}). Results are not yet ready.",
+        )
+
+    if job.status == JobStatus.FAILED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' failed: {job.error}",
+        )
+
+    if job.status == JobStatus.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Backtest job '{job_id}' was cancelled.",
+        )
+
+    if not job.result:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Backtest job '{job_id}' completed without result payload.",
+        )
+
+    return MultiAssetBacktestJobResultResponse(**job.result)
 
 
 @router.get(

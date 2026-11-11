@@ -498,6 +498,10 @@ class CapitalAllocator:
         if getattr(portfolio, "has_unresolved_liquidations", False):
             return False, "Portfolio has unresolved emergency liquidations pending valid market data"
 
+        if getattr(portfolio, "has_indeterminate_valuation", False):
+            reason = f"Portfolio has indeterminate valuation: {getattr(portfolio, 'indeterminate_valuation_reason', 'Uncertain valuation')}"
+            return False, reason
+
         # 2. Hard tradeability check
         if not opportunity.is_tradeable:
             return False, "Opportunity flagged as not tradeable (circuit filter / trading halted)"

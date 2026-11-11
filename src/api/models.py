@@ -7,7 +7,8 @@ import re
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, field_validator
+import pandas as pd
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 
 class HealthResponse(BaseModel):
@@ -968,6 +969,8 @@ class BacktestJobStatusResponse(BaseModel):
     job_id: str
     status: str
     symbol: str
+    symbols: list[str] | None = None
+    is_multi_asset: bool = False
     created_at: str
     started_at: str | None = None
     completed_at: str | None = None
@@ -1029,6 +1032,398 @@ class BacktestJobResultResponse(BaseModel):
     bankruptcy_reason: str | None = None
     risk_config: dict[str, Any] | None = None
     cost_model: dict[str, Any] | None = None
+
+
+# ============================================================================
+# Multi-Asset Backtest Models (Phase 27C.6)
+# ============================================================================
+
+class MultiAssetBacktestRunRequest(BaseModel):
+    """
+    Request payload to initiate an asynchronous multi-asset backtest simulation.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    symbols: list[str]
+    start_date: str | None = None
+    end_date: str | None = None
+    initial_capital: float = 100_000.0
+    risk_per_trade_pct: float = 0.01
+    max_stock_allocation_pct: float = 0.35
+    max_portfolio_risk_pct: float = 0.03
+    reserve_capital_pct: float = 0.15
+    max_leverage: float = 5.0
+    min_trade_quantity: int = 1
+    min_free_capital: float = 0.0
+    include_estimated_round_trip_costs_in_sizing: bool = True
+    transaction_cost_rate: float = 0.0001
+    cost_profile: str = "DISCOUNT_BROKER_REALISTIC"
+    execution_model: str = "next_open"
+
+    # Optional strategy parameter overrides (frozen defaults)
+    ema_fast_period: int = 20
+    ema_slow_period: int = 50
+    rsi_period: int = 14
+    atr_period: int = 14
+    rvol_period: int = 20
+    minimum_rvol: float = 1.5
+    minimum_atr: float = 0.0
+    minimum_long_rsi: float = 60.0
+    use_rvol: bool = False
+
+    # Production Intraday Risk Controls
+    stop_loss_atr: float = 1.5
+    take_profit_atr: float = 3.0
+    session_end_time: str = "15:15"
+    enforce_eod_square_off: bool = True
+    capital_protection_floor: float | None = None
+    overall_loss_limit: float | None = None
+
+    # Production Opening Market Cooldown
+    opening_cooldown_minutes: int = 10
+    market_open_time: str = "09:15"
+
+    # Multi-Asset Data Outage & Resilience Controls
+    max_consecutive_missing_bars: int = 3
+    expected_timeline: list[str] | None = None
+    expected_end_time: str | None = None
+
+    @field_validator("symbols")
+    @classmethod
+    def validate_symbols_field(cls, v: list[str]) -> list[str]:
+        if not isinstance(v, list) or not v:
+            raise ValueError("symbols must be a non-empty list of stock symbols.")
+        if len(v) > 50:
+            raise ValueError("symbols list cannot exceed 50 stocks per backtest.")
+
+        cleaned: list[str] = []
+        seen: set[str] = set()
+        for item in v:
+            if not isinstance(item, str):
+                raise ValueError("Every symbol in symbols must be a string.")
+            s = item.strip().upper()
+            if not s:
+                raise ValueError("Symbol cannot be empty.")
+            if not re.match(r"^[A-Z0-9_\-&]+(\.[A-Z0-9]+)?$", s):
+                raise ValueError(f"Invalid symbol format: '{item}'.")
+            if s in seen:
+                raise ValueError(f"Duplicate symbol detected in request: '{s}'.")
+            seen.add(s)
+            cleaned.append(s)
+        return cleaned
+
+    @field_validator("initial_capital")
+    @classmethod
+    def validate_capital_field(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("initial_capital must be greater than zero.")
+        return v
+
+    @field_validator("risk_per_trade_pct")
+    @classmethod
+    def validate_risk_per_trade_pct_field(cls, v: float) -> float:
+        if v <= 0 or v > 1.0:
+            raise ValueError("risk_per_trade_pct must be in range (0.0, 1.0].")
+        return v
+
+    @field_validator("max_stock_allocation_pct")
+    @classmethod
+    def validate_max_stock_allocation_pct_field(cls, v: float) -> float:
+        if v <= 0 or v > 1.0:
+            raise ValueError("max_stock_allocation_pct must be in range (0.0, 1.0].")
+        return v
+
+    @field_validator("max_portfolio_risk_pct")
+    @classmethod
+    def validate_max_portfolio_risk_pct_field(cls, v: float) -> float:
+        if v <= 0 or v > 1.0:
+            raise ValueError("max_portfolio_risk_pct must be in range (0.0, 1.0].")
+        return v
+
+    @field_validator("reserve_capital_pct")
+    @classmethod
+    def validate_reserve_capital_pct_field(cls, v: float) -> float:
+        if v < 0 or v > 1.0:
+            raise ValueError("reserve_capital_pct must be in range [0.0, 1.0].")
+        return v
+
+    @field_validator("max_leverage")
+    @classmethod
+    def validate_max_leverage_field(cls, v: float) -> float:
+        if v < 1.0:
+            raise ValueError("max_leverage must be at least 1.0.")
+        return v
+
+    @field_validator("min_trade_quantity")
+    @classmethod
+    def validate_min_trade_quantity_field(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("min_trade_quantity must be at least 1.")
+        return v
+
+    @field_validator("min_free_capital")
+    @classmethod
+    def validate_min_free_capital_field(cls, v: float) -> float:
+        if v < 0:
+            raise ValueError("min_free_capital cannot be negative.")
+        return v
+
+    @field_validator("transaction_cost_rate")
+    @classmethod
+    def validate_cost_field(cls, v: float) -> float:
+        if v < 0:
+            raise ValueError("transaction_cost_rate cannot be negative.")
+        return v
+
+    @field_validator("cost_profile")
+    @classmethod
+    def validate_cost_profile_field(cls, v: str) -> str:
+        s = v.strip().upper()
+        allowed = {"DISCOUNT_BROKER_REALISTIC", "STATUTORY_ONLY", "CONSERVATIVE_STRESS", "ZERO_COST", "LEGACY_LINEAR"}
+        if s not in allowed:
+            raise ValueError(f"Unsupported cost_profile: '{v}'. Supported profiles: {sorted(allowed)}")
+        return s
+
+    @field_validator("execution_model")
+    @classmethod
+    def validate_execution_model_field(cls, v: str) -> str:
+        if v not in {"next_open", "same_close"}:
+            raise ValueError("execution_model must be 'next_open' or 'same_close'.")
+        return v
+
+    @field_validator("stop_loss_atr")
+    @classmethod
+    def validate_stop_loss_atr_field(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("stop_loss_atr must be greater than zero.")
+        return v
+
+    @field_validator("take_profit_atr")
+    @classmethod
+    def validate_take_profit_atr_field(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("take_profit_atr must be greater than zero.")
+        return v
+
+    @field_validator("session_end_time")
+    @classmethod
+    def validate_session_end_time_field(cls, v: str) -> str:
+        s = v.strip()
+        if not re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d$", s):
+            raise ValueError(f"session_end_time must be in 'HH:MM' 24-hour format, got '{v}'.")
+        return s
+
+    @field_validator("market_open_time")
+    @classmethod
+    def validate_market_open_time_field(cls, v: str) -> str:
+        s = v.strip()
+        if not re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d$", s):
+            raise ValueError(f"market_open_time must be in 'HH:MM' 24-hour format, got '{v}'.")
+        return s
+
+    @field_validator("capital_protection_floor")
+    @classmethod
+    def validate_capital_protection_floor_field(cls, v: float | None) -> float | None:
+        if v is not None and v < 0:
+            raise ValueError("capital_protection_floor cannot be negative.")
+        return v
+
+    @field_validator("overall_loss_limit")
+    @classmethod
+    def validate_overall_loss_limit_field(cls, v: float | None) -> float | None:
+        if v is not None and v <= 0:
+            raise ValueError("overall_loss_limit must be greater than zero.")
+        return v
+
+    @field_validator("opening_cooldown_minutes")
+    @classmethod
+    def validate_opening_cooldown_minutes_field(cls, v: int) -> int:
+        if isinstance(v, bool) or not isinstance(v, int):
+            raise ValueError("opening_cooldown_minutes must be an integer.")
+        if v < 0:
+            raise ValueError("opening_cooldown_minutes cannot be negative.")
+        return v
+
+    @field_validator("max_consecutive_missing_bars")
+    @classmethod
+    def validate_max_consecutive_missing_bars_field(cls, v: int) -> int:
+        if isinstance(v, bool) or not isinstance(v, int):
+            raise ValueError("max_consecutive_missing_bars must be an integer.")
+        if v < 1:
+            raise ValueError("max_consecutive_missing_bars must be at least 1.")
+        return v
+
+    @field_validator("expected_timeline")
+    @classmethod
+    def validate_expected_timeline_field(cls, v: list[str] | None) -> list[str] | None:
+        if v is not None:
+            if not isinstance(v, list) or not v:
+                raise ValueError("expected_timeline must be a non-empty list of datetime strings if provided.")
+            for t_str in v:
+                try:
+                    pd.Timestamp(t_str)
+                except Exception as exc:
+                    raise ValueError(f"Invalid timestamp in expected_timeline: '{t_str}': {exc}") from exc
+        return v
+
+    @field_validator("expected_end_time")
+    @classmethod
+    def validate_expected_end_time_field(cls, v: str | None) -> str | None:
+        if v is not None:
+            try:
+                pd.Timestamp(v)
+            except Exception as exc:
+                raise ValueError(f"Invalid timestamp format for expected_end_time: '{v}': {exc}") from exc
+        return v
+
+    @model_validator(mode="after")
+    def validate_cross_field_constraints(self) -> MultiAssetBacktestRunRequest:
+        if self.max_portfolio_risk_pct < self.risk_per_trade_pct:
+            raise ValueError("max_portfolio_risk_pct cannot be less than risk_per_trade_pct.")
+        return self
+
+
+class MultiAssetBacktestJobCreatedResponse(BaseModel):
+    """Response returned upon successfully creating a multi-asset backtest job."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: str
+    status: str
+    symbols: list[str]
+    created_at: str
+    message: str
+
+
+class MultiAssetBacktestJobStatusResponse(BaseModel):
+    """Response returned when querying multi-asset backtest job status."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: str
+    status: str
+    symbols: list[str]
+    created_at: str
+    started_at: str | None = None
+    completed_at: str | None = None
+    progress: float = 0.0
+    error: str | None = None
+
+
+class MultiAssetTradeItem(BaseModel):
+    """Simulated trade item for multi-asset backtest."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    trade_id: int
+    symbol: str
+    entry_time: str
+    exit_time: str
+    side: str
+    entry_price: float
+    exit_price: float
+    quantity: int
+    gross_pnl: float
+    costs: float
+    net_pnl: float
+    return_pct: float
+    exit_reason: str
+
+
+class SymbolMetricsItem(BaseModel):
+    """Performance and attribution metrics for an individual symbol."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    symbol: str
+    trades: int
+    winning_trades: int
+    losing_trades: int
+    net_pnl: float
+    gross_pnl: float
+    total_transaction_costs: float
+    win_rate_pct: float
+    profit_factor: float | str
+    position_status: str = "CLOSED"
+
+
+class UnresolvedPositionItem(BaseModel):
+    """Open position remaining unresolved or pending liquidation at session end."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    symbol: str
+    side: str
+    entry_time: str
+    entry_price: float
+    quantity: int
+    current_price: float
+    allocated_margin: float
+    notional_value: float
+    unrealized_pnl: float
+    is_stale: bool = False
+    pending_liquidation: bool = False
+    pending_liquidation_reason: str | None = None
+
+
+class MultiAssetRiskQualityItem(BaseModel):
+    """Risk controls, data quality, and outage reporting."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    active_risk_blockers: dict[str, str] = {}
+    stale_symbols: list[str] = []
+    missing_candle_stats: dict[str, int] = {}
+    global_feed_outage_events: int = 0
+    indeterminate_valuation_events: int = 0
+    stale_price_events: int = 0
+    stale_notional_exposure: float = 0.0
+    unresolved_liquidation_exposure: float = 0.0
+    global_outage_detection_status: str = "LIMITED_TO_RECEIVED_UNION"
+    expected_timeline_provided: bool = False
+
+
+class MultiAssetPortfolioSummaryItem(BaseModel):
+    """Portfolio-level capital, equity, and margin accounting summary."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    initial_capital: float
+    final_equity: float
+    realized_net_pnl: float
+    unrealized_pnl: float
+    total_transaction_costs: float
+    peak_equity: float
+    max_drawdown_pct: float
+    total_trades: int
+    win_rate_pct: float
+    gross_exposure: float
+    available_margin: float
+    allocated_margin: float
+    is_bankrupt: bool = False
+    bankruptcy_reason: str | None = None
+
+
+class MultiAssetBacktestJobResultResponse(BaseModel):
+    """Complete structured quantitative result for a multi-asset backtest job."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    job_id: str
+    status: str
+    symbols: list[str]
+    date_range: dict[str, Any]
+    execution_model: str
+    risk_config: dict[str, Any]
+    cost_model: dict[str, Any]
+    portfolio: MultiAssetPortfolioSummaryItem
+    metrics: BacktestMetricsItem
+    symbol_metrics: dict[str, SymbolMetricsItem]
+    risk_and_quality: MultiAssetRiskQualityItem
+    trades: list[MultiAssetTradeItem]
+    unresolved_positions: list[UnresolvedPositionItem]
+
 
 
 

@@ -36,7 +36,7 @@ from src.backtest.indian_market_costs import (
     get_cost_config,
 )
 from src.backtest.metrics import PerformanceMetrics, calculate_metrics
-from src.backtest.portfolio import OpenPosition, PortfolioManager
+from src.backtest.portfolio import OpenPosition, PortfolioManager, RiskReason
 from src.backtest.simulator import Position, Trade, simulate_trade
 
 
@@ -120,6 +120,9 @@ class MultiAssetEngineConfig:
     transaction_cost_rate: float = 0.0
     opening_cooldown_minutes: int = 10
     market_open_time: str = "09:15"
+    max_consecutive_missing_bars: int = 3
+    expected_timeline: Optional[Any] = None
+    expected_end_time: Optional[Any] = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.initial_capital, (int, float)) or isinstance(self.initial_capital, bool):
@@ -160,6 +163,11 @@ class MultiAssetEngineConfig:
         if self.opening_cooldown_minutes < 0:
             raise ValueError("opening_cooldown_minutes cannot be negative.")
 
+        if not isinstance(self.max_consecutive_missing_bars, int) or isinstance(self.max_consecutive_missing_bars, bool):
+            raise TypeError("max_consecutive_missing_bars must be an integer.")
+        if self.max_consecutive_missing_bars < 1:
+            raise ValueError("max_consecutive_missing_bars must be at least 1.")
+
         try:
             open_t = pd.Timestamp(self.market_open_time).time()
             session_end_t = pd.Timestamp(self.session_end_time).time()
@@ -172,6 +180,18 @@ class MultiAssetEngineConfig:
         cooldown_end_dt = datetime.combine(datetime.today().date(), open_t) + pd.Timedelta(minutes=self.opening_cooldown_minutes)
         if cooldown_end_dt.time() > session_end_t:
             raise ValueError("opening_cooldown_minutes cannot extend past session_end_time.")
+
+        if self.expected_end_time is not None:
+            try:
+                _ = pd.Timestamp(self.expected_end_time)
+            except Exception as e:
+                raise ValueError(f"Invalid expected_end_time: {e}")
+
+        if self.expected_timeline is not None:
+            try:
+                _ = [pd.Timestamp(t) for t in self.expected_timeline]
+            except Exception as e:
+                raise ValueError(f"Invalid expected_timeline: {e}")
 
         if self.cost_config is None:
             self.cost_config = DISCOUNT_BROKER_REALISTIC_CONFIG
@@ -227,6 +247,11 @@ class MultiAssetBacktestResult:
     bankruptcy_reason: Optional[str] = None
     cost_model_info: Optional[dict[str, Any]] = None
     indeterminate_valuation_events: int = 0
+    max_consecutive_missing_bars: int = 3
+    global_feed_outage_events: int = 0
+    expected_timeline_provided: bool = False
+    global_outage_detection_status: str = "LIMITED_TO_RECEIVED_UNION"
+    active_risk_reasons: dict[str, str] = field(default_factory=dict)
 
 
 def _normalize_symbol_dataframe(symbol: str, data: pd.DataFrame) -> pd.DataFrame:
@@ -434,11 +459,45 @@ def run_multi_asset_backtest(
         normalized_data[sym] = _normalize_symbol_dataframe(sym, df_raw)
 
     # 2. Build global synchronized chronological timeline
-    all_timestamps_set: Set[pd.Timestamp] = set()
-    for df in normalized_data.values():
-        all_timestamps_set.update(df.index)
+    expected_timeline_provided = False
+    global_outage_detection_status = "LIMITED_TO_RECEIVED_UNION"
 
-    timeline = sorted(list(all_timestamps_set))
+    if config.expected_timeline is not None:
+        timeline = sorted(list(set(pd.to_datetime(config.expected_timeline))))
+        expected_timeline_provided = True
+        global_outage_detection_status = "ACTIVE"
+    elif config.expected_end_time is not None:
+        end_dt = pd.Timestamp(config.expected_end_time)
+        valid_dfs = [df for df in normalized_data.values() if not df.empty]
+        if valid_dfs:
+            min_dt = min(df.index[0] for df in valid_dfs)
+            if min_dt <= end_dt:
+                all_expected = pd.date_range(min_dt, end_dt, freq="1min")
+                open_t = pd.Timestamp(config.market_open_time).time()
+                session_end_t = pd.Timestamp(config.session_end_time).time()
+                expected_session_bars = [
+                    t for t in all_expected
+                    if open_t <= t.time() <= session_end_t and t.dayofweek < 5
+                ]
+                union_set = set(expected_session_bars)
+                for df in valid_dfs:
+                    union_set.update(df.index)
+                timeline = sorted(list(union_set))
+                expected_timeline_provided = True
+                global_outage_detection_status = "ACTIVE"
+            else:
+                all_timestamps_set: Set[pd.Timestamp] = set()
+                for df in normalized_data.values():
+                    all_timestamps_set.update(df.index)
+                timeline = sorted(list(all_timestamps_set))
+        else:
+            timeline = []
+    else:
+        all_timestamps_set: Set[pd.Timestamp] = set()
+        for df in normalized_data.values():
+            all_timestamps_set.update(df.index)
+        timeline = sorted(list(all_timestamps_set))
+
     if not timeline:
         raise ValueError("No valid timestamps found across supplied symbol data.")
 
@@ -458,6 +517,9 @@ def run_multi_asset_backtest(
     # Tracking containers
     all_allocations: list[AllocationDecision] = []
     missing_candle_stats: dict[str, int] = {s: 0 for s in symbols}
+    consecutive_missing_bars: dict[str, int] = {s: 0 for s in symbols}
+    consecutive_global_missing_bars: int = 0
+    global_feed_outage_events: int = 0
     stale_price_events: int = 0
     stale_notional_exposure: float = 0.0
     indeterminate_events: int = 0
@@ -501,39 +563,65 @@ def run_multi_asset_backtest(
         prev_timestamp = current_time
 
         # --------------------------------------------------------------------
-        # 2. LOAD ACTIVE MARKET EVENTS & DETECT MISSING CANDLES
+        # 2. LOAD ACTIVE MARKET EVENTS & DETECT MISSING CANDLES / OUTAGES
         # --------------------------------------------------------------------
         active_bars: dict[str, pd.Series] = {}
         missing_syms_with_positions: list[str] = []
+        stale_syms_with_positions: list[str] = []
         for sym in symbols:
             if current_time in symbol_index_map[sym]:
                 active_bars[sym] = normalized_data[sym].loc[current_time]
+                consecutive_missing_bars[sym] = 0
+                if sym in portfolio.open_positions:
+                    portfolio.open_positions[sym].is_stale = False
+                portfolio.remove_indeterminate_risk_reason(f"{RiskReason.STALE_POSITION}:{sym}")
+                portfolio.remove_indeterminate_risk_reason(f"{RiskReason.INVALID_MARK}:{sym}")
             else:
                 missing_candle_stats[sym] += 1
+                consecutive_missing_bars[sym] += 1
                 # Check if position open in missing symbol (stale mark)
                 if sym in portfolio.open_positions:
                     stale_price_events += 1
                     pos = portfolio.open_positions[sym]
                     stale_notional_exposure += pos.notional_value
                     missing_syms_with_positions.append(sym)
+                    if consecutive_missing_bars[sym] >= config.max_consecutive_missing_bars:
+                        pos.is_stale = True
+                        stale_syms_with_positions.append(sym)
+                        portfolio.add_indeterminate_risk_reason(
+                            f"{RiskReason.STALE_POSITION}:{sym}",
+                            f"Stale market data exceeding {config.max_consecutive_missing_bars} consecutive bars for active position: {sym} at {current_time}",
+                        )
 
+        # Check for invalid marks
         if missing_syms_with_positions:
+            for s in missing_syms_with_positions:
+                pos = portfolio.open_positions[s]
+                if pos.current_price is None or pos.current_price <= 0:
+                    portfolio.add_indeterminate_risk_reason(
+                        f"{RiskReason.INVALID_MARK}:{s}",
+                        f"Current mark cannot be formed from authentic data for: {s} at {current_time}",
+                    )
+
+        # Global simultaneous feed outage detection across all open positions
+        if len(active_bars) == 0:
+            consecutive_global_missing_bars += 1
+            if portfolio.open_positions:
+                indeterminate_events += 1
+                if consecutive_global_missing_bars >= config.max_consecutive_missing_bars:
+                    global_feed_outage_events += 1
+                    portfolio.add_indeterminate_risk_reason(
+                        RiskReason.GLOBAL_FEED_OUTAGE,
+                        f"Global feed outage: all market data feeds stopped for {consecutive_global_missing_bars} consecutive bars at {current_time}",
+                    )
+                    for pos in portfolio.open_positions.values():
+                        pos.is_stale = True
+        else:
+            consecutive_global_missing_bars = 0
+            portfolio.remove_indeterminate_risk_reason(RiskReason.GLOBAL_FEED_OUTAGE)
+
+        if stale_syms_with_positions or missing_syms_with_positions:
             indeterminate_events += 1
-            cannot_form_mark = any(
-                portfolio.open_positions[s].current_price is None or portfolio.open_positions[s].current_price <= 0
-                for s in missing_syms_with_positions
-            )
-            if cannot_form_mark:
-                portfolio.has_indeterminate_valuation = True
-                portfolio.indeterminate_valuation_reason = (
-                    f"Current mark cannot be formed from authentic data for: {', '.join(sorted(missing_syms_with_positions))} at {current_time}"
-                )
-            else:
-                portfolio.has_indeterminate_valuation = False
-                portfolio.indeterminate_valuation_reason = None
-        elif not portfolio.has_unresolved_liquidations:
-            portfolio.has_indeterminate_valuation = False
-            portfolio.indeterminate_valuation_reason = None
 
         # --------------------------------------------------------------------
         # 3. PROCESS PENDING LIQUIDATIONS (Authentic executable bar arrival)
@@ -662,10 +750,10 @@ def run_multi_asset_backtest(
                 and not (config.enforce_eod_square_off and current_time.time() >= session_end_t)
             )
 
-            if is_in_cooldown:
-                # During Opening Cooldown: discard pending signals, block new entries
+            if is_in_cooldown or not is_trading_active:
+                # During Opening Cooldown or inactive trading (indeterminate valuation, bankruptcy, unresolved liquidation): discard pending signals
                 pending_next_open_signals.clear()
-            elif is_trading_active and pending_next_open_signals:
+            elif pending_next_open_signals:
                 candidate_opportunities = []
                 for sym, opp in list(pending_next_open_signals.items()):
                     if sym in active_bars and sym not in portfolio.open_positions:
@@ -1287,7 +1375,9 @@ def run_multi_asset_backtest(
             else:
                 # Missing from final candle: do NOT fabricate fill! Mark pending liquidation.
                 pos.pending_liquidation = True
-                pos.pending_liquidation_reason = "EOD"
+                pos.pending_liquidation_reason = (
+                    "GLOBAL_FEED_OUTAGE" if len(final_active_bars) == 0 else "EOD"
+                )
 
     unresolved_positions = portfolio.unresolved_liquidation_positions
     unresolved_liquidation_exposure = sum(p.notional_value for p in unresolved_positions)
@@ -1328,6 +1418,11 @@ def run_multi_asset_backtest(
         bankruptcy_reason=portfolio.bankruptcy_reason,
         cost_model_info=cost_model_info,
         indeterminate_valuation_events=indeterminate_events,
+        max_consecutive_missing_bars=config.max_consecutive_missing_bars,
+        global_feed_outage_events=global_feed_outage_events,
+        expected_timeline_provided=expected_timeline_provided,
+        global_outage_detection_status=global_outage_detection_status,
+        active_risk_reasons=portfolio.active_risk_reasons,
     )
 
 
