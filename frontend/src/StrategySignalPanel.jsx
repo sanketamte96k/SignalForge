@@ -6,6 +6,7 @@ import {
   closePaperTrade,
   updatePaperTrade,
   runBacktest,
+  runMultiAssetBacktest,
   fetchBacktestJobStatus,
   fetchBacktestJobResult,
   getBacktestTearsheetUrl,
@@ -209,8 +210,13 @@ export function StrategySignalPanel({
   const [actionSuccess, setActionSuccess] = useState(null)
 
   // -------------------------------------------------------------------------
-  // Phase 24G.28: Asynchronous Backtest Job Bridge State
+  // Phase 24G.28: Asynchronous Backtest Job Bridge State (Single & Multi-Asset)
   // -------------------------------------------------------------------------
+  const [backtestMode, setBacktestMode] = useState('single')
+  const [multiSymbols, setMultiSymbols] = useState(['RELIANCE', 'INFY'])
+  const [multiSymbolInput, setMultiSymbolInput] = useState('')
+  const [maxPortfolioRiskPct, setMaxPortfolioRiskPct] = useState(3.0)
+  const [riskPerTradePct, setRiskPerTradePct] = useState(1.0)
   const [backtestStartDate, setBacktestStartDate] = useState('2023-01-01')
   const [backtestEndDate, setBacktestEndDate] = useState('2023-03-31')
   const [backtestExecutionModel, setBacktestExecutionModel] = useState('next_open')
@@ -224,11 +230,70 @@ export function StrategySignalPanel({
   const [cancellingBacktest, setCancellingBacktest] = useState(false)
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
 
+  const handleAddMultiSymbol = (symToAdd) => {
+    const raw = typeof symToAdd === 'string' ? symToAdd : multiSymbolInput
+    const clean = raw.trim().toUpperCase()
+    if (clean && !multiSymbols.includes(clean)) {
+      setMultiSymbols([...multiSymbols, clean])
+      setMultiSymbolInput('')
+    }
+  }
+
+  const handleRemoveMultiSymbol = (symToRemove) => {
+    setMultiSymbols(multiSymbols.filter((s) => s !== symToRemove))
+  }
+
   const handleTriggerBacktest = async () => {
     if (backtestSubmitting || backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING') {
       return
     }
 
+    if (backtestMode === 'multi') {
+      if (multiSymbols.length < 2) {
+        setBacktestError('Multi-asset portfolio backtest requires at least two symbols.')
+        return
+      }
+      if (backtestInitialCapital <= 0) {
+        setBacktestError('Initial capital must be greater than zero.')
+        return
+      }
+      if (maxPortfolioRiskPct <= 0 || maxPortfolioRiskPct > 100) {
+        setBacktestError('Max portfolio risk must be between 0.1% and 100%.')
+        return
+      }
+      if (riskPerTradePct <= 0 || riskPerTradePct > 100) {
+        setBacktestError('Risk per trade must be between 0.1% and 100%.')
+        return
+      }
+
+      setBacktestSubmitting(true)
+      setBacktestError(null)
+      setBacktestResult(null)
+      setBacktestStatus('QUEUED')
+      setBacktestProgress(0)
+
+      try {
+        const created = await runMultiAssetBacktest({
+          symbols: multiSymbols,
+          start_date: backtestStartDate || undefined,
+          end_date: backtestEndDate || undefined,
+          initial_capital: Number(backtestInitialCapital),
+          max_portfolio_risk_pct: Number(maxPortfolioRiskPct) / 100,
+          risk_per_trade_pct: Number(riskPerTradePct) / 100,
+          execution_model: backtestExecutionModel,
+        })
+        setBacktestJobId(created.job_id)
+        setBacktestStatus(created.status || 'QUEUED')
+      } catch (err) {
+        setBacktestError(err.message || 'Failed to submit multi-asset backtest job.')
+        setBacktestStatus('FAILED')
+      } finally {
+        setBacktestSubmitting(false)
+      }
+      return
+    }
+
+    // Single-symbol mode
     if ((symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI') && ((backtestStartDate && backtestStartDate > '2024-03-26') || (backtestEndDate && backtestEndDate > '2024-03-26'))) {
       setBacktestError('NIFTY 50 historical backtest date exceeds verified dataset boundary. Maximum permitted date is 2024-03-26.')
       return
@@ -292,8 +357,6 @@ export function StrategySignalPanel({
         if (!isMounted) return
 
         consecutiveNetworkErrors = 0
-        setBacktestStatus(statusRes.status)
-        setBacktestProgress(statusRes.progress || 0)
 
         if (statusRes.status === 'COMPLETED') {
           clearInterval(interval)
@@ -301,18 +364,26 @@ export function StrategySignalPanel({
             const resultRes = await fetchBacktestJobResult(backtestJobId)
             if (isMounted) {
               setBacktestResult(resultRes)
+              setBacktestStatus('COMPLETED')
+              setBacktestProgress(100)
             }
           } catch (resErr) {
             if (isMounted) {
+              setBacktestStatus('FAILED')
               setBacktestError(`Failed to fetch completed results: ${resErr.message}`)
             }
           }
         } else if (statusRes.status === 'FAILED') {
           clearInterval(interval)
+          setBacktestStatus('FAILED')
           setBacktestError(statusRes.error || 'Backtest job execution failed.')
         } else if (statusRes.status === 'CANCELLED') {
           clearInterval(interval)
+          setBacktestStatus('CANCELLED')
           setBacktestError('Backtest job was cancelled.')
+        } else {
+          setBacktestStatus(statusRes.status)
+          setBacktestProgress(statusRes.progress || 0)
         }
       } catch (pollErr) {
         if (!isMounted) return
@@ -951,6 +1022,175 @@ export function StrategySignalPanel({
                 </span>
               </div>
 
+              {/* Mode Selector */}
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                <button
+                  type="button"
+                  id="bt-mode-single-btn"
+                  onClick={() => {
+                    setBacktestMode('single')
+                    setBacktestError(null)
+                  }}
+                  disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                  style={{
+                    flex: 1,
+                    padding: '4px 6px',
+                    fontSize: '10.5px',
+                    fontWeight: 'bold',
+                    borderRadius: '3px',
+                    border: backtestMode === 'single' ? '1px solid #00eaaf' : '1px solid #1a3a54',
+                    background: backtestMode === 'single' ? 'rgba(0, 234, 175, 0.15)' : '#0d1a27',
+                    color: backtestMode === 'single' ? '#00eaaf' : '#88a3b8',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Single Symbol ({symbol})
+                </button>
+                <button
+                  type="button"
+                  id="bt-mode-multi-btn"
+                  onClick={() => {
+                    setBacktestMode('multi')
+                    setBacktestError(null)
+                    // If start date is beyond stock dataset boundary, provide default stock range
+                    if (!backtestStartDate || backtestStartDate > '2020-12-31') {
+                      setBacktestStartDate('2019-01-02')
+                      setBacktestEndDate('2019-01-15')
+                    }
+                  }}
+                  disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                  style={{
+                    flex: 1,
+                    padding: '4px 6px',
+                    fontSize: '10.5px',
+                    fontWeight: 'bold',
+                    borderRadius: '3px',
+                    border: backtestMode === 'multi' ? '1px solid #7cb5ec' : '1px solid #1a3a54',
+                    background: backtestMode === 'multi' ? 'rgba(124, 181, 236, 0.15)' : '#0d1a27',
+                    color: backtestMode === 'multi' ? '#7cb5ec' : '#88a3b8',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Multi-Asset Portfolio ({multiSymbols.length})
+                </button>
+              </div>
+
+              {/* Multi-Asset Stock Selector (when in multi mode) */}
+              {backtestMode === 'multi' && (
+                <div style={{ marginBottom: '8px', padding: '6px 8px', background: 'rgba(124, 181, 236, 0.05)', borderRadius: '4px', border: '1px solid rgba(124, 181, 236, 0.2)' }}>
+                  <div style={{ fontSize: '10px', color: '#7cb5ec', fontWeight: 'bold', marginBottom: '4px' }}>
+                    PORTFOLIO SYMBOLS (SELECT &ge; 2)
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '6px' }}>
+                    {multiSymbols.map((sym) => (
+                      <span
+                        key={sym}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: '#13283c',
+                          border: '1px solid #1f4263',
+                          color: '#fff',
+                          borderRadius: '3px',
+                          padding: '2px 6px',
+                          fontSize: '10.5px',
+                          fontFamily: 'monospace',
+                        }}
+                      >
+                        {sym}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMultiSymbol(sym)}
+                          disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ff6876',
+                            cursor: 'pointer',
+                            padding: 0,
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                          }}
+                          aria-label={`Remove ${sym}`}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                    <input
+                      id="bt-multi-symbol-input"
+                      type="text"
+                      placeholder="Add stock (e.g. TCS)"
+                      value={multiSymbolInput}
+                      onChange={(e) => setMultiSymbolInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddMultiSymbol()
+                        }
+                      }}
+                      disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                      style={{
+                        flex: 1,
+                        background: '#020b14',
+                        border: '1px solid #1a3a54',
+                        color: '#fff',
+                        padding: '3px 6px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      id="bt-multi-symbol-add-btn"
+                      onClick={() => handleAddMultiSymbol()}
+                      disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING' || !multiSymbolInput.trim()}
+                      style={{
+                        background: '#13283c',
+                        border: '1px solid #1f4263',
+                        color: '#7cb5ec',
+                        padding: '3px 8px',
+                        borderRadius: '3px',
+                        fontSize: '10.5px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      + ADD
+                    </button>
+                  </div>
+
+                  {/* Quick-add presets */}
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '9.5px', color: '#88a3b8' }}>Quick Add:</span>
+                    {['RELIANCE', 'INFY', 'TCS', 'ICICIBANK'].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => handleAddMultiSymbol(s)}
+                        disabled={multiSymbols.includes(s) || backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                        style={{
+                          background: multiSymbols.includes(s) ? 'transparent' : 'rgba(124, 181, 236, 0.1)',
+                          border: multiSymbols.includes(s) ? '1px dashed #203f5d' : '1px solid rgba(124, 181, 236, 0.3)',
+                          color: multiSymbols.includes(s) ? '#4a657e' : '#7cb5ec',
+                          borderRadius: '2px',
+                          padding: '1px 5px',
+                          fontSize: '9.5px',
+                          cursor: multiSymbols.includes(s) ? 'default' : 'pointer',
+                        }}
+                      >
+                        +{s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Parameters Form */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
                 <div>
@@ -960,7 +1200,7 @@ export function StrategySignalPanel({
                     type="date"
                     value={backtestStartDate}
                     onChange={(e) => setBacktestStartDate(e.target.value)}
-                    max={symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI' ? '2024-03-26' : undefined}
+                    max={backtestMode === 'single' && (symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI') ? '2024-03-26' : undefined}
                     disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
                     style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
                   />
@@ -972,7 +1212,7 @@ export function StrategySignalPanel({
                     type="date"
                     value={backtestEndDate}
                     onChange={(e) => setBacktestEndDate(e.target.value)}
-                    max={symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI' ? '2024-03-26' : undefined}
+                    max={backtestMode === 'single' && (symbol === 'NIFTY 50' || symbol === 'NIFTY' || symbol === '^NSEI') ? '2024-03-26' : undefined}
                     disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
                     style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
                   />
@@ -1001,6 +1241,40 @@ export function StrategySignalPanel({
                     style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
                   />
                 </div>
+
+                {/* Multi-Asset Risk Inputs */}
+                {backtestMode === 'multi' && (
+                  <>
+                    <div>
+                      <label htmlFor="bt-portfolio-risk" style={{ color: '#88a3b8', display: 'block', marginBottom: '2px' }}>Max Portfolio Risk (%):</label>
+                      <input
+                        id="bt-portfolio-risk"
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="100"
+                        value={maxPortfolioRiskPct}
+                        onChange={(e) => setMaxPortfolioRiskPct(Number(e.target.value))}
+                        disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                        style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="bt-trade-risk" style={{ color: '#88a3b8', display: 'block', marginBottom: '2px' }}>Risk Per Trade (%):</label>
+                      <input
+                        id="bt-trade-risk"
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="100"
+                        value={riskPerTradePct}
+                        onChange={(e) => setRiskPerTradePct(Number(e.target.value))}
+                        disabled={backtestStatus === 'QUEUED' || backtestStatus === 'RUNNING'}
+                        style={{ width: '100%', background: '#020b14', border: '1px solid #1a3a54', color: '#fff', padding: '3px 6px', borderRadius: '3px', fontSize: '11px' }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Active Job Progress */}
@@ -1048,8 +1322,12 @@ export function StrategySignalPanel({
               {backtestResult && (
                 <div className="backtest-results-box" style={{ marginBottom: '8px', padding: '8px', background: 'rgba(0, 234, 175, 0.05)', borderRadius: '4px', border: '1px solid rgba(0, 234, 175, 0.2)' }}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#00eaaf', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>SIMULATION RESULTS ({backtestResult.symbol})</span>
-                    <span style={{ color: '#88a3b8', fontSize: '10px' }}>{backtestResult.date_range?.total_candles} candles</span>
+                    <span>
+                      SIMULATION RESULTS ({backtestResult.symbols ? `PORTFOLIO: ${backtestResult.symbols.join(', ')}` : backtestResult.symbol})
+                    </span>
+                    <span style={{ color: '#88a3b8', fontSize: '10px' }}>
+                      {backtestResult.date_range?.total_candles ? `${backtestResult.date_range.total_candles} candles` : `${backtestResult.symbols?.length || 1} symbols`}
+                    </span>
                   </div>
                   {backtestResult.execution_model === 'same_close' ? (
                     <div style={{ padding: '3px 6px', marginBottom: '6px', background: 'rgba(255, 79, 94, 0.15)', border: '1px solid rgba(255, 79, 94, 0.4)', borderRadius: '3px', color: '#ff6876', fontSize: '9.5px', fontWeight: 'bold' }}>
@@ -1063,32 +1341,49 @@ export function StrategySignalPanel({
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', fontSize: '11px' }}>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Net Return: </span>
-                      <strong style={{ color: backtestResult.metrics.total_return_pct >= 0 ? '#00eaaf' : '#ff6876' }}>
-                        {backtestResult.metrics.total_return_pct >= 0 ? '+' : ''}{backtestResult.metrics.total_return_pct}%
+                      <strong style={{ color: (backtestResult.metrics?.total_return_pct ?? 0) >= 0 ? '#00eaaf' : '#ff6876' }}>
+                        {(backtestResult.metrics?.total_return_pct ?? 0) >= 0 ? '+' : ''}{backtestResult.metrics?.total_return_pct}%
                       </strong>
                     </div>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Total P&L: </span>
-                      <strong style={{ color: backtestResult.metrics.total_pnl >= 0 ? '#00eaaf' : '#ff6876' }}>
-                        ₹{formatPrice(backtestResult.metrics.total_pnl)}
+                      <strong style={{ color: (backtestResult.metrics?.total_pnl ?? backtestResult.portfolio?.realized_net_pnl ?? 0) >= 0 ? '#00eaaf' : '#ff6876' }}>
+                        ₹{formatPrice(backtestResult.metrics?.total_pnl ?? backtestResult.portfolio?.realized_net_pnl)}
                       </strong>
                     </div>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Trades: </span>
-                      <strong>{backtestResult.metrics.total_trades}</strong>
+                      <strong>{backtestResult.metrics?.total_trades ?? backtestResult.portfolio?.total_trades}</strong>
                     </div>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Win Rate: </span>
-                      <strong>{backtestResult.metrics.win_rate_pct}%</strong>
+                      <strong>{backtestResult.metrics?.win_rate_pct ?? backtestResult.portfolio?.win_rate_pct}%</strong>
                     </div>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Profit Factor: </span>
-                      <strong>{backtestResult.metrics.profit_factor}</strong>
+                      <strong>{backtestResult.metrics?.profit_factor}</strong>
                     </div>
                     <div>
                       <span style={{ color: '#88a3b8' }}>Max DD: </span>
-                      <strong style={{ color: '#ff6876' }}>-{backtestResult.metrics.max_drawdown_pct}%</strong>
+                      <strong style={{ color: '#ff6876' }}>-{backtestResult.metrics?.max_drawdown_pct ?? backtestResult.portfolio?.max_drawdown_pct}%</strong>
                     </div>
+
+                    {backtestResult.portfolio?.final_equity !== undefined && (
+                      <div style={{ gridColumn: 'span 3', borderTop: '1px dashed #1a3a54', paddingTop: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '10.5px' }}>
+                        <span>
+                          <span style={{ color: '#88a3b8' }}>Equity: </span>
+                          <strong style={{ color: '#7cb5ec' }}>₹{formatPrice(backtestResult.portfolio.final_equity)}</strong>
+                        </span>
+                        <span>
+                          <span style={{ color: '#88a3b8' }}>Costs: </span>
+                          <strong style={{ color: '#ffaa00' }}>₹{formatPrice(backtestResult.portfolio.total_transaction_costs)}</strong>
+                        </span>
+                        <span>
+                          <span style={{ color: '#88a3b8' }}>Gross Exp: </span>
+                          <strong style={{ color: '#fff' }}>₹{formatPrice(backtestResult.portfolio.gross_exposure)}</strong>
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Interactive Analytics & Tearsheet Trigger Actions */}

@@ -32,6 +32,25 @@ from src.paper_trading.cost_model import (
     calculate_trade_costs,
     compute_entry_execution_price,
 )
+from src.paper_trading.simulated_execution import (
+    SimulatedExecutionEngine,
+    SimulatedOrder,
+    SimulatedOrderStatus,
+    SimulatedOrderType,
+)
+from src.paper_trading.ledger import (
+    PaperAccountLedger,
+    LedgerEntry,
+    LedgerEntryType,
+)
+from src.paper_trading.risk_manager import (
+    PaperRiskManager,
+    PaperRiskConfig,
+)
+from src.paper_trading.market_data_monitor import (
+    MarketDataReliabilityMonitor,
+    DataQualityState,
+)
 
 
 class TradeStatus(str, Enum):
@@ -247,6 +266,20 @@ class InteractivePaperTradingService:
         self._max_drawdown_pct: float = 0.0
         self._equity_curve: list[dict[str, Any]] = []
 
+        # Phase 28: Integrated Ledger, Execution Engine, Risk Manager, and Data Monitor
+        ledger_path = self.persistence_file.parent / "paper_ledger.json"
+        self.ledger = PaperAccountLedger(
+            starting_capital=self.starting_capital,
+            persistence_path=ledger_path,
+        )
+        self.ledger.load_from_disk()
+
+        self.simulated_execution = SimulatedExecutionEngine(
+            cost_config=self.cost_model.to_intraday_cost_config(),
+        )
+        self.risk_manager = PaperRiskManager()
+        self.market_data_monitor = MarketDataReliabilityMonitor()
+
         self._load_from_disk()
         if not self._equity_curve:
             self._record_equity_point(
@@ -302,6 +335,20 @@ class InteractivePaperTradingService:
         self._max_drawdown = 0.0
         self._max_drawdown_pct = 0.0
         self._equity_curve = []
+
+        # Phase 28: Reset integrated ledger, execution engine, risk manager, and monitor
+        ledger_path = self.persistence_file.parent / "paper_ledger.json"
+        self.ledger = PaperAccountLedger(
+            starting_capital=self.starting_capital,
+            persistence_path=ledger_path,
+        )
+        self.ledger.save_to_disk()
+        self.simulated_execution = SimulatedExecutionEngine(
+            cost_config=self.cost_model.to_intraday_cost_config(),
+        )
+        self.risk_manager = PaperRiskManager()
+        self.market_data_monitor = MarketDataReliabilityMonitor()
+
         self._record_equity_point(
             event="INITIAL_CAPITAL",
             trade_id=None,
@@ -429,6 +476,8 @@ class InteractivePaperTradingService:
         drawdown = max(0.0, self._peak_equity - total_equity)
         drawdown_pct = (drawdown / self._peak_equity * 100.0) if self._peak_equity > 0 else 0.0
 
+        ledger_recon = self.ledger.reconcile_accounting(unrealized_pnl)
+
         return {
             "simulation_only": True,
             "starting_capital": round(self.starting_capital, 2),
@@ -447,6 +496,16 @@ class InteractivePaperTradingService:
             "open_positions_count": len(active_trades),
             "completed_trades_count": len(closed_trades),
             "cost_model_id": self.cost_model.config_id,
+            "reserved_capital": self.ledger.reserved_capital,
+            "available_margin": ledger_recon["available_margin"],
+            "allocated_margin": self.ledger.allocated_margin,
+            "ledger_reconciliation": ledger_recon,
+            "risk_status": {
+                "is_blocked": self.risk_manager.is_blocked(),
+                "active_blockers": self.risk_manager.active_risk_blockers,
+            },
+            "market_data_health": self.market_data_monitor.get_summary(),
+            "environment_badge": "PAPER / SIMULATION ONLY — NO BROKER CONNECTED",
         }
 
     def get_equity_curve(self) -> list[dict[str, Any]]:
@@ -612,6 +671,29 @@ class InteractivePaperTradingService:
                 f"Insufficient available capital: trade requires ₹{required_capital:.2f}, but available capital is ₹{available_cap:.2f}"
             )
 
+        # Market data reliability guard (Phase 28.5)
+        can_open_feed, feed_reason = self.market_data_monitor.can_open_entry(clean_symbol)
+        if not can_open_feed:
+            raise ValueError(feed_reason)
+
+        # Server-side risk controls (Phase 28.4)
+        active_pos_dicts = [t.to_dict() for t in self._trades.values() if t.is_active]
+        can_risk, risk_reason = self.risk_manager.validate_candidate_order(
+            symbol=clean_symbol,
+            side=side_enum.value,
+            entry_price=float(actual_entry),
+            stop_loss=float(stop_loss),
+            quantity=int(quantity),
+            current_equity=account_state["total_equity"],
+            available_margin=account_state.get("available_margin", account_state["available_capital"]),
+            initial_capital=self.starting_capital,
+            active_positions=active_pos_dicts,
+            feed_quality_state=self.market_data_monitor.get_symbol_health(clean_symbol).state,
+            order_timestamp=resolved_entry_time,
+        )
+        if not can_risk:
+            raise ValueError(risk_reason)
+
         trade_id = f"tr_{uuid.uuid4().hex[:10]}"
         trade = InteractivePaperTrade(
             trade_id=trade_id,
@@ -644,6 +726,39 @@ class InteractivePaperTradingService:
             trade_id=trade_id,
             timestamp=resolved_entry_time,
         )
+
+        # Phase 28: Allocate margin in ledger
+        margin_req = float(actual_entry) * int(quantity)
+        self.ledger.allocate_margin(
+            margin_required=margin_req,
+            reference_id=trade_id,
+            description=f"Margin allocation for {clean_symbol} {side_enum.value}",
+            timestamp=resolved_entry_time,
+        )
+        self.ledger.save_to_disk()
+
+        # Phase 28: Track simulated order in execution engine
+        try:
+            ord_res = self.simulated_execution.submit_order(
+                symbol=clean_symbol,
+                side=side_enum.value,
+                order_type=SimulatedOrderType.MARKET.value,
+                quantity=int(quantity),
+                requested_price=float(entry_price),
+                stop_price=float(stop_loss),
+                target_price=float(target_1),
+                client_request_id=client_request_id,
+                timeframe=clean_tf,
+                timestamp=resolved_entry_time,
+            )
+            self.simulated_execution.execute_fill(
+                order_id=ord_res.order_id,
+                market_price=float(entry_price),
+                timestamp=resolved_entry_time,
+            )
+        except Exception:
+            pass
+
         self._save_to_disk()
         return trade
 
@@ -751,6 +866,17 @@ class InteractivePaperTradingService:
             trade_id=trade.trade_id,
             timestamp=exit_time,
         )
+
+        # Phase 28: Record trade close in double-entry ledger
+        margin_rel = float(trade.actual_entry_price) * int(trade.quantity)
+        self.ledger.record_trade_close(
+            trade_id=trade.trade_id,
+            gross_pnl=trade.gross_pnl,
+            transaction_costs=trade.total_cost,
+            margin_released=margin_rel,
+            timestamp=exit_time,
+        )
+        self.ledger.save_to_disk()
 
     # ------------------------------------------------------------------------
     # State Updates & Exit Engine
@@ -1134,3 +1260,138 @@ class InteractivePaperTradingService:
             "profit_factor": profit_factor,
             "max_drawdown": round(self._max_drawdown, 2),
         }
+
+    # ------------------------------------------------------------------------
+    # Phase 28: Simulated Orders, Double-Entry Ledger & Health Endpoints
+    # ------------------------------------------------------------------------
+
+    def submit_simulated_order(
+        self,
+        symbol: str,
+        side: str,
+        order_type: str = "MARKET",
+        quantity: int = 1,
+        price: float | None = None,
+        stop_price: float | None = None,
+        current_market_price: float | None = None,
+        client_order_id: str | None = None,
+        timeframe: str = "15m",
+        timestamp: datetime | None = None,
+    ) -> Any:
+        """Validate via RiskManager, record order, and execute simulated fill if MARKET."""
+        now = _ensure_aware_utc(timestamp or datetime.now(timezone.utc))
+        req_price = price or current_market_price or 100.0
+
+        # Validate order pre-trade risk
+        active_trades = [t for t in self._trades.values() if t.is_active]
+        unrealized_pnl = sum(t.unrealized_pnl for t in active_trades)
+        recon = self.ledger.reconcile_accounting(unrealized_pnl)
+
+        is_valid, reason = self.risk_manager.validate_candidate_order(
+            symbol=symbol,
+            side=side,
+            quantity=quantity,
+            price=req_price,
+            stop_price=stop_price,
+            portfolio_equity=recon["total_equity"],
+            available_margin=recon["available_margin"],
+            active_positions=[
+                {
+                    "symbol": t.symbol,
+                    "side": t.side,
+                    "quantity": t.quantity,
+                    "entry_price": t.actual_entry_price,
+                }
+                for t in active_trades
+            ],
+            timestamp=now,
+        )
+        if not is_valid:
+            raise ValueError(f"Risk rejection: {reason}")
+
+        order = self.simulated_execution.submit_order(
+            symbol=symbol,
+            side=side,
+            order_type=order_type,
+            quantity=quantity,
+            requested_price=req_price,
+            stop_price=stop_price,
+            client_request_id=client_order_id,
+            timeframe=timeframe,
+            timestamp=now,
+        )
+
+        if order.order_type == "MARKET" and (current_market_price or price):
+            fill_p = current_market_price or price
+            order = self.simulated_execution.execute_fill(
+                order_id=order.order_id,
+                market_price=fill_p,
+                timestamp=now,
+                available_cash=recon["available_margin"],
+            )
+            if order.status == "FILLED":
+                margin_req = order.gross_amount
+                self.ledger.allocate_margin(
+                    margin_req,
+                    trade_id=None,
+                    order_id=order.order_id,
+                    timestamp=now,
+                )
+        return order
+
+    def cancel_simulated_order(
+        self, order_id: str, reason: str = "User cancelled"
+    ) -> Any:
+        """Cancel an unfulfilled simulated order."""
+        return self.simulated_execution.cancel_order(order_id, reason=reason)
+
+    def list_simulated_orders(
+        self,
+        symbol: str | None = None,
+        status: str | None = None,
+        limit: int = 50,
+    ) -> list[Any]:
+        """List simulated orders matching filters."""
+        return self.simulated_execution.list_orders(
+            symbol=symbol, status=status, limit=limit
+        )
+
+    def get_ledger_report(self) -> dict[str, Any]:
+        """Return ledger entries and double-entry reconciliation."""
+        self._recalculate_equity_metrics()
+        active_trades = [t for t in self._trades.values() if t.is_active]
+        unrealized_pnl = sum(t.unrealized_pnl for t in active_trades)
+        recon = self.ledger.reconcile_accounting(unrealized_pnl)
+
+        entries = [
+            {
+                "entry_id": e.entry_id,
+                "timestamp": e.timestamp,
+                "entry_type": e.entry_type,
+                "amount": e.amount,
+                "balance_after": e.balance_after,
+                "trade_id": getattr(e, "trade_id", None) or e.reference_id,
+                "order_id": getattr(e, "order_id", None) or e.reference_id,
+                "description": e.description,
+                "simulation_only": True,
+            }
+            for e in self.ledger.entries
+        ]
+        return {
+            "entries": entries,
+            "initial_deposit": recon["initial_deposit"],
+            "cash_balance": recon["cash_balance"],
+            "allocated_margin": recon["allocated_margin"],
+            "reserved_capital": recon["reserved_capital"],
+            "available_margin": recon["available_margin"],
+            "unrealized_pnl": recon["unrealized_pnl"],
+            "total_equity": recon["total_equity"],
+            "is_balanced": recon["is_balanced"],
+            "simulation_only": True,
+        }
+
+    def get_market_data_health(self) -> dict[str, Any]:
+        """Return market data quality summary."""
+        summary = self.market_data_monitor.get_summary()
+        summary["simulation_only"] = True
+        return summary

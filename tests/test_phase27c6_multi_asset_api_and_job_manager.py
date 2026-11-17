@@ -21,11 +21,12 @@ from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import patch
 
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
 import numpy as np
 import pandas as pd
 from pydantic import ValidationError
 import pytest
-from fastapi.testclient import TestClient
 
 from src.api.main import app
 from src.api.models import (
@@ -38,8 +39,18 @@ from src.api.models import (
     MultiAssetBacktestJobStatusResponse,
     MultiAssetBacktestRunRequest,
 )
+from src.api.routes.strategy import (
+    create_multi_asset_backtest_job,
+    get_backtest_job_result,
+    get_backtest_job_status,
+    get_multi_asset_backtest_job_result,
+)
 from src.backtest.capital_allocator import TradeOpportunity
-from src.backtest.multi_asset_engine import MultiAssetEngineConfig, run_multi_asset_backtest
+from src.backtest.multi_asset_engine import (
+    MultiAssetEngineConfig,
+    _normalize_symbol_dataframe,
+    run_multi_asset_backtest,
+)
 from src.backtest.portfolio import Position, RiskReason
 from src.strategy.job_manager import (
     BacktestJob,
@@ -79,11 +90,6 @@ def _make_synthetic_candles(
             "low": lows,
             "close": prices_arr,
             "volume": volumes,
-            "Open": opens,
-            "High": highs,
-            "Low": lows,
-            "Close": prices_arr,
-            "Volume": volumes,
         },
         index=dates,
     )
@@ -427,25 +433,68 @@ def test_19_execution_multiple_symbols_sharing_capital():
 
 
 def test_20_execution_aggregate_portfolio_risk():
-    """Verify aggregate portfolio risk limit bounds concurrent positions."""
+    """Verify aggregate portfolio risk limit bounds concurrent positions:
+    Case 1: Downsizing when remaining risk budget exists.
+    Case 2: Rejection when aggregate risk budget is exhausted.
+    """
     dates = pd.date_range("2026-03-30 09:25:00", periods=5, freq="1min")
     df_a = _make_synthetic_candles(dates, 100.0)
     df_b = _make_synthetic_candles(dates, 200.0)
 
-    # Risk per trade is 2% = ₹2,000. Max portfolio risk is 2.0% = ₹2,000.
-    # Second trade would exceed aggregate risk and must be rejected.
+    # ------------------------------------------------------------------------
+    # Case 1: Remaining aggregate risk budget exists -> Allocator downsizes SYM_B
+    # Initial capital = ₹100,000. Risk per trade = 2.0% (₹2,000). Max portfolio risk = 2.5% (₹2,500).
+    # SYM_A consumes ~₹2,000. Remaining portfolio risk budget = ~₹500.
+    # Allocator dynamically sizes SYM_B to fit the remaining ~₹500 risk budget.
+    # ------------------------------------------------------------------------
     opp_a = TradeOpportunity(
         symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=80.0, target_price=200.0,
-        requested_quantity=100, signal_quality=1.0, relative_volume=1.0, is_tradeable=True,
+        requested_quantity=0, signal_quality=1.0, relative_volume=1.0, is_tradeable=True,
         timestamp=dates[0], atr=2.0,
     )
     opp_b = TradeOpportunity(
         symbol="SYM_B", side=Position.LONG, entry_price=200.0, stop_loss=160.0, target_price=400.0,
-        requested_quantity=100, signal_quality=0.8, relative_volume=1.0, is_tradeable=True,
+        requested_quantity=0, signal_quality=0.8, relative_volume=1.0, is_tradeable=True,
         timestamp=dates[0], atr=2.0,
     )
 
-    m_cfg = MultiAssetEngineConfig(
+    cfg_downsize = MultiAssetEngineConfig(
+        initial_capital=100_000.0,
+        risk_per_trade_pct=0.02,
+        max_portfolio_risk_pct=0.025,
+        opening_cooldown_minutes=0,
+        enforce_eod_square_off=False,
+    )
+
+    res_downsize = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df_a, "SYM_B": df_b},
+        signals_by_symbol={"SYM_A": [opp_a] + [None]*4, "SYM_B": [opp_b] + [None]*4},
+        config=cfg_downsize,
+    )
+
+    alloc_a1 = next(a for a in res_downsize.allocations if a.symbol == "SYM_A")
+    alloc_b1 = next(a for a in res_downsize.allocations if a.symbol == "SYM_B")
+
+    assert alloc_a1.accepted is True
+    assert alloc_a1.allocated_quantity > 0
+    assert alloc_a1.estimated_risk == pytest.approx(2000.0, abs=5.0)
+
+    assert alloc_b1.accepted is True
+    assert alloc_b1.allocated_quantity > 0
+    assert alloc_b1.limiting_constraint == "PORTFOLIO_RISK_LIMIT"
+    assert alloc_b1.estimated_risk == pytest.approx(500.0, abs=10.0)
+
+    total_allocated_risk_case1 = alloc_a1.estimated_risk + alloc_b1.estimated_risk
+    assert total_allocated_risk_case1 <= 2500.0
+    assert len(res_downsize.trades) == 2
+
+    # ------------------------------------------------------------------------
+    # Case 2: Aggregate risk budget is exhausted -> Allocator rejects SYM_B
+    # Initial capital = ₹100,000. Risk per trade = 2.0% (₹2,000). Max portfolio risk = 2.0% (₹2,000).
+    # SYM_A consumes ~₹2,000. Remaining portfolio risk budget = ₹0.0.
+    # SYM_B cannot be allocated any shares and must be strictly rejected.
+    # ------------------------------------------------------------------------
+    cfg_exhaust = MultiAssetEngineConfig(
         initial_capital=100_000.0,
         risk_per_trade_pct=0.02,
         max_portfolio_risk_pct=0.02,
@@ -453,16 +502,28 @@ def test_20_execution_aggregate_portfolio_risk():
         enforce_eod_square_off=False,
     )
 
-    res = run_multi_asset_backtest(
+    res_exhaust = run_multi_asset_backtest(
         data_by_symbol={"SYM_A": df_a, "SYM_B": df_b},
         signals_by_symbol={"SYM_A": [opp_a] + [None]*4, "SYM_B": [opp_b] + [None]*4},
-        config=m_cfg,
+        config=cfg_exhaust,
     )
 
-    # SYM_A accepted (higher quality 1.0), SYM_B rejected (would exceed 2.0% portfolio risk)
-    assert len(res.trades) == 1
-    assert res.trades[0].symbol == "SYM_A"
-    assert not any(a.symbol == "SYM_B" and a.accepted for a in res.allocations)
+    alloc_a2 = next(a for a in res_exhaust.allocations if a.symbol == "SYM_A")
+    alloc_b2 = next(a for a in res_exhaust.allocations if a.symbol == "SYM_B")
+
+    assert alloc_a2.accepted is True
+    assert alloc_a2.allocated_quantity > 0
+    assert alloc_a2.estimated_risk == pytest.approx(2000.0, abs=5.0)
+
+    assert alloc_b2.accepted is False
+    assert alloc_b2.allocated_quantity == 0
+    assert alloc_b2.estimated_risk == 0.0
+    assert alloc_b2.limiting_constraint == "PORTFOLIO_RISK_LIMIT"
+
+    total_allocated_risk_case2 = alloc_a2.estimated_risk + alloc_b2.estimated_risk
+    assert total_allocated_risk_case2 <= 2000.0
+    assert len(res_exhaust.trades) == 1
+    assert res_exhaust.trades[0].symbol == "SYM_A"
 
 
 def test_21_execution_stale_data_entry_blocking():
@@ -603,7 +664,7 @@ def test_25_execution_margin_conservation():
     dates = pd.date_range("2026-03-30 09:25:00", periods=5, freq="1min")
     df_a = _make_synthetic_candles(dates, 100.0)
     # Target hit at bar 2
-    df_a.loc[dates[2], ["High", "Close"]] = 150.0
+    df_a.loc[dates[2], ["high", "close"]] = 150.0
 
     opp_a = TradeOpportunity(
         symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=50.0, target_price=150.0,
@@ -614,7 +675,7 @@ def test_25_execution_margin_conservation():
     m_cfg = MultiAssetEngineConfig(initial_capital=100_000.0, opening_cooldown_minutes=0)
     res = run_multi_asset_backtest(
         data_by_symbol={"SYM_A": df_a},
-        signals_by_symbol={"SYM_A": [opp_a] + [None]*4},
+        signals_by_symbol={"SYM_A": [opp_a] + [None]*4, "SYM_B": [None]*5},
         config=m_cfg,
     )
 
@@ -628,7 +689,7 @@ def test_26_execution_exactly_once_transaction_costs():
     """Verify realized transaction costs are deducted exactly once from cash."""
     dates = pd.date_range("2026-03-30 09:25:00", periods=5, freq="1min")
     df_a = _make_synthetic_candles(dates, 100.0)
-    df_a.loc[dates[2], ["High", "Close"]] = 150.0
+    df_a.loc[dates[2], ["high", "close"]] = 150.0
 
     opp_a = TradeOpportunity(
         symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=50.0, target_price=150.0,
@@ -639,7 +700,7 @@ def test_26_execution_exactly_once_transaction_costs():
     m_cfg = MultiAssetEngineConfig(initial_capital=100_000.0, opening_cooldown_minutes=0)
     res = run_multi_asset_backtest(
         data_by_symbol={"SYM_A": df_a},
-        signals_by_symbol={"SYM_A": [opp_a] + [None]*4},
+        signals_by_symbol={"SYM_A": [opp_a] + [None]*4, "SYM_B": [None]*5},
         config=m_cfg,
     )
 
@@ -653,7 +714,7 @@ def test_27_execution_no_fabricated_execution_fills():
     dates = pd.date_range("2026-03-30 09:25:00", periods=7, freq="1min")
     # Bars 2..4 dropped, bar 5 resumes with gap down to 70.0
     df_a = _make_synthetic_candles(dates, 100.0).drop(dates[2:5])
-    df_a.loc[dates[5], ["Open", "High", "Low", "Close"]] = 70.0
+    df_a.loc[dates[5], ["open", "high", "low", "close"]] = 70.0
 
     opp_a = TradeOpportunity(
         symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=80.0, target_price=200.0,
@@ -664,7 +725,7 @@ def test_27_execution_no_fabricated_execution_fills():
     m_cfg = MultiAssetEngineConfig(initial_capital=100_000.0, opening_cooldown_minutes=0)
     res = run_multi_asset_backtest(
         data_by_symbol={"SYM_A": df_a},
-        signals_by_symbol={"SYM_A": [opp_a] + [None]*6},
+        signals_by_symbol={"SYM_A": [opp_a] + [None]*6, "SYM_B": [None]*7},
         config=m_cfg,
     )
 
@@ -678,48 +739,56 @@ def test_27_execution_no_fabricated_execution_fills():
 # ============================================================================
 
 def test_28_e2e_submit_request_through_api(
-    api_client: TestClient,
     synthetic_dates_120: pd.DatetimeIndex,
 ):
-    """Verify POST /api/strategy/backtest/multi/run returns 202 Accepted with job metadata."""
+    """Verify create_multi_asset_backtest_job accepts valid request and returns 202-equivalent metadata."""
     df_a = _make_synthetic_candles(synthetic_dates_120, 100.0)
     mgr = get_job_manager()
 
     with patch.object(mgr, "_load_data_for_job", return_value=df_a):
-        payload = {
-            "symbols": ["SYM_A", "SYM_B"],
-            "initial_capital": 100000.0,
-            "risk_per_trade_pct": 0.01,
-            "execution_model": "next_open",
-        }
-        res = api_client.post("/api/strategy/backtest/multi/run", json=payload)
-        assert res.status_code == 202
-        data = res.json()
-        assert data["job_id"].startswith("job-")
-        assert data["status"] in ("QUEUED", "RUNNING")
-        assert data["symbols"] == ["SYM_A", "SYM_B"]
+        req = MultiAssetBacktestRunRequest(
+            symbols=["SYM_A", "SYM_B"],
+            initial_capital=100000.0,
+            risk_per_trade_pct=0.01,
+            execution_model="next_open",
+        )
+        res = create_multi_asset_backtest_job(req)
+        assert res.job_id.startswith("job-")
+        assert res.status in ("QUEUED", "RUNNING")
+        assert res.symbols == ["SYM_A", "SYM_B"]
+
+        # Keep _load_data_for_job patched until job reaches a terminal state
+        job_id = res.job_id
+        deadline = time.time() + 10.0
+        final_status = None
+        while time.time() < deadline:
+            stat_res = get_backtest_job_status(job_id)
+            final_status = stat_res.status
+            if final_status in ("COMPLETED", "FAILED"):
+                break
+            time.sleep(0.05)
+
+        assert final_status == "COMPLETED", f"Job {job_id} did not complete within timeout. Status: {final_status}"
 
 
 def test_29_e2e_execute_through_job_manager(
-    api_client: TestClient,
     synthetic_dates_120: pd.DatetimeIndex,
 ):
-    """Verify polling GET /api/strategy/backtest/jobs/{job_id} tracks job progression."""
+    """Verify polling get_backtest_job_status tracks job progression."""
     df_a = _make_synthetic_candles(synthetic_dates_120, 100.0)
     mgr = get_job_manager()
 
     with patch.object(mgr, "_load_data_for_job", return_value=df_a):
-        payload = {"symbols": ["SYM_A"]}
-        post_res = api_client.post("/api/strategy/backtest/multi/run", json=payload)
-        job_id = post_res.json()["job_id"]
+        req = MultiAssetBacktestRunRequest(symbols=["SYM_A"])
+        post_res = create_multi_asset_backtest_job(req)
+        job_id = post_res.job_id
 
         # Poll status
         deadline = time.time() + 10.0
         final_status = None
         while time.time() < deadline:
-            stat_res = api_client.get(f"/api/strategy/backtest/jobs/{job_id}")
-            assert stat_res.status_code == 200
-            final_status = stat_res.json()["status"]
+            stat_res = get_backtest_job_status(job_id)
+            final_status = stat_res.status
             if final_status in ("COMPLETED", "FAILED"):
                 break
             time.sleep(0.05)
@@ -728,43 +797,43 @@ def test_29_e2e_execute_through_job_manager(
 
 
 def test_30_e2e_retrieve_completed_multi_asset_result(
-    api_client: TestClient,
     synthetic_dates_120: pd.DatetimeIndex,
 ):
-    """Verify GET /api/strategy/backtest/jobs/{job_id}/result retrieves multi-asset schema."""
+    """Verify get_backtest_job_result retrieves multi-asset schema."""
     df_a = _make_synthetic_candles(synthetic_dates_120, 100.0)
     mgr = get_job_manager()
 
     with patch.object(mgr, "_load_data_for_job", return_value=df_a):
-        payload = {"symbols": ["SYM_A"]}
-        post_res = api_client.post("/api/strategy/backtest/multi/run", json=payload)
-        job_id = post_res.json()["job_id"]
+        req = MultiAssetBacktestRunRequest(symbols=["SYM_A"])
+        post_res = create_multi_asset_backtest_job(req)
+        job_id = post_res.job_id
 
         deadline = time.time() + 10.0
+        final_status = None
         while time.time() < deadline:
-            stat_res = api_client.get(f"/api/strategy/backtest/jobs/{job_id}")
-            if stat_res.json()["status"] == "COMPLETED":
+            stat_res = get_backtest_job_status(job_id)
+            final_status = stat_res.status
+            if final_status in ("COMPLETED", "FAILED"):
                 break
             time.sleep(0.05)
 
+        assert final_status == "COMPLETED", f"Job {job_id} did not complete successfully. Status: {final_status}"
+
         # Query generic result endpoint
-        res = api_client.get(f"/api/strategy/backtest/jobs/{job_id}/result")
-        assert res.status_code == 200
-        data = res.json()
-        assert data["job_id"] == job_id
-        assert data["symbols"] == ["SYM_A"]
-        assert "portfolio" in data
-        assert "symbol_metrics" in data
-        assert "risk_and_quality" in data
+        res = get_backtest_job_result(job_id)
+        assert res.job_id == job_id
+        assert res.symbols == ["SYM_A"]
+        assert res.portfolio is not None
+        assert res.symbol_metrics is not None
+        assert res.risk_and_quality is not None
 
         # Query dedicated multi-asset result endpoint
-        multi_res = api_client.get(f"/api/strategy/backtest/multi/jobs/{job_id}/result")
-        assert multi_res.status_code == 200
-        assert multi_res.json()["job_id"] == job_id
+        multi_res = get_multi_asset_backtest_job_result(job_id)
+        assert multi_res.job_id == job_id
 
 
-def test_31_e2e_retrieve_failed_job_details(api_client: TestClient):
-    """Verify querying result of a failed job returns HTTP 400 with failure explanation."""
+def test_31_e2e_retrieve_failed_job_details():
+    """Verify querying result of a failed job raises HTTP 400 with failure explanation."""
     mgr = get_job_manager()
     job = mgr.submit_multi_asset_job(symbols=["SYM_DOES_NOT_EXIST"])
 
@@ -776,13 +845,13 @@ def test_31_e2e_retrieve_failed_job_details(api_client: TestClient):
 
     assert job.status == JobStatus.FAILED
 
-    res = api_client.get(f"/api/strategy/backtest/jobs/{job.job_id}/result")
-    assert res.status_code == 400
-    assert "failed" in res.json()["detail"].lower()
+    with pytest.raises(HTTPException) as exc_info:
+        get_backtest_job_result(job.job_id)
+    assert exc_info.value.status_code == 400
+    assert "failed" in str(exc_info.value.detail).lower()
 
 
 def test_32_e2e_verify_per_symbol_attribution(
-    api_client: TestClient,
     synthetic_dates_120: pd.DatetimeIndex,
 ):
     """Verify result payload contains detailed per-symbol performance attribution."""
@@ -791,30 +860,34 @@ def test_32_e2e_verify_per_symbol_attribution(
     mgr = get_job_manager()
 
     with patch.object(mgr, "_load_data_for_job", side_effect=lambda s: df_a if s == "SYM_A" else df_b):
-        payload = {"symbols": ["SYM_A", "SYM_B"]}
-        post_res = api_client.post("/api/strategy/backtest/multi/run", json=payload)
-        job_id = post_res.json()["job_id"]
+        req = MultiAssetBacktestRunRequest(symbols=["SYM_A", "SYM_B"])
+        post_res = create_multi_asset_backtest_job(req)
+        job_id = post_res.job_id
 
         deadline = time.time() + 10.0
+        final_status = None
         while time.time() < deadline:
-            if api_client.get(f"/api/strategy/backtest/jobs/{job_id}").json()["status"] == "COMPLETED":
+            stat_res = get_backtest_job_status(job_id)
+            final_status = stat_res.status
+            if final_status in ("COMPLETED", "FAILED"):
                 break
             time.sleep(0.05)
 
-        data = api_client.get(f"/api/strategy/backtest/jobs/{job_id}/result").json()
-        assert "SYM_A" in data["symbol_metrics"]
-        assert "SYM_B" in data["symbol_metrics"]
+        assert final_status == "COMPLETED", f"Job {job_id} did not complete successfully. Status: {final_status}"
+
+        data = get_multi_asset_backtest_job_result(job_id)
+        assert "SYM_A" in data.symbol_metrics
+        assert "SYM_B" in data.symbol_metrics
         for sym in ("SYM_A", "SYM_B"):
-            sm = data["symbol_metrics"][sym]
-            assert "trades" in sm
-            assert "net_pnl" in sm
-            assert "win_rate_pct" in sm
-            assert "profit_factor" in sm
-            assert "position_status" in sm
+            sm = data.symbol_metrics[sym]
+            assert sm.trades >= 0
+            assert sm.net_pnl is not None
+            assert sm.win_rate_pct is not None
+            assert sm.profit_factor is not None
+            assert sm.position_status is not None
 
 
 def test_33_e2e_verify_portfolio_level_metrics(
-    api_client: TestClient,
     synthetic_dates_120: pd.DatetimeIndex,
 ):
     """Verify result payload accurately reports portfolio-level capital, equity, and margin."""
@@ -822,30 +895,34 @@ def test_33_e2e_verify_portfolio_level_metrics(
     mgr = get_job_manager()
 
     with patch.object(mgr, "_load_data_for_job", return_value=df_a):
-        payload = {"symbols": ["SYM_A"], "initial_capital": 100_000.0}
-        post_res = api_client.post("/api/strategy/backtest/multi/run", json=payload)
-        job_id = post_res.json()["job_id"]
+        req = MultiAssetBacktestRunRequest(symbols=["SYM_A"], initial_capital=100_000.0)
+        post_res = create_multi_asset_backtest_job(req)
+        job_id = post_res.job_id
 
         deadline = time.time() + 10.0
+        final_status = None
         while time.time() < deadline:
-            if api_client.get(f"/api/strategy/backtest/jobs/{job_id}").json()["status"] == "COMPLETED":
+            stat_res = get_backtest_job_status(job_id)
+            final_status = stat_res.status
+            if final_status in ("COMPLETED", "FAILED"):
                 break
             time.sleep(0.05)
 
-        data = api_client.get(f"/api/strategy/backtest/jobs/{job_id}/result").json()
-        port = data["portfolio"]
-        assert port["initial_capital"] == 100_000.0
-        assert "final_equity" in port
-        assert "realized_net_pnl" in port
-        assert "unrealized_pnl" in port
-        assert "total_transaction_costs" in port
-        assert "available_margin" in port
-        assert "allocated_margin" in port
-        assert "max_drawdown_pct" in port
+        assert final_status == "COMPLETED", f"Job {job_id} did not complete successfully. Status: {final_status}"
+
+        data = get_multi_asset_backtest_job_result(job_id)
+        port = data.portfolio
+        assert port.initial_capital == 100_000.0
+        assert port.final_equity is not None
+        assert port.realized_net_pnl is not None
+        assert port.unrealized_pnl is not None
+        assert port.total_transaction_costs is not None
+        assert port.available_margin is not None
+        assert port.allocated_margin is not None
+        assert port.max_drawdown_pct is not None
 
 
 def test_34_e2e_verify_unresolved_position_reporting(
-    api_client: TestClient,
     synthetic_dates_120: pd.DatetimeIndex,
 ):
     """Verify unresolved positions are structured and never disguised as closed trades."""
@@ -853,19 +930,171 @@ def test_34_e2e_verify_unresolved_position_reporting(
     mgr = get_job_manager()
 
     with patch.object(mgr, "_load_data_for_job", return_value=df_a):
-        payload = {"symbols": ["SYM_A"]}
-        post_res = api_client.post("/api/strategy/backtest/multi/run", json=payload)
-        job_id = post_res.json()["job_id"]
+        req = MultiAssetBacktestRunRequest(symbols=["SYM_A"])
+        post_res = create_multi_asset_backtest_job(req)
+        job_id = post_res.job_id
 
         deadline = time.time() + 10.0
+        final_status = None
         while time.time() < deadline:
-            if api_client.get(f"/api/strategy/backtest/jobs/{job_id}").json()["status"] == "COMPLETED":
+            stat_res = get_backtest_job_status(job_id)
+            final_status = stat_res.status
+            if final_status in ("COMPLETED", "FAILED"):
                 break
             time.sleep(0.05)
 
-        data = api_client.get(f"/api/strategy/backtest/jobs/{job_id}/result").json()
-        assert "unresolved_positions" in data
-        assert isinstance(data["unresolved_positions"], list)
-        assert "trades" in data
-        assert isinstance(data["trades"], list)
+        assert final_status == "COMPLETED", f"Job {job_id} did not complete successfully. Status: {final_status}"
+
+        data = get_multi_asset_backtest_job_result(job_id)
+        assert isinstance(data.unresolved_positions, list)
+        assert isinstance(data.trades, list)
+
+
+def test_35_atr_no_lookahead_preserves_initial_nans():
+    """Verify ATR warm-up preserves initial NaNs and avoids look-ahead bias from future bars."""
+    dates = pd.date_range("2026-03-30 09:15:00", periods=30, freq="1min")
+    raw_df = _make_synthetic_candles(dates, base_price=100.0)
+
+    # Normalize DataFrame without pre-existing ATR
+    norm_df = _normalize_symbol_dataframe("SYM_A", raw_df)
+
+    # Initial 13 bars must strictly be NaN (Wilder's period=14 with min_periods=14)
+    assert norm_df["ATR"].iloc[:13].isna().all(), "Early candles must have NaN ATR to avoid look-ahead bias"
+    assert not norm_df["ATR"].iloc[13:].isna().any(), "Warmed up candles must have valid ATR"
+    assert (norm_df["ATR"].iloc[13:] > 0).all(), "Warmed up candles must have positive ATR"
+
+    # Confirm early candles do NOT equal future ATR values (strictly no backward filling)
+    for i in range(13):
+        assert pd.isna(norm_df["ATR"].iloc[i]), f"Bar {i} must be NaN, got {norm_df['ATR'].iloc[i]}"
+
+
+def test_36_atr_blocks_entries_during_warmup_next_open():
+    """Verify next_open execution blocks entry on early candles with NaN ATR, but allows later warmed-up entries."""
+    dates = pd.date_range("2026-03-30 09:25:00", periods=25, freq="1min")
+    df = _make_synthetic_candles(dates, base_price=100.0)
+
+    # Bar 2 is in warm-up (ATR is NaN). Bar 18 is warmed up (ATR is valid positive).
+    # Test 1: Signal only on bar 2 during warm-up
+    signals_warmup = [None] * 25
+    signals_warmup[2] = Position.LONG
+
+    cfg = MultiAssetEngineConfig(
+        initial_capital=100_000.0,
+        execution_model="next_open",
+        opening_cooldown_minutes=0,
+        enforce_eod_square_off=False,
+    )
+
+    res_blocked = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df},
+        signals_by_symbol={"SYM_A": signals_warmup},
+        config=cfg,
+    )
+    assert len(res_blocked.trades) == 0
+    assert len(res_blocked.allocations) == 0
+
+    # Test 2: Signal on bar 18 after warm-up
+    signals_valid = [None] * 25
+    signals_valid[18] = Position.LONG
+
+    res_entered = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df},
+        signals_by_symbol={"SYM_A": signals_valid},
+        config=cfg,
+    )
+    assert len(res_entered.allocations) == 1
+    assert res_entered.allocations[0].accepted is True
+    assert res_entered.allocations[0].allocated_quantity > 0
+
+
+def test_37_atr_blocks_entries_during_warmup_same_close():
+    """Verify same_close execution blocks entry on early candles with NaN ATR, but allows later warmed-up entries."""
+    dates = pd.date_range("2026-03-30 09:25:00", periods=25, freq="1min")
+    df = _make_synthetic_candles(dates, base_price=100.0)
+
+    signals_warmup = [None] * 25
+    signals_warmup[2] = Position.LONG
+
+    cfg = MultiAssetEngineConfig(
+        initial_capital=100_000.0,
+        execution_model="same_close",
+        opening_cooldown_minutes=0,
+        enforce_eod_square_off=False,
+    )
+
+    res_blocked = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df},
+        signals_by_symbol={"SYM_A": signals_warmup},
+        config=cfg,
+    )
+    assert len(res_blocked.trades) == 0
+    assert len(res_blocked.allocations) == 0
+
+    # Signal on bar 18 after warm-up
+    signals_valid = [None] * 25
+    signals_valid[18] = Position.LONG
+
+    res_entered = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df},
+        signals_by_symbol={"SYM_A": signals_valid},
+        config=cfg,
+    )
+    assert len(res_entered.allocations) == 1
+    assert res_entered.allocations[0].accepted is True
+    assert res_entered.allocations[0].allocated_quantity > 0
+
+
+def test_38_atr_blocks_entries_when_non_positive_or_unavailable():
+    """Verify both next_open and same_close paths block entries when ATR is non-positive or NaN."""
+    dates = pd.date_range("2026-03-30 09:25:00", periods=5, freq="1min")
+    df = _make_synthetic_candles(dates, base_price=100.0)
+    # Ensure ATR is defined on later bars so normalizer passes
+    df["ATR"] = [np.nan, np.nan, 2.0, 2.0, 2.0]
+
+    # Opportunities with invalid/non-positive ATR values on warm bars
+    opp_zero = TradeOpportunity(
+        symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=50.0, target_price=200.0,
+        atr=0.0, timestamp=dates[2],
+    )
+    opp_neg = TradeOpportunity(
+        symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=50.0, target_price=200.0,
+        atr=-1.5, timestamp=dates[3],
+    )
+    opp_nan = TradeOpportunity(
+        symbol="SYM_A", side=Position.LONG, entry_price=100.0, stop_loss=50.0, target_price=200.0,
+        atr=float("nan"), timestamp=dates[4],
+    )
+
+    signals = [None, None, opp_zero, opp_neg, opp_nan]
+
+    # next_open path
+    cfg_next = MultiAssetEngineConfig(
+        initial_capital=100_000.0,
+        execution_model="next_open",
+        opening_cooldown_minutes=0,
+        enforce_eod_square_off=False,
+    )
+    res_next = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df},
+        signals_by_symbol={"SYM_A": signals},
+        config=cfg_next,
+    )
+    assert len(res_next.trades) == 0
+    assert len(res_next.allocations) == 0
+
+    # same_close path
+    cfg_same = MultiAssetEngineConfig(
+        initial_capital=100_000.0,
+        execution_model="same_close",
+        opening_cooldown_minutes=0,
+        enforce_eod_square_off=False,
+    )
+    res_same = run_multi_asset_backtest(
+        data_by_symbol={"SYM_A": df},
+        signals_by_symbol={"SYM_A": signals},
+        config=cfg_same,
+    )
+    assert len(res_same.trades) == 0
+    assert len(res_same.allocations) == 0
+
 

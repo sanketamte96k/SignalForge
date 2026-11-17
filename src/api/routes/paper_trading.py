@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, status
 
 from src.api.models import (
     InteractivePaperTradeResponse,
+    PaperLedgerReportResponse,
+    PaperMarketDataHealthResponse,
     PaperTradeCloseRequest,
     PaperTradeCreateRequest,
     PaperTradeUpdateRequest,
@@ -18,6 +21,8 @@ from src.api.models import (
     PaperTradingRiskMetricsResponse,
     PaperTradingStatusResponse,
     PaperTradingSummaryResponse,
+    SimulatedOrderCreateRequest,
+    SimulatedOrderResponse,
 )
 from src.data.downloader import load_market_data
 from src.paper_trading.cost_model import CostModel
@@ -129,6 +134,33 @@ def _interactive_trade_to_response(
         exit_time=trade.exit_timestamp,
         reason=trade.exit_reason or "",
         return_pct=trade.return_pct,
+    )
+
+
+def _simulated_order_to_response(order: Any) -> SimulatedOrderResponse:
+    """Convert an internal SimulatedOrder to the public SimulatedOrderResponse schema."""
+    return SimulatedOrderResponse(
+        order_id=order.order_id,
+        symbol=order.symbol,
+        side=order.side,
+        order_type=order.order_type,
+        quantity=order.quantity,
+        price=order.requested_price,
+        stop_price=order.stop_price,
+        status=order.status,
+        created_at=order.created_at,
+        filled_at=order.filled_at,
+        cancelled_at=order.updated_at if order.status == "CANCELLED" else None,
+        fill_price=order.fill_price,
+        slippage_bps=round(order.slippage_cost / (order.fill_price * order.quantity) * 10000.0, 2)
+        if order.fill_price and order.quantity
+        else 0.0,
+        half_spread_bps=round(order.spread_cost / (order.fill_price * order.quantity) * 10000.0, 2)
+        if order.fill_price and order.quantity
+        else 0.0,
+        transaction_cost=order.total_costs,
+        rejection_reason=order.rejection_reason,
+        simulation_only=True,
     )
 
 
@@ -412,6 +444,105 @@ def configure_paper_trading(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         ) from exc
+
+
+# ----------------------------------------------------------------------------
+# Phase 28: Simulated Orders, Double-Entry Ledger & Health Endpoints
+# ----------------------------------------------------------------------------
+
+
+@router.get(
+    "/orders",
+    response_model=list[SimulatedOrderResponse],
+)
+def get_simulated_orders(
+    symbol: str | None = Query(None),
+    status: str | None = Query(None),
+) -> list[SimulatedOrderResponse]:
+    """List simulated orders with optional symbol and status filters."""
+    service = _get_interactive_service()
+    orders = service.list_simulated_orders(symbol=symbol, status=status)
+    return [_simulated_order_to_response(o) for o in orders]
+
+
+@router.post(
+    "/orders",
+    response_model=SimulatedOrderResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def submit_simulated_order(
+    req: SimulatedOrderCreateRequest,
+) -> SimulatedOrderResponse:
+    """Submit a simulated paper order with server-side risk checking and causal fill execution."""
+    service = _get_interactive_service()
+    try:
+        order = service.submit_simulated_order(
+            symbol=req.symbol,
+            side=req.side,
+            order_type=req.order_type,
+            quantity=req.quantity,
+            price=req.price,
+            stop_price=req.stop_price,
+            current_market_price=req.current_market_price,
+            client_order_id=req.client_order_id,
+        )
+        return _simulated_order_to_response(order)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc).strip("'"),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.post(
+    "/orders/{order_id}/cancel",
+    response_model=SimulatedOrderResponse,
+)
+def cancel_simulated_order(
+    order_id: str,
+) -> SimulatedOrderResponse:
+    """Cancel an active simulated order."""
+    service = _get_interactive_service()
+    try:
+        cancelled = service.cancel_simulated_order(order_id)
+        return _simulated_order_to_response(cancelled)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
+    "/ledger",
+    response_model=PaperLedgerReportResponse,
+)
+def get_paper_ledger() -> PaperLedgerReportResponse:
+    """Return double-entry transaction ledger and accounting reconciliation."""
+    service = _get_interactive_service()
+    report = service.get_ledger_report()
+    return PaperLedgerReportResponse(**report)
+
+
+@router.get(
+    "/market-data-health",
+    response_model=PaperMarketDataHealthResponse,
+)
+def get_market_data_health() -> PaperMarketDataHealthResponse:
+    """Return real-time market data feed health and outage tracking report."""
+    service = _get_interactive_service()
+    health = service.get_market_data_health()
+    return PaperMarketDataHealthResponse(**health)
 
 
 # ----------------------------------------------------------------------------

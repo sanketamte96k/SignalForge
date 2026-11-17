@@ -40,6 +40,7 @@ from src.backtest.indian_market_costs import (
 from src.core.security import validate_safe_path, validate_symbol
 from src.data.downloader import load_market_data
 from src.data.stock_provider import StockDataProvider
+from src.indicators.indicators import calculate_atr
 from src.strategy.backtest_strategy import (
     StrategyConfig,
     create_signal_function,
@@ -653,7 +654,18 @@ class BacktestJobManager:
                     raise ValueError(
                         f"Insufficient market data ({len(sym_data)} candles) for '{sym}'. Minimum {min_req} required."
                     )
-                data_by_symbol[sym] = sym_data
+
+                # Standardize columns to clean lowercase without duplicates
+                col_map = {str(c).lower(): c for c in sym_data.columns}
+                for req_col in ("open", "high", "low", "close", "volume"):
+                    if req_col not in col_map:
+                        raise ValueError(f"Market data for '{sym}' missing required column: '{req_col}'")
+
+                clean_df = pd.DataFrame(index=sym_data.index)
+                for req_col in ("open", "high", "low", "close", "volume"):
+                    clean_df[req_col] = sym_data[col_map[req_col]].astype(float)
+
+                data_by_symbol[sym] = clean_df
 
             # Checkpoint 2: Cancellation check after loading data
             with self._lock:
@@ -674,15 +686,31 @@ class BacktestJobManager:
                 use_rvol=bool(params.get("use_rvol", False)),
             )
 
+            # Enrich market data with canonical SignalForge ATR before simulation (strictly causal, no bfill)
+            for sym, s_df in data_by_symbol.items():
+                period = max(1, min(strat_config.atr_period, len(s_df)))
+                atr_series = calculate_atr(
+                    high=s_df["high"],
+                    low=s_df["low"],
+                    close=s_df["close"],
+                    period=period,
+                )
+                valid_atr = atr_series.dropna()
+                if valid_atr.empty or (valid_atr <= 0).any():
+                    raise ValueError(
+                        f"Unable to calculate valid positive ATR for '{sym}'. "
+                        f"Minimum {period} valid candles with positive range required."
+                    )
+                s_df["atr"] = atr_series
+                s_df["ATR"] = atr_series
+
             # Check if custom signals_by_symbol was passed in params (e.g. synthetic test fixtures)
             if "signals_by_symbol" in params and params["signals_by_symbol"] is not None:
                 signals_by_symbol = params["signals_by_symbol"]
             else:
                 signals_by_symbol = {}
                 for sym, s_df in data_by_symbol.items():
-                    sig_input_df = s_df.copy()
-                    sig_input_df.columns = [str(c).lower() for c in sig_input_df.columns]
-                    sig_df = generate_signals(sig_input_df, strat_config)
+                    sig_df = generate_signals(s_df, strat_config)
                     signals_by_symbol[sym] = sig_df["signal"]
 
             # Checkpoint 3: Cancellation check before backtest configuration
@@ -883,6 +911,7 @@ class BacktestJobManager:
                     p = portfolio.open_positions[s]
                     pos_status = "PENDING_LIQUIDATION" if p.pending_liquidation else ("STALE" if p.is_stale else "ACTIVE")
                 sm_copy = dict(s_metrics)
+                sm_copy["symbol"] = s
                 sm_copy["position_status"] = pos_status
                 pf_s = sm_copy.get("profit_factor", 0.0)
                 if isinstance(pf_s, float) and (math.isinf(pf_s) or math.isnan(pf_s)):

@@ -7,10 +7,10 @@ function formatCurrency(val) {
   return `₹${val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export function BacktestAnalyticsModal({ isOpen, onClose, result }) {
+export function BacktestAnalyticsModal({ isOpen, onClose, result, initialTab = 'equity' }) {
   if (!isOpen || !result) return null
 
-  const [activeTab, setActiveTab] = useState('equity')
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [tradeFilter, setTradeFilter] = useState('ALL')
   const [tradeSort, setTradeSort] = useState('date_asc')
   const [page, setPage] = useState(1)
@@ -18,11 +18,16 @@ export function BacktestAnalyticsModal({ isOpen, onClose, result }) {
   const [hoverEquityPoint, setHoverEquityPoint] = useState(null)
   const [hoverDrawdownPoint, setHoverDrawdownPoint] = useState(null)
 
+  const isMultiAsset = Boolean(result.symbols || result.symbol_metrics)
+  const symbols = result.symbols || (result.symbol ? [result.symbol] : [])
+  const symbol = isMultiAsset ? `Portfolio (${symbols.join(', ')})` : (result.symbol || 'NIFTY 50')
+  const symbolMetrics = result.symbol_metrics || {}
+  const riskQuality = result.risk_and_quality || {}
+  const unresolvedPositions = result.unresolved_positions || []
   const initialCapital = Number(result.portfolio?.initial_capital || 100000)
   const trades = result.trades || []
   const metrics = result.metrics || {}
   const dateRange = result.date_range || {}
-  const symbol = result.symbol || 'NIFTY 50'
   const isCausal = result.execution_model === 'next_open'
 
   // Construct Chronological Equity Progression & Drawdown Curve
@@ -219,6 +224,18 @@ export function BacktestAnalyticsModal({ isOpen, onClose, result }) {
           >
             📈 Extended Metrics
           </button>
+          {isMultiAsset && (
+            <button
+              type="button"
+              role="tab"
+              id="bam-tab-attribution"
+              aria-selected={activeTab === 'attribution'}
+              className={`bam-tab ${activeTab === 'attribution' ? 'active' : ''}`}
+              onClick={() => setActiveTab('attribution')}
+            >
+              🏛️ Attribution & Risk
+            </button>
+          )}
         </div>
 
         {/* Content Body */}
@@ -560,7 +577,7 @@ export function BacktestAnalyticsModal({ isOpen, onClose, result }) {
                           <tr key={t.trade_id}>
                             <td className="bam-text-center bam-font-mono">{t.trade_id}</td>
                             <td>
-                              <strong>{symbol}</strong>
+                              <strong>{t.symbol || symbol}</strong>
                             </td>
                             <td>
                               <span className={isBuy ? 'bam-side-buy' : 'bam-side-sell'}>{t.side}</span>
@@ -744,6 +761,195 @@ export function BacktestAnalyticsModal({ isOpen, onClose, result }) {
                     * Quantitative research simulation only. Zero broker connectivity.
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 4: Per-Symbol Attribution & Risk Controls (Multi-Asset) */}
+          {activeTab === 'attribution' && isMultiAsset && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* 1. Per-Symbol Performance Attribution Table */}
+              <div className="bam-chart-box">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#00eaaf' }}>
+                    🏛️ PER-SYMBOL ATTRIBUTION & PERFORMANCE METRICS
+                  </div>
+                  <span style={{ fontSize: '10.5px', color: '#88a3b8' }}>
+                    {Object.keys(symbolMetrics).length} Asset Allocation Tracks
+                  </span>
+                </div>
+
+                <div className="bam-table-wrap">
+                  <table className="bam-table">
+                    <thead>
+                      <tr>
+                        <th>Symbol</th>
+                        <th className="bam-text-center">Status</th>
+                        <th className="bam-text-center">Trades</th>
+                        <th className="bam-text-center">W / L</th>
+                        <th className="bam-text-right">Win Rate</th>
+                        <th className="bam-text-right">Gross P&L</th>
+                        <th className="bam-text-right">Costs</th>
+                        <th className="bam-text-right">Net P&L</th>
+                        <th className="bam-text-center">Profit Factor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(symbolMetrics).map(([sym, sm]) => {
+                        const net = Number(sm.net_pnl || 0)
+                        const gross = Number(sm.gross_pnl || 0)
+                        const costs = Number(sm.total_transaction_costs || 0)
+                        return (
+                          <tr key={sym}>
+                            <td style={{ fontWeight: 'bold', color: '#7cb5ec' }}>{sym}</td>
+                            <td className="bam-text-center">
+                              <span
+                                style={{
+                                  fontSize: '9.5px',
+                                  padding: '1px 6px',
+                                  borderRadius: '3px',
+                                  fontWeight: 'bold',
+                                  background:
+                                    sm.position_status === 'CLOSED'
+                                      ? 'rgba(0, 234, 175, 0.15)'
+                                      : sm.position_status === 'ACTIVE'
+                                        ? 'rgba(124, 181, 236, 0.15)'
+                                        : 'rgba(255, 170, 0, 0.15)',
+                                  color:
+                                    sm.position_status === 'CLOSED'
+                                      ? '#00eaaf'
+                                      : sm.position_status === 'ACTIVE'
+                                        ? '#7cb5ec'
+                                        : '#ffaa00',
+                                }}
+                              >
+                                {sm.position_status || 'CLOSED'}
+                              </span>
+                            </td>
+                            <td className="bam-text-center bam-font-mono">{sm.trades}</td>
+                            <td className="bam-text-center bam-font-mono">
+                              <span style={{ color: '#00eaaf' }}>{sm.winning_trades}</span> /{' '}
+                              <span style={{ color: '#ff6876' }}>{sm.losing_trades}</span>
+                            </td>
+                            <td className="bam-text-right bam-font-mono">{sm.win_rate_pct}%</td>
+                            <td
+                              className={`bam-text-right bam-font-mono ${gross > 0 ? 'bam-val-pos' : gross < 0 ? 'bam-val-neg' : ''}`}
+                            >
+                              {gross >= 0 ? '+' : ''}
+                              {formatCurrency(gross)}
+                            </td>
+                            <td className="bam-text-right bam-font-mono">{formatCurrency(costs)}</td>
+                            <td
+                              className={`bam-text-right bam-font-mono ${net > 0 ? 'bam-val-pos' : net < 0 ? 'bam-val-neg' : ''}`}
+                              style={{ fontWeight: 'bold' }}
+                            >
+                              {net >= 0 ? '+' : ''}
+                              {formatCurrency(net)}
+                            </td>
+                            <td className="bam-text-center bam-font-mono">{sm.profit_factor}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* 2. Portfolio Risk Controls & Data Quality Audit */}
+              <div className="bam-chart-box">
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#f0b90b', marginBottom: '8px' }}>
+                  🛡️ PORTFOLIO RISK & OUTAGE CONTROLS
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', fontSize: '11px' }}>
+                  <div style={{ padding: '8px', background: '#071018', borderRadius: '4px', border: '1px solid #142333' }}>
+                    <div style={{ color: '#88a3b8', fontSize: '10px' }}>GLOBAL OUTAGE STATUS</div>
+                    <div style={{ fontWeight: 'bold', color: '#00eaaf', marginTop: '2px' }}>
+                      {riskQuality.global_outage_detection_status || 'LIMITED_TO_RECEIVED_UNION'}
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px', background: '#071018', borderRadius: '4px', border: '1px solid #142333' }}>
+                    <div style={{ color: '#88a3b8', fontSize: '10px' }}>OUTAGE / INDETERMINATE EVENTS</div>
+                    <div style={{ fontWeight: 'bold', color: '#fff', marginTop: '2px' }}>
+                      Feed: {riskQuality.global_feed_outage_events || 0} | Valuation: {riskQuality.indeterminate_valuation_events || 0}
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px', background: '#071018', borderRadius: '4px', border: '1px solid #142333' }}>
+                    <div style={{ color: '#88a3b8', fontSize: '10px' }}>STALE EXPOSURE</div>
+                    <div style={{ fontWeight: 'bold', color: '#fff', marginTop: '2px' }}>
+                      Events: {riskQuality.stale_price_events || 0} | {formatCurrency(riskQuality.stale_notional_exposure || 0)}
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px', background: '#071018', borderRadius: '4px', border: '1px solid #142333' }}>
+                    <div style={{ color: '#88a3b8', fontSize: '10px' }}>ACTIVE RISK BLOCKERS</div>
+                    <div style={{ fontWeight: 'bold', color: Object.keys(riskQuality.active_risk_blockers || {}).length ? '#ff6876' : '#00eaaf', marginTop: '2px' }}>
+                      {Object.keys(riskQuality.active_risk_blockers || {}).length ? Object.keys(riskQuality.active_risk_blockers).join(', ') : 'None (Clear)'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Unresolved Positions & Pending Liquidations */}
+              <div className="bam-chart-box">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#7cb5ec' }}>
+                    ⚡ UNRESOLVED POSITIONS & PENDING LIQUIDATIONS ({unresolvedPositions.length})
+                  </div>
+                  <span style={{ fontSize: '10px', color: '#88a3b8' }}>
+                    Liquidation Exposure: {formatCurrency(riskQuality.unresolved_liquidation_exposure || 0)}
+                  </span>
+                </div>
+
+                {unresolvedPositions.length > 0 ? (
+                  <div className="bam-table-wrap">
+                    <table className="bam-table">
+                      <thead>
+                        <tr>
+                          <th>Symbol</th>
+                          <th>Side</th>
+                          <th>Entry Time</th>
+                          <th className="bam-text-right">Entry Price</th>
+                          <th className="bam-text-center">Qty</th>
+                          <th className="bam-text-right">Current Price</th>
+                          <th className="bam-text-right">Unrealized P&L</th>
+                          <th className="bam-text-right">Margin</th>
+                          <th>Status / Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {unresolvedPositions.map((pos, idx) => (
+                          <tr key={idx}>
+                            <td style={{ fontWeight: 'bold', color: '#7cb5ec' }}>{pos.symbol}</td>
+                            <td>{pos.side}</td>
+                            <td className="bam-font-mono">{String(pos.entry_time).slice(0, 16)}</td>
+                            <td className="bam-font-mono bam-text-right">{formatCurrency(pos.entry_price)}</td>
+                            <td className="bam-font-mono bam-text-center">{pos.quantity}</td>
+                            <td className="bam-font-mono bam-text-right">{formatCurrency(pos.current_price)}</td>
+                            <td
+                              className={`bam-font-mono bam-text-right ${pos.unrealized_pnl >= 0 ? 'bam-val-pos' : 'bam-val-neg'}`}
+                            >
+                              {pos.unrealized_pnl >= 0 ? '+' : ''}
+                              {formatCurrency(pos.unrealized_pnl)}
+                            </td>
+                            <td className="bam-font-mono bam-text-right">{formatCurrency(pos.allocated_margin)}</td>
+                            <td>
+                              {pos.pending_liquidation ? (
+                                <span style={{ color: '#ff6876', fontSize: '10px' }}>
+                                  PENDING LIQUIDATION: {pos.pending_liquidation_reason || 'Outage'}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#88a3b8', fontSize: '10px' }}>OPEN</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ padding: '12px', textAlign: 'center', color: '#00eaaf', fontSize: '11px', background: '#071018', borderRadius: '4px' }}>
+                    ✅ Zero unresolved or stranded positions. All asset positions safely resolved before session close.
+                  </div>
+                )}
               </div>
             </div>
           )}

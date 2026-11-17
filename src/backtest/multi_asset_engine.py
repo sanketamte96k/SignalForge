@@ -38,6 +38,7 @@ from src.backtest.indian_market_costs import (
 from src.backtest.metrics import PerformanceMetrics, calculate_metrics
 from src.backtest.portfolio import OpenPosition, PortfolioManager, RiskReason
 from src.backtest.simulator import Position, Trade, simulate_trade
+from src.indicators.indicators import calculate_atr
 
 
 @dataclass
@@ -299,18 +300,26 @@ def _normalize_symbol_dataframe(symbol: str, data: pd.DataFrame) -> pd.DataFrame
     else:
         df["Volume"] = 100_000.0
 
-    # Ensure ATR column exists using causal Wilder's smoothed ATR(14)
+    # Ensure ATR column exists using canonical calculate_atr from src.indicators.indicators
     if "atr" in col_map:
         df["ATR"] = df[col_map["atr"]].astype(float)
+    elif "ATR" in df.columns:
+        df["ATR"] = df["ATR"].astype(float)
     else:
-        prev_close = df["Close"].shift(1)
-        tr1 = df["High"] - df["Low"]
-        tr2 = (df["High"] - prev_close).abs()
-        tr3 = (df["Low"] - prev_close).abs()
-        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-        df["ATR"] = tr.ewm(alpha=1.0 / 14.0, adjust=False, min_periods=14).mean()
-        # Backfill any leading NaNs with simple true range or 1.0% of close
-        df["ATR"] = df["ATR"].bfill().fillna(df["Close"] * 0.01)
+        period = max(1, min(14, len(df)))
+        atr_series = calculate_atr(df["High"], df["Low"], df["Close"], period=period)
+        valid_atr = atr_series.dropna()
+        if valid_atr.empty:
+            raise ValueError(
+                f"Unable to calculate valid positive ATR for symbol '{symbol}'. "
+                f"Requires candles with positive price range."
+            )
+        df["ATR"] = atr_series
+
+    # Preserve initial NaNs during indicator warm-up. Where ATR is non-NaN, it must be strictly positive.
+    defined_atr = df["ATR"].dropna()
+    if (defined_atr <= 0).any():
+        raise ValueError(f"ATR for symbol '{symbol}' must be strictly positive where defined.")
 
     return df
 
@@ -759,10 +768,20 @@ def run_multi_asset_backtest(
                     if sym in active_bars and sym not in portfolio.open_positions:
                         bar = active_bars[sym]
                         bar_open = float(bar["Open"])
-                        bar_atr = float(opp.atr) if opp.atr > 0 else float(bar["ATR"])
+                        opp_atr = opp.atr
+                        if opp_atr is not None and (pd.isna(opp_atr) or float(opp_atr) <= 0):
+                            # Block entry: ATR non-positive or NaN
+                            continue
+                        effective_atr = opp_atr if (opp_atr is not None and float(opp_atr) > 0) else bar.get("ATR")
+                        if effective_atr is None or pd.isna(effective_atr) or float(effective_atr) <= 0:
+                            # Block entry: ATR unavailable, NaN or non-positive
+                            continue
+                        bar_atr = float(effective_atr)
 
                         stop_dist = bar_atr * config.stop_loss_atr
                         target_dist = bar_atr * config.take_profit_atr
+                        if stop_dist <= 0:
+                            continue
 
                         if opp.side == Position.LONG:
                             stop_p = bar_open - stop_dist
@@ -997,15 +1016,36 @@ def run_multi_asset_backtest(
                     )
 
                     if isinstance(raw_sig, TradeOpportunity):
+                        opp_atr = raw_sig.atr
+                        if opp_atr is not None and (pd.isna(opp_atr) or float(opp_atr) <= 0):
+                            # Block entry when ATR is non-positive or NaN
+                            continue
+                        effective_atr = opp_atr if (opp_atr is not None and float(opp_atr) > 0) else bar.get("ATR")
+                        if effective_atr is None or pd.isna(effective_atr) or float(effective_atr) <= 0:
+                            # Block entry when ATR is unavailable, NaN or non-positive
+                            continue
+                        if raw_sig.atr is None or pd.isna(raw_sig.atr) or raw_sig.atr <= 0:
+                            raw_sig.atr = float(effective_atr)
                         pending_next_open_signals[sym] = raw_sig
                     elif isinstance(raw_sig, Position):
-                        bar_atr = float(bar["ATR"])
+                        bar_atr = bar.get("ATR")
+                        if bar_atr is None or pd.isna(bar_atr) or float(bar_atr) <= 0:
+                            # Block entry when ATR is unavailable, NaN or non-positive
+                            continue
+                        bar_atr = float(bar_atr)
+                        bar_close = float(bar["Close"])
+                        stop_dist = bar_atr * config.stop_loss_atr
+                        target_dist = bar_atr * config.take_profit_atr
+                        if stop_dist <= 0:
+                            continue
+                        stop_p = bar_close - stop_dist if raw_sig == Position.LONG else bar_close + stop_dist
+                        target_p = bar_close + target_dist if raw_sig == Position.LONG else bar_close - target_dist
                         pending_next_open_signals[sym] = TradeOpportunity(
                             symbol=sym,
                             side=raw_sig,
-                            entry_price=float(bar["Close"]),
-                            stop_loss=0.0,
-                            target_price=0.0,
+                            entry_price=bar_close,
+                            stop_loss=stop_p,
+                            target_price=target_p,
                             signal_quality=1.0,
                             relative_volume=1.0,
                             is_tradeable=True,
@@ -1279,12 +1319,28 @@ def run_multi_asset_backtest(
                     )
 
                     if isinstance(raw_sig, TradeOpportunity):
+                        opp_atr = raw_sig.atr
+                        if opp_atr is not None and (pd.isna(opp_atr) or float(opp_atr) <= 0):
+                            # Block entry when ATR is non-positive or NaN
+                            continue
+                        effective_atr = opp_atr if (opp_atr is not None and float(opp_atr) > 0) else bar.get("ATR")
+                        if effective_atr is None or pd.isna(effective_atr) or float(effective_atr) <= 0:
+                            # Block entry when ATR is unavailable, NaN or non-positive
+                            continue
+                        if raw_sig.atr is None or pd.isna(raw_sig.atr) or raw_sig.atr <= 0:
+                            raw_sig.atr = float(effective_atr)
                         candidate_opportunities.append(raw_sig)
                     elif isinstance(raw_sig, Position):
+                        bar_atr = bar.get("ATR")
+                        if bar_atr is None or pd.isna(bar_atr) or float(bar_atr) <= 0:
+                            # Block entry when ATR is unavailable, NaN or non-positive
+                            continue
                         bar_close = float(bar["Close"])
-                        bar_atr = float(bar["ATR"])
+                        bar_atr = float(bar_atr)
                         stop_dist = bar_atr * config.stop_loss_atr
                         target_dist = bar_atr * config.take_profit_atr
+                        if stop_dist <= 0:
+                            continue
 
                         if raw_sig == Position.LONG:
                             stop_p = bar_close - stop_dist

@@ -8,6 +8,11 @@ import {
   closePaperTrade,
   resetPaperTrading,
   startPaperTrading,
+  fetchPaperOrders,
+  submitPaperOrder,
+  cancelPaperOrder,
+  fetchPaperLedger,
+  fetchPaperMarketDataHealth,
 } from './api'
 import './PaperTradingView.css'
 import { LoadingState, ErrorState, EmptyState } from './StateViews'
@@ -160,12 +165,26 @@ function PaperTradingView() {
   const [trades, setTrades] = useState([])
   const [openTrades, setOpenTrades] = useState([])
   const [summary, setSummary] = useState(null)
+  const [orders, setOrders] = useState([])
+  const [ledgerReport, setLedgerReport] = useState(null)
+  const [marketDataHealth, setMarketDataHealth] = useState(null)
 
   // Filters for Trade History
   const [filterSymbol, setFilterSymbol] = useState('')
   const [filterSide, setFilterSide] = useState('')
   const [filterTimeframe, setFilterTimeframe] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
+
+  // Simulated Order Form State
+  const [orderSymbol, setOrderSymbol] = useState('RELIANCE')
+  const [orderSide, setOrderSide] = useState('BUY')
+  const [orderType, setOrderType] = useState('MARKET')
+  const [orderQty, setOrderQty] = useState(10)
+  const [orderPrice, setOrderPrice] = useState(2500)
+  const [orderStopLoss, setOrderStopLoss] = useState(2475)
+  const [submittingOrder, setSubmittingOrder] = useState(false)
+  const [cancellingOrderId, setCancellingOrderId] = useState(null)
+  const [showLedgerEntries, setShowLedgerEntries] = useState(false)
 
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
@@ -184,17 +203,23 @@ function PaperTradingView() {
         tradesResult,
         openTradesResult,
         summaryResult,
+        ordersResult,
+        ledgerResult,
+        healthResult,
       ] = await Promise.all([
-        fetchPaperTradingStatus(),
-        fetchPaperTradingReport(),
+        fetchPaperTradingStatus().catch(() => null),
+        fetchPaperTradingReport().catch(() => null),
         fetchPaperTradingTrades({
           symbol: filterSymbol || undefined,
           side: filterSide || undefined,
           timeframe: filterTimeframe || undefined,
           status: filterStatus || undefined,
-        }),
-        fetchOpenPaperTrades(),
-        fetchPaperTradingSummary(),
+        }).catch(() => []),
+        fetchOpenPaperTrades().catch(() => []),
+        fetchPaperTradingSummary().catch(() => null),
+        fetchPaperOrders().catch(() => []),
+        fetchPaperLedger().catch(() => null),
+        fetchPaperMarketDataHealth().catch(() => null),
       ])
 
       setStatus(statusResult)
@@ -202,6 +227,9 @@ function PaperTradingView() {
       setTrades(Array.isArray(tradesResult) ? tradesResult : [])
       setOpenTrades(Array.isArray(openTradesResult) ? openTradesResult : [])
       setSummary(summaryResult)
+      setOrders(Array.isArray(ordersResult) ? ordersResult : [])
+      setLedgerReport(ledgerResult)
+      setMarketDataHealth(healthResult)
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -216,6 +244,41 @@ function PaperTradingView() {
   useEffect(() => {
     loadPaperTradingData()
   }, [loadPaperTradingData])
+
+  async function handleOrderSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault()
+    setSubmittingOrder(true)
+    try {
+      await submitPaperOrder({
+        symbol: orderSymbol,
+        side: orderSide,
+        order_type: orderType,
+        quantity: parseInt(orderQty, 10),
+        price: parseFloat(orderPrice),
+        current_market_price: parseFloat(orderPrice),
+        stop_price: orderStopLoss ? parseFloat(orderStopLoss) : undefined,
+      })
+      toast.success(`Simulated ${orderSide} order for ${orderSymbol} placed.`, { title: 'Order Submitted' })
+      await loadPaperTradingData()
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit simulated order.', { title: 'Order Rejected' })
+    } finally {
+      setSubmittingOrder(false)
+    }
+  }
+
+  async function handleOrderCancel(orderId) {
+    setCancellingOrderId(orderId)
+    try {
+      await cancelPaperOrder(orderId)
+      toast.success(`Order ${orderId} cancelled.`, { title: 'Order Cancelled' })
+      await loadPaperTradingData()
+    } catch (err) {
+      toast.error(err.message || 'Failed to cancel order.', { title: 'Cancel Failed' })
+    } finally {
+      setCancellingOrderId(null)
+    }
+  }
 
   async function handleClosePosition(tradeId, currentPrice) {
     setClosingTradeId(tradeId)
@@ -307,6 +370,46 @@ function PaperTradingView() {
           </div>
         </div>
       </header>
+
+      {/* Phase 28: Prominent Simulation Warning Banner & Data Health */}
+      <div
+        className="paper-simulation-banner"
+        style={{
+          padding: '12px 18px',
+          background: 'rgba(255, 68, 68, 0.12)',
+          border: '1px solid rgba(255, 68, 68, 0.35)',
+          borderRadius: '8px',
+          color: '#ff7878',
+          fontSize: '13px',
+          fontWeight: '700',
+          letterSpacing: '0.5px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '18px' }}>🛡️</span>
+          <span>PAPER / SIMULATION ONLY — NO BROKER CONNECTED • ZERO REAL CAPITAL RISK</span>
+        </div>
+        {marketDataHealth && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', background: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '4px' }}>
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: marketDataHealth.data_quality_state === 'CONNECTED' ? '#00eaaf' : '#ffb300',
+                display: 'inline-block',
+              }}
+            />
+            <span>Feed: {marketDataHealth.data_quality_state}</span>
+          </div>
+        )}
+      </div>
 
       <div
         className="paper-trading-historical-notice"
@@ -481,6 +584,284 @@ function PaperTradingView() {
                 </div>
               </div>
             )}
+          </section>
+
+          {/* Phase 28: Portfolio Risk & Margin Discipline Panel */}
+          {ledgerReport && (
+            <section className="paper-session-panel" style={{ marginTop: '20px' }}>
+              <SectionHeader
+                title="Capital Accounting & Portfolio Risk Discipline"
+                subtitle="Double-entry ledger reconciliation, margin allocations, and pre-trade risk safeguards."
+                right={
+                  <span
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      background: ledgerReport.is_balanced ? 'rgba(0, 234, 175, 0.15)' : 'rgba(255, 100, 114, 0.15)',
+                      color: ledgerReport.is_balanced ? '#00eaaf' : '#ff6472',
+                      border: `1px solid ${ledgerReport.is_balanced ? 'rgba(0, 234, 175, 0.3)' : 'rgba(255, 100, 114, 0.3)'}`,
+                    }}
+                  >
+                    {ledgerReport.is_balanced ? '✓ LEDGER BALANCED' : '⚠️ RECONCILIATION DISCREPANCY'}
+                  </span>
+                }
+              />
+
+              <div className="paper-stats-grid" style={{ marginTop: '14px' }}>
+                <StatCard
+                  label="Total Account Equity"
+                  value={formatCurrency(ledgerReport.total_equity)}
+                  subValue={`Cash ₹${(ledgerReport.cash_balance || 0).toFixed(0)} + Unrealized ₹${(ledgerReport.unrealized_pnl || 0).toFixed(0)}`}
+                  className={getPnlClass(ledgerReport.total_equity - ledgerReport.initial_deposit)}
+                />
+                <StatCard
+                  label="Available Margin"
+                  value={formatCurrency(ledgerReport.available_margin)}
+                  subValue="Deployable capital for new trades"
+                />
+                <StatCard
+                  label="Allocated Margin"
+                  value={formatCurrency(ledgerReport.allocated_margin)}
+                  subValue="Active margin locked in positions"
+                />
+                <StatCard
+                  label="Reserved Capital (15%)"
+                  value={formatCurrency(ledgerReport.reserved_capital)}
+                  subValue="Capital preservation buffer"
+                />
+              </div>
+
+              {/* Safeguard Status Bar */}
+              <div
+                style={{
+                  marginTop: '14px',
+                  padding: '10px 14px',
+                  background: 'rgba(12, 31, 45, 0.6)',
+                  borderRadius: '6px',
+                  border: '1px solid #142a3a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  fontSize: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', color: '#88a3b8' }}>
+                  <span>Max Per-Trade Risk: <strong style={{ color: '#fff' }}>1.0%</strong></span>
+                  <span>Max Symbol Allocation: <strong style={{ color: '#fff' }}>35.0%</strong></span>
+                  <span>Max Aggregate Risk: <strong style={{ color: '#fff' }}>3.0%</strong></span>
+                  <span>Square-Off Cutoff: <strong style={{ color: '#fff' }}>15:15 IST</strong></span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLedgerEntries(!showLedgerEntries)}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid #23425d',
+                    borderRadius: '4px',
+                    color: '#7cb5ec',
+                    fontSize: '11px',
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {showLedgerEntries ? 'Hide Audit Journal ▲' : `View Audit Journal (${ledgerReport.entries?.length || 0} entries) ▼`}
+                </button>
+              </div>
+
+              {/* Expandable Journal Table */}
+              {showLedgerEntries && (
+                <div className="paper-table-scroll" style={{ marginTop: '12px' }}>
+                  <div className="paper-trades-table">
+                    <div className="paper-table-head">
+                      <span>Entry ID</span>
+                      <span>Timestamp</span>
+                      <span>Type</span>
+                      <span className="text-right">Amount</span>
+                      <span className="text-right">Balance After</span>
+                      <span>Trade / Order ID</span>
+                      <span>Description</span>
+                    </div>
+                    {(ledgerReport.entries || []).map((e) => (
+                      <div className="paper-trade-row" key={e.entry_id}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#88a3b8' }}>{e.entry_id}</span>
+                        <span style={{ fontSize: '11px' }}>{formatTimestamp(e.timestamp)}</span>
+                        <span style={{ fontWeight: '600', color: e.entry_type.includes('RELEASE') || e.entry_type.includes('DEPOSIT') ? '#00eaaf' : '#ffb300' }}>{e.entry_type}</span>
+                        <span className="text-right tabular-num">{formatCurrency(e.amount)}</span>
+                        <span className="text-right tabular-num">{formatCurrency(e.balance_after)}</span>
+                        <span style={{ fontFamily: 'monospace', fontSize: '10px' }}>{e.trade_id || e.order_id || '—'}</span>
+                        <span style={{ color: '#88a3b8', fontSize: '11px' }}>{e.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Phase 28: Simulated Orders & Order Book */}
+          <section className="paper-session-panel" style={{ marginTop: '20px' }}>
+            <SectionHeader
+              title="Simulated Order Book & Execution"
+              subtitle="Causal fill simulation on authentic quotes with deterministic slippage (1 bps) and half-spread (0.5 bps)."
+              right={
+                <span className="paper-trade-count">
+                  {orders.length} orders
+                </span>
+              }
+            />
+
+            {/* Quick Simulated Order Form */}
+            <form onSubmit={handleOrderSubmit} style={{ display: 'flex', gap: '10px', padding: '12px 0', borderBottom: '1px solid #142a3a', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input
+                type="text"
+                placeholder="Symbol (e.g. RELIANCE)"
+                value={orderSymbol}
+                onChange={(e) => setOrderSymbol(e.target.value)}
+                style={{ height: '32px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '110px' }}
+                required
+              />
+              <select
+                value={orderSide}
+                onChange={(e) => setOrderSide(e.target.value)}
+                style={{ height: '32px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px' }}
+              >
+                <option value="BUY">BUY</option>
+                <option value="SELL">SELL</option>
+              </select>
+              <select
+                value={orderType}
+                onChange={(e) => setOrderType(e.target.value)}
+                style={{ height: '32px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px' }}
+              >
+                <option value="MARKET">MARKET</option>
+                <option value="LIMIT">LIMIT</option>
+                <option value="STOP_LOSS">STOP_LOSS</option>
+              </select>
+              <input
+                type="number"
+                placeholder="Qty"
+                min="1"
+                value={orderQty}
+                onChange={(e) => setOrderQty(e.target.value)}
+                style={{ height: '32px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '65px' }}
+                required
+              />
+              <input
+                type="number"
+                step="0.05"
+                placeholder="Price"
+                value={orderPrice}
+                onChange={(e) => setOrderPrice(e.target.value)}
+                style={{ height: '32px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '85px' }}
+                required
+              />
+              <input
+                type="number"
+                step="0.05"
+                placeholder="Stop Loss"
+                value={orderStopLoss}
+                onChange={(e) => setOrderStopLoss(e.target.value)}
+                style={{ height: '32px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '85px' }}
+              />
+              <button
+                type="submit"
+                disabled={submittingOrder}
+                style={{
+                  height: '32px',
+                  padding: '0 14px',
+                  background: orderSide === 'BUY' ? '#00d9a3' : '#ff6472',
+                  border: '0',
+                  borderRadius: '4px',
+                  color: '#051525',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                }}
+              >
+                {submittingOrder ? 'Submitting…' : `Submit Simulated ${orderSide}`}
+              </button>
+            </form>
+
+            <div className="paper-table-scroll">
+              <div className="paper-trades-table">
+                <div className="paper-table-head">
+                  <span>Order ID</span>
+                  <span>Symbol</span>
+                  <span>Side</span>
+                  <span>Type</span>
+                  <span className="text-right">Qty</span>
+                  <span className="text-right">Req Price</span>
+                  <span className="text-right">Fill Price</span>
+                  <span className="text-right">Slippage</span>
+                  <span className="text-right">Costs</span>
+                  <span>Status</span>
+                  <span className="text-right">Action</span>
+                </div>
+
+                {orders.length === 0 ? (
+                  <EmptyState
+                    title="No Simulated Orders"
+                    description="Submit a simulated order above or trigger a signal from the Strategy Signal Panel."
+                    compact
+                  />
+                ) : (
+                  orders.map((ord) => (
+                    <div className="paper-trade-row" key={ord.order_id}>
+                      <span style={{ fontFamily: 'monospace', color: '#88a3b8', fontSize: '10px' }}>{ord.order_id}</span>
+                      <strong>{ord.symbol}</strong>
+                      <span className={`paper-position ${ord.side.toLowerCase()}`}>{ord.side}</span>
+                      <span>{ord.order_type}</span>
+                      <span className="text-right tabular-num">{ord.quantity}</span>
+                      <span className="text-right tabular-num">{formatCurrency(ord.price)}</span>
+                      <span className="text-right tabular-num">{ord.fill_price ? formatCurrency(ord.fill_price) : '—'}</span>
+                      <span className="text-right tabular-num" style={{ color: '#88a3b8', fontSize: '11px' }}>
+                        {ord.slippage_bps ? `${ord.slippage_bps.toFixed(1)} bps` : '—'}
+                      </span>
+                      <span className="text-right tabular-num">{formatCurrency(ord.transaction_cost)}</span>
+                      <span>
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            padding: '2px 6px',
+                            borderRadius: '3px',
+                            background: ord.status === 'FILLED' ? 'rgba(0, 234, 175, 0.15)' : ord.status === 'REJECTED' || ord.status === 'CANCELLED' ? 'rgba(255, 100, 114, 0.15)' : 'rgba(76, 168, 255, 0.15)',
+                            color: ord.status === 'FILLED' ? '#00eaaf' : ord.status === 'REJECTED' || ord.status === 'CANCELLED' ? '#ff6472' : '#7cb5ec',
+                          }}
+                        >
+                          {ord.status}
+                        </span>
+                      </span>
+                      <span className="text-right">
+                        {ord.status === 'SUBMITTED' || ord.status === 'PENDING_EXECUTION' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOrderCancel(ord.order_id)}
+                            disabled={cancellingOrderId === ord.order_id}
+                            style={{
+                              padding: '3px 8px',
+                              background: '#3d1d24',
+                              border: '1px solid #7a2b36',
+                              borderRadius: '3px',
+                              color: '#ff6472',
+                              fontSize: '10px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {cancellingOrderId === ord.order_id ? '…' : 'Cancel'}
+                          </button>
+                        ) : (
+                          <span style={{ color: '#587286', fontSize: '10px' }}>—</span>
+                        )}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </section>
 
           {/* 3. Trade History & Filters (Phase 17J) */}

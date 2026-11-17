@@ -622,28 +622,28 @@ function App() {
             <TopMarket
               icon="fii"
               label="FII / DII"
-              value="�"
+              value="—"
               change="Unavailable"
             />
 
             <TopMarket
               icon="globe"
               label="Global Markets"
-              value="�"
+              value="—"
               change="Unavailable"
             />
 
             <TopMarket
               icon="barrel"
               label="Crude Oil"
-              value="�"
+              value="—"
               change="Unavailable"
             />
 
             <TopMarket
               icon="currency"
               label="USD / INR"
-              value="�"
+              value="—"
               change="Unavailable"
             />
           </div>

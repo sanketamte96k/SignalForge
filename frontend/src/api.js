@@ -312,6 +312,38 @@ export function resetPaperTrading() {
   })
 }
 
+export function fetchPaperOrders(params = {}) {
+  const query = new URLSearchParams()
+  if (params.symbol) query.append('symbol', params.symbol)
+  if (params.status) query.append('status', params.status)
+  const qs = query.toString()
+  return fetchJson(`/api/paper-trading/orders${qs ? `?${qs}` : ''}`)
+}
+
+export function submitPaperOrder(orderData) {
+  return fetchJson('/api/paper-trading/orders', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderData),
+  })
+}
+
+export function cancelPaperOrder(orderId) {
+  return fetchJson(`/api/paper-trading/orders/${encodeURIComponent(orderId)}/cancel`, {
+    method: 'POST',
+  })
+}
+
+export function fetchPaperLedger() {
+  return fetchJson('/api/paper-trading/ledger')
+}
+
+export function fetchPaperMarketDataHealth() {
+  return fetchJson('/api/paper-trading/market-data-health')
+}
+
 // ---------------------------------------------------------------------------
 // Market Intelligence & Opportunity Scoring API
 // ---------------------------------------------------------------------------
@@ -422,12 +454,26 @@ export function runBacktest(params = {}) {
   })
 }
 
+export function runMultiAssetBacktest(params = {}) {
+  return fetchJson('/api/strategy/backtest/multi/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params),
+  })
+}
+
 export function fetchBacktestJobStatus(jobId) {
   return fetchJson(`/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}`)
 }
 
 export function fetchBacktestJobResult(jobId) {
   return fetchJson(`/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}/result`)
+}
+
+export function fetchMultiAssetBacktestJobResult(jobId) {
+  return fetchJson(`/api/strategy/backtest/multi/jobs/${encodeURIComponent(jobId)}/result`)
 }
 
 export function cancelBacktestJob(jobId) {

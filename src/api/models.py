@@ -542,7 +542,7 @@ class PaperTradingSummaryResponse(BaseModel):
 class PaperTradingAccountResponse(BaseModel):
     """Paper trading account capital, equity, and drawdown state."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
     simulation_only: bool = True
     starting_capital: float
@@ -561,6 +561,97 @@ class PaperTradingAccountResponse(BaseModel):
     open_positions_count: int
     completed_trades_count: int
     cost_model_id: str
+    reserved_capital: float = 0.0
+    available_margin: float = 0.0
+    allocated_margin: float = 0.0
+    ledger_reconciliation: dict | None = None
+    risk_status: dict | None = None
+    market_data_health: dict | None = None
+    environment_badge: str = "PAPER / SIMULATION ONLY — NO BROKER CONNECTED"
+
+
+class SimulatedOrderResponse(BaseModel):
+    """Simulated paper order model for Phase 28."""
+
+    model_config = ConfigDict(extra="allow")
+
+    order_id: str
+    symbol: str
+    side: str
+    order_type: str
+    quantity: int
+    price: float | None = None
+    stop_price: float | None = None
+    status: str
+    created_at: datetime
+    filled_at: datetime | None = None
+    cancelled_at: datetime | None = None
+    fill_price: float | None = None
+    slippage_bps: float = 0.0
+    half_spread_bps: float = 0.0
+    transaction_cost: float = 0.0
+    rejection_reason: str | None = None
+    simulation_only: bool = True
+
+
+class SimulatedOrderCreateRequest(BaseModel):
+    """Request to submit a simulated order."""
+
+    symbol: str
+    side: str
+    order_type: str = "MARKET"
+    quantity: int
+    price: float | None = None
+    stop_price: float | None = None
+    current_market_price: float | None = None
+    client_order_id: str | None = None
+
+
+class PaperLedgerEntryResponse(BaseModel):
+    """Individual double-entry transaction record."""
+
+    model_config = ConfigDict(extra="allow")
+
+    entry_id: str
+    timestamp: datetime
+    entry_type: str
+    amount: float
+    balance_after: float
+    trade_id: str | None = None
+    order_id: str | None = None
+    description: str
+    simulation_only: bool = True
+
+
+class PaperLedgerReportResponse(BaseModel):
+    """Full paper account ledger and accounting reconciliation report."""
+
+    model_config = ConfigDict(extra="allow")
+
+    entries: list[PaperLedgerEntryResponse]
+    initial_deposit: float
+    cash_balance: float
+    allocated_margin: float
+    reserved_capital: float
+    available_margin: float
+    unrealized_pnl: float
+    total_equity: float
+    is_balanced: bool
+    simulation_only: bool = True
+
+
+class PaperMarketDataHealthResponse(BaseModel):
+    """Paper trading market data feed health and outage tracking report."""
+
+    model_config = ConfigDict(extra="allow")
+
+    data_quality_state: str
+    global_feed_connected: bool
+    last_feed_update_utc: datetime | None = None
+    active_outage: bool
+    outage_history: list[dict]
+    symbols_health: dict[str, dict]
+    simulation_only: bool = True
 
 
 class PaperTradingRiskMetricsResponse(BaseModel):
