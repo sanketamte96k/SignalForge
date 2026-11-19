@@ -1,15 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, status
 
 from src.api.models import (
+    DailyReconciliationReportResponse,
+    ExecutionQualityReportResponse,
     InteractivePaperTradeResponse,
+    OperationalReportResponse,
     PaperLedgerReportResponse,
     PaperMarketDataHealthResponse,
+    PaperSessionCreateRequest,
+    PaperSessionResponse,
+    PaperSessionTransitionRequest,
     PaperTradeCloseRequest,
     PaperTradeCreateRequest,
     PaperTradeUpdateRequest,
@@ -17,6 +24,8 @@ from src.api.models import (
     PaperTradingConfigRequest,
     PaperTradingCostBreakdownResponse,
     PaperTradingEquityPointResponse,
+    PaperTradingIncidentCreateRequest,
+    PaperTradingIncidentResponse,
     PaperTradingReportResponse,
     PaperTradingRiskMetricsResponse,
     PaperTradingStatusResponse,
@@ -30,8 +39,17 @@ from src.paper_trading.interactive_engine import (
     InteractivePaperTrade,
     InteractivePaperTradingService,
 )
+from src.paper_trading.operational_reporting import (
+    OperationalReportGenerator,
+)
 from src.paper_trading.replay_runner import PaperTradingReplayRunner
 from src.paper_trading.runner import PaperTradingRunner
+from src.paper_trading.session_manager import (
+    IncidentSeverity,
+    PaperSessionManager,
+    PaperSessionStatus,
+    PaperTradingSession,
+)
 
 
 router = APIRouter(
@@ -543,6 +561,361 @@ def get_market_data_health() -> PaperMarketDataHealthResponse:
     service = _get_interactive_service()
     health = service.get_market_data_health()
     return PaperMarketDataHealthResponse(**health)
+
+
+# ----------------------------------------------------------------------------
+# Phase 29: Controlled Paper-Trading Session Lifecycle & Operations Endpoints
+# ----------------------------------------------------------------------------
+
+_session_manager: PaperSessionManager | None = None
+
+
+def _get_session_manager() -> PaperSessionManager:
+    global _session_manager
+    if _session_manager is None:
+        _session_manager = PaperSessionManager()
+        # If no session exists, create a default active session
+        if not _session_manager.list_sessions():
+            _session_manager.create_session(
+                session_id="sess_live_intraday_001",
+                account_id="v_acct_main_1m",
+                initial_capital=1_000_000.0,
+                symbols=["RELIANCE", "TCS", "INFY"],
+            )
+    return _session_manager
+
+
+@router.post(
+    "/sessions",
+    response_model=PaperSessionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_session(req: PaperSessionCreateRequest) -> PaperSessionResponse:
+    """Create a new isolated paper trading session."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.create_session(
+            session_id=req.session_id,
+            account_id=req.account_id,
+            initial_capital=req.initial_capital,
+            symbols=req.symbols,
+            risk_config=req.risk_config,
+        )
+        return PaperSessionResponse(**session.get_health_summary())
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc).strip("'"),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
+    "/sessions",
+    response_model=list[PaperSessionResponse],
+)
+def list_sessions() -> list[PaperSessionResponse]:
+    """List all configured paper trading sessions and operational summaries."""
+    mgr = _get_session_manager()
+    summaries = mgr.list_sessions()
+    return [PaperSessionResponse(**s) for s in summaries]
+
+
+@router.get(
+    "/sessions/{session_id}",
+    response_model=PaperSessionResponse,
+)
+def get_session(session_id: str) -> PaperSessionResponse:
+    """Get operational summary and health for a specific session."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        return PaperSessionResponse(**session.get_health_summary())
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+
+
+@router.post(
+    "/sessions/{session_id}/transition",
+    response_model=PaperSessionResponse,
+)
+def transition_session_state(
+    session_id: str,
+    req: PaperSessionTransitionRequest,
+) -> PaperSessionResponse:
+    """Transition session state enforcing valid state lifecycle machine."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        target = PaperSessionStatus(req.target_status.upper())
+        session.transition_to(target, reason=req.reason)
+        return PaperSessionResponse(**session.get_health_summary())
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.post(
+    "/sessions/{session_id}/orders",
+    response_model=SimulatedOrderResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def submit_session_order(
+    session_id: str,
+    req: SimulatedOrderCreateRequest,
+) -> SimulatedOrderResponse:
+    """Submit simulated order within an active isolated session."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        order = session.submit_simulated_order(
+            symbol=req.symbol,
+            side=req.side,
+            order_type=req.order_type,
+            quantity=req.quantity,
+            price=req.price,
+            stop_price=req.stop_price,
+            current_market_price=req.current_market_price,
+            client_order_id=req.client_order_id,
+            timestamp=req.timestamp,
+        )
+        return _simulated_order_to_response(order)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
+    "/sessions/{session_id}/orders",
+    response_model=list[SimulatedOrderResponse],
+)
+def list_session_orders(
+    session_id: str,
+    symbol: str | None = Query(None),
+    status: str | None = Query(None),
+) -> list[SimulatedOrderResponse]:
+    """List simulated orders executed in this session."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        orders = session.execution_engine.list_orders(symbol=symbol, status=status)
+        return [_simulated_order_to_response(o) for o in orders]
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+
+
+@router.get(
+    "/sessions/{session_id}/execution-quality",
+    response_model=ExecutionQualityReportResponse,
+)
+def get_session_execution_quality(session_id: str) -> ExecutionQualityReportResponse:
+    """Return execution quality analytics, slippage decomposition, and statutory fee audit."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        summary = session.execution_quality.get_summary()
+        return ExecutionQualityReportResponse(**summary)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+
+
+@router.get(
+    "/sessions/{session_id}/reconciliation",
+    response_model=DailyReconciliationReportResponse,
+)
+def get_session_daily_reconciliation(
+    session_id: str,
+    date: str | None = Query(None),
+) -> DailyReconciliationReportResponse:
+    """Generate and return daily double-entry paper account reconciliation."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        effective_date = date if isinstance(date, str) else None
+        report = session.reconcile(reconciliation_date=effective_date)
+        return DailyReconciliationReportResponse(**report.to_dict())
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+
+
+@router.get(
+    "/sessions/{session_id}/incidents",
+    response_model=list[PaperTradingIncidentResponse],
+)
+def get_session_incidents(session_id: str) -> list[PaperTradingIncidentResponse]:
+    """List operational incidents and alerts recorded for this session."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        return [PaperTradingIncidentResponse(**i.to_dict()) for i in session.incidents]
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+
+
+@router.post(
+    "/sessions/{session_id}/incidents",
+    response_model=PaperTradingIncidentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def record_session_incident(
+    session_id: str,
+    req: PaperTradingIncidentCreateRequest,
+) -> PaperTradingIncidentResponse:
+    """Record a test or manual operational incident into session log."""
+    mgr = _get_session_manager()
+    try:
+        session = mgr.get_session(session_id)
+        inc = session.record_incident(
+            severity=req.severity,
+            category=req.category,
+            description=req.description,
+            details=req.details,
+            action_taken=req.action_taken,
+            auto_pause_on_critical=req.auto_pause_on_critical,
+        )
+        return PaperTradingIncidentResponse(**inc.to_dict())
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc).strip("'"),
+        ) from exc
+
+
+@router.get(
+    "/reports/daily",
+    response_model=OperationalReportResponse,
+)
+def get_daily_operational_report(
+    date: str | None = Query(None),
+) -> OperationalReportResponse:
+    """Generate daily operational report aggregating active paper sessions."""
+    mgr = _get_session_manager()
+    target_date = date if isinstance(date, str) else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    sessions_data = []
+    recon_reports = []
+
+    for s in mgr._sessions.values():
+        h = s.get_health_summary()
+        trades = s.closed_trades
+        orders = [
+            _simulated_order_to_response(o).model_dump()
+            for o in s.execution_engine.list_orders(limit=1000)
+        ]
+        eq_summary = s.execution_quality.get_summary()
+        recon = s.reconcile(reconciliation_date=target_date)
+        recon_reports.append(recon)
+
+        sessions_data.append({
+            "session_id": s.session_id,
+            "account_id": s.account_id,
+            "data_quality_state": h["data_quality_state"],
+            "orders": orders,
+            "trades": trades,
+            "incidents": [i.to_dict() for i in s.incidents],
+            "execution_quality": eq_summary,
+            "starting_capital": s.config.initial_capital,
+            "current_equity": h["total_equity"],
+            "peak_equity": s.peak_equity,
+            "max_exposure": s.max_exposure,
+            "risk_violations_count": h["warning_incident_count"] + h["critical_incident_count"],
+        })
+
+    report = OperationalReportGenerator.generate_report(
+        report_type="DAILY",
+        period_start=target_date,
+        period_end=target_date,
+        sessions_data=sessions_data,
+        reconciliation_reports=recon_reports,
+    )
+    return OperationalReportResponse(**report.to_dict())
+
+
+@router.get(
+    "/reports/weekly",
+    response_model=OperationalReportResponse,
+)
+def get_weekly_operational_report(
+    start_date: str | None = Query(None),
+    end_date: str | None = Query(None),
+) -> OperationalReportResponse:
+    """Generate weekly operational report aggregating paper trading metrics."""
+    mgr = _get_session_manager()
+    now_utc = datetime.now(timezone.utc)
+    target_end = end_date if isinstance(end_date, str) else now_utc.strftime("%Y-%m-%d")
+    target_start = start_date if isinstance(start_date, str) else now_utc.strftime("%Y-%m-%d")
+
+    sessions_data = []
+    recon_reports = []
+
+    for s in mgr._sessions.values():
+        h = s.get_health_summary()
+        trades = s.closed_trades
+        orders = [
+            _simulated_order_to_response(o).model_dump()
+            for o in s.execution_engine.list_orders(limit=1000)
+        ]
+        eq_summary = s.execution_quality.get_summary()
+        recon = s.reconcile(reconciliation_date=target_end)
+        recon_reports.append(recon)
+
+        sessions_data.append({
+            "session_id": s.session_id,
+            "account_id": s.account_id,
+            "data_quality_state": h["data_quality_state"],
+            "orders": orders,
+            "trades": trades,
+            "incidents": [i.to_dict() for i in s.incidents],
+            "execution_quality": eq_summary,
+            "starting_capital": s.config.initial_capital,
+            "current_equity": h["total_equity"],
+            "peak_equity": s.peak_equity,
+            "max_exposure": s.max_exposure,
+            "risk_violations_count": h["warning_incident_count"] + h["critical_incident_count"],
+        })
+
+    report = OperationalReportGenerator.generate_report(
+        report_type="WEEKLY",
+        period_start=target_start,
+        period_end=target_end,
+        sessions_data=sessions_data,
+        reconciliation_reports=recon_reports,
+    )
+    return OperationalReportResponse(**report.to_dict())
+
 
 
 # ----------------------------------------------------------------------------

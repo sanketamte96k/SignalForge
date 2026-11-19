@@ -605,6 +605,7 @@ class SimulatedOrderCreateRequest(BaseModel):
     stop_price: float | None = None
     current_market_price: float | None = None
     client_order_id: str | None = None
+    timestamp: datetime | None = None
 
 
 class PaperLedgerEntryResponse(BaseModel):
@@ -652,6 +653,184 @@ class PaperMarketDataHealthResponse(BaseModel):
     outage_history: list[dict]
     symbols_health: dict[str, dict]
     simulation_only: bool = True
+
+
+# ----------------------------------------------------------------------------
+# Phase 29: Controlled Paper-Trading Operations Schemas
+# ----------------------------------------------------------------------------
+
+
+class PaperSessionCreateRequest(BaseModel):
+    """Request to create an isolated paper trading session."""
+
+    session_id: str | None = None
+    account_id: str | None = None
+    initial_capital: float = 1_000_000.0
+    symbols: list[str] = ["RELIANCE", "TCS", "INFY"]
+    risk_config: dict[str, Any] = {}
+
+
+class PaperSessionTransitionRequest(BaseModel):
+    """Request to transition paper session status."""
+
+    target_status: str
+    reason: str = ""
+
+
+class PaperSessionResponse(BaseModel):
+    """Paper session state and health summary."""
+
+    model_config = ConfigDict(extra="allow")
+
+    session_id: str
+    account_id: str
+    status: str
+    status_reason: str
+    health_state: str
+    data_quality_state: str
+    total_equity: float
+    cash_balance: float
+    available_margin: float
+    allocated_margin: float
+    unrealized_pnl: float
+    risk_utilization_pct: float
+    open_positions_count: int
+    incident_count: int
+    critical_incident_count: int
+    warning_incident_count: int
+    last_market_timestamp: datetime | None = None
+    last_order_event_timestamp: datetime | None = None
+    simulation_only: bool = True
+
+
+class PaperTradingIncidentResponse(BaseModel):
+    """Incident audit log entry."""
+
+    incident_id: str
+    timestamp: datetime
+    severity: str
+    category: str
+    description: str
+    details: dict[str, Any] = {}
+    action_taken: str = ""
+    simulation_only: bool = True
+
+
+class PaperTradingIncidentCreateRequest(BaseModel):
+    """Request to log an operational incident."""
+
+    severity: str = "INFO"
+    category: str
+    description: str
+    details: dict[str, Any] = {}
+    action_taken: str = ""
+    auto_pause_on_critical: bool = True
+
+
+class ExecutionQualityReportResponse(BaseModel):
+    """Simulated execution quality analysis report."""
+
+    model_config = ConfigDict(extra="allow")
+
+    total_orders: int
+    filled_orders: int
+    rejected_orders: int
+    cancelled_orders: int
+    fill_rate_pct: float
+    average_slippage_bps: float
+    median_slippage_bps: float
+    max_slippage_bps: float
+    average_spread_bps: float
+    average_market_movement_bps: float
+    total_statutory_costs: float
+    total_slippage_cost: float
+    total_spread_cost: float
+    total_execution_costs: float
+    cost_decomposition_pct: dict[str, float]
+    fee_breakdown: dict[str, float]
+    rejection_reasons: dict[str, int]
+    simulation_only: bool = True
+
+
+class DailyReconciliationReportResponse(BaseModel):
+    """Daily paper account double-entry accounting reconciliation."""
+
+    model_config = ConfigDict(extra="allow")
+
+    reconciliation_id: str
+    session_id: str
+    account_id: str
+    reconciliation_date: str
+    opening_equity: float
+    closing_equity: float
+    cash_balance: float
+    initial_capital: float
+    realized_gross_pnl: float
+    realized_net_pnl: float
+    unrealized_pnl: float
+    total_transaction_costs: float
+    allocated_margin: float
+    reserved_capital: float
+    available_margin: float
+    open_positions_count: int
+    closed_trades_count: int
+    pending_orders_count: int
+    filled_orders_count: int
+    rejected_orders_count: int
+    cancelled_orders_count: int
+    total_ledger_entries: int
+    equation_1_holds: bool
+    equation_2_holds: bool
+    margin_conservation_holds: bool
+    is_balanced: bool
+    discrepancies: list[str]
+    timestamp: datetime
+    simulation_only: bool = True
+
+
+class OperationalReportResponse(BaseModel):
+    """Periodic operational summary report."""
+
+    model_config = ConfigDict(extra="allow")
+
+    report_id: str
+    report_type: str
+    period_start: str
+    period_end: str
+    session_ids: list[str]
+    account_ids: list[str]
+    total_sessions: int
+    data_quality_summary: dict[str, Any]
+    total_orders: int
+    filled_orders: int
+    rejected_orders: int
+    cancelled_orders: int
+    total_trades: int
+    winning_trades: int
+    losing_trades: int
+    win_rate_pct: float
+    gross_pnl: float
+    net_pnl: float
+    total_transaction_costs: float
+    average_slippage_bps: float
+    average_spread_bps: float
+    average_win: float
+    average_loss: float
+    expectancy: float
+    profit_factor: float | None
+    peak_equity: float
+    ending_equity: float
+    max_drawdown: float
+    max_drawdown_pct: float
+    total_turnover: float
+    max_gross_exposure: float
+    risk_violations_count: int
+    incidents_by_severity: dict[str, int]
+    reconciliation_status: str
+    disclaimer: str
+    timestamp: datetime
+    simulation_only: bool = True
+
 
 
 class PaperTradingRiskMetricsResponse(BaseModel):
@@ -1514,6 +1693,87 @@ class MultiAssetBacktestJobResultResponse(BaseModel):
     risk_and_quality: MultiAssetRiskQualityItem
     trades: list[MultiAssetTradeItem]
     unresolved_positions: list[UnresolvedPositionItem]
+
+
+# ----------------------------------------------------------------------------
+# Phase 30: Live Market Data Ingestion & Readiness Models
+# ----------------------------------------------------------------------------
+
+
+class LiveQuoteIngestRequest(BaseModel):
+    """Payload for submitting a standardized live quote update."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    symbol: str
+    exchange: str = "NSE"
+    ltp: float
+    volume: int = 0
+    bid: float | None = None
+    ask: float | None = None
+    bid_qty: int | None = None
+    ask_qty: int | None = None
+    event_timestamp: datetime | None = None
+    source_id: str = "synthetic"
+    feed_type: str = "SYNTHETIC"
+
+
+class LiveCandleIngestRequest(BaseModel):
+    """Payload for submitting a standardized live OHLCV candle."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    symbol: str
+    exchange: str = "NSE"
+    timeframe: str = "1m"
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float = 0.0
+    candle_timestamp: datetime | None = None
+    is_closed: bool = True
+    event_timestamp: datetime | None = None
+    source_id: str = "synthetic"
+    feed_type: str = "SYNTHETIC"
+
+
+class SymbolLiveHealthResponse(BaseModel):
+    """Health, latency, and quality telemetry for an individual symbol stream."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    symbol: str
+    quality_state: str
+    feed_type: str
+    total_quotes: int
+    total_completed_candles: int
+    missing_candles: int
+    duplicates: int
+    out_of_order: int
+    invalid_events: int
+    avg_provider_latency_ms: float
+    avg_processing_latency_ms: float
+    avg_end_to_end_latency_ms: float
+    last_quote_ltp: float | None = None
+    last_event_timestamp: str | None = None
+    last_processed_timestamp: str | None = None
+
+
+class LiveMarketDataStatusResponse(BaseModel):
+    """System-level live market data telemetry and provider health envelope."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    source_id: str
+    global_state: str
+    default_feed_type: str
+    total_registered_symbols: int
+    symbols: dict[str, SymbolLiveHealthResponse]
+    outage_events_count: int
+    timestamp: str
+    simulation_only: bool = True
+
 
 
 

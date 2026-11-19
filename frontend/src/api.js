@@ -344,6 +344,72 @@ export function fetchPaperMarketDataHealth() {
   return fetchJson('/api/paper-trading/market-data-health')
 }
 
+// Phase 29: Controlled Paper-Trading Operations
+export function fetchPaperSessions() {
+  return fetchJson('/api/paper-trading/sessions')
+}
+
+export function fetchPaperSession(sessionId) {
+  return fetchJson(`/api/paper-trading/sessions/${encodeURIComponent(sessionId)}`)
+}
+
+export function createPaperSession(sessionData) {
+  return fetchJson('/api/paper-trading/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(sessionData),
+  })
+}
+
+export function transitionPaperSession(sessionId, targetStatus, reason = '') {
+  return fetchJson(`/api/paper-trading/sessions/${encodeURIComponent(sessionId)}/transition`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_status: targetStatus, reason }),
+  })
+}
+
+export function fetchSessionExecutionQuality(sessionId) {
+  return fetchJson(`/api/paper-trading/sessions/${encodeURIComponent(sessionId)}/execution-quality`)
+}
+
+export function fetchSessionReconciliation(sessionId, date = null) {
+  return fetchJson(`/api/paper-trading/sessions/${encodeURIComponent(sessionId)}/reconciliation${date ? `?date=${encodeURIComponent(date)}` : ''}`)
+}
+
+export function fetchSessionIncidents(sessionId) {
+  return fetchJson(`/api/paper-trading/sessions/${encodeURIComponent(sessionId)}/incidents`)
+}
+
+export function fetchDailyOperationalReport(date = null) {
+  return fetchJson(`/api/paper-trading/reports/daily${date ? `?date=${encodeURIComponent(date)}` : ''}`)
+}
+
+export function fetchWeeklyOperationalReport(startDate = null, endDate = null) {
+  const params = new URLSearchParams()
+  if (startDate) params.set('start_date', startDate)
+  if (endDate) params.set('end_date', endDate)
+  const qs = params.toString()
+  return fetchJson(`/api/paper-trading/reports/weekly${qs ? `?${qs}` : ''}`)
+}
+
+// ---------------------------------------------------------------------------
+// Phase 30: Live Market Data Ingestion & Readiness
+// ---------------------------------------------------------------------------
+
+export function fetchLiveMarketDataStatus() {
+  return fetchJson('/api/market-data/live/status')
+}
+
+export function fetchLiveMarketDataTelemetry() {
+  return fetchJson('/api/market-data/live/telemetry')
+}
+
+export function fetchSymbolLiveHealth(symbol) {
+  return fetchJson(`/api/market-data/live/symbols/${encodeURIComponent(symbol.trim().toUpperCase())}/health`)
+}
+
+
 // ---------------------------------------------------------------------------
 // Market Intelligence & Opportunity Scoring API
 // ---------------------------------------------------------------------------

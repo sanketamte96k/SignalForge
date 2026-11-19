@@ -777,3 +777,189 @@
     min-height: 44px;
   }
 }
+
+/* Phase 29: Controlled Paper-Trading Operations Styles */
+.paper-phase29-section {
+  margin-top: 20px;
+}
+
+.paper-lifecycle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.paper-lifecycle-badge.running {
+  background: rgba(0, 234, 175, 0.15);
+  color: #00eaaf;
+  border: 1px solid rgba(0, 234, 175, 0.35);
+}
+
+.paper-lifecycle-badge.ready {
+  background: rgba(76, 168, 255, 0.15);
+  color: #7cb5ec;
+  border: 1px solid rgba(76, 168, 255, 0.35);
+}
+
+.paper-lifecycle-badge.validating {
+  background: rgba(255, 179, 0, 0.15);
+  color: #ffb300;
+  border: 1px solid rgba(255, 179, 0, 0.35);
+}
+
+.paper-lifecycle-badge.created {
+  background: rgba(142, 168, 188, 0.15);
+  color: #8ea8bc;
+  border: 1px solid rgba(142, 168, 188, 0.35);
+}
+
+.paper-lifecycle-badge.paused {
+  background: rgba(255, 204, 0, 0.18);
+  color: #ffdd40;
+  border: 1px solid rgba(255, 204, 0, 0.4);
+}
+
+.paper-lifecycle-badge.completed {
+  background: rgba(175, 110, 255, 0.18);
+  color: #c48eff;
+  border: 1px solid rgba(175, 110, 255, 0.35);
+}
+
+.paper-lifecycle-badge.failed,
+.paper-lifecycle-badge.aborted {
+  background: rgba(255, 80, 95, 0.18);
+  color: #ff6472;
+  border: 1px solid rgba(255, 80, 95, 0.4);
+}
+
+.paper-incident-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.paper-incident-badge.info {
+  background: rgba(76, 168, 255, 0.18);
+  color: #7cb5ec;
+  border: 1px solid rgba(76, 168, 255, 0.3);
+}
+
+.paper-incident-badge.warning {
+  background: rgba(255, 179, 0, 0.2);
+  color: #ffb300;
+  border: 1px solid rgba(255, 179, 0, 0.35);
+}
+
+.paper-incident-badge.critical {
+  background: rgba(255, 68, 68, 0.25);
+  color: #ff6472;
+  border: 1px solid rgba(255, 68, 68, 0.5);
+  animation: pulse-critical 2s infinite ease-in-out;
+}
+
+@keyframes pulse-critical {
+  0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+}
+
+.paper-cost-bar-container {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #091926;
+  border: 1px solid #173246;
+  margin: 10px 0;
+}
+
+.paper-cost-bar-statutory {
+  background: #7cb5ec;
+  height: 100%;
+}
+
+.paper-cost-bar-slippage {
+  background: #ffb300;
+  height: 100%;
+}
+
+.paper-cost-bar-spread {
+  background: #00eaaf;
+  height: 100%;
+}
+
+.paper-tab-btn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #1a374b;
+  border-radius: 6px;
+  color: #8fa7b9;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.paper-tab-btn.active {
+  background: #0c2b42;
+  color: #00eaaf;
+  border-color: #00eaaf;
+}
+
+.paper-session-chip {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #091926;
+  border: 1px solid #173246;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Phase 30: Live Market Data Ingestion & Feed Classification Badges */
+.paper-feed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.paper-feed-badge.live {
+  background: rgba(0, 234, 175, 0.2);
+  color: #00eaaf;
+  border: 1px solid rgba(0, 234, 175, 0.45);
+}
+
+.paper-feed-badge.delayed {
+  background: rgba(255, 179, 0, 0.2);
+  color: #ffb300;
+  border: 1px solid rgba(255, 179, 0, 0.45);
+}
+
+.paper-feed-badge.replay {
+  background: rgba(76, 168, 255, 0.2);
+  color: #7cb5ec;
+  border: 1px solid rgba(76, 168, 255, 0.45);
+}
+
+.paper-feed-badge.synthetic {
+  background: rgba(175, 110, 255, 0.2);
+  color: #c48eff;
+  border: 1px solid rgba(175, 110, 255, 0.45);
+}
+

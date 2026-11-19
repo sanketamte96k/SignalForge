@@ -217,16 +217,20 @@ class PaperAccountLedger:
 
     def allocate_margin(
         self,
-        margin_required: float,
+        margin_required: Optional[float] = None,
         reference_id: Optional[str] = None,
         trade_id: Optional[str] = None,
         order_id: Optional[str] = None,
         description: str = "Position margin allocation",
         timestamp: Optional[datetime] = None,
+        margin_amount: Optional[float] = None,
     ) -> LedgerEntry:
         """Lock margin required for an active simulated position."""
         ref = reference_id or trade_id or order_id or f"margin_{uuid.uuid4().hex[:8]}"
-        amt = float(margin_required)
+        raw_amt = margin_required if margin_required is not None else margin_amount
+        if raw_amt is None:
+            raw_amt = 0.0
+        amt = float(raw_amt)
         if amt < 0:
             raise ValueError(f"margin_required cannot be negative, got {amt}")
         self.allocated_margin = round(self.allocated_margin + amt, 2)
@@ -244,15 +248,20 @@ class PaperAccountLedger:
 
     def release_margin(
         self,
-        margin_to_release: float,
+        margin_to_release: Optional[float] = None,
         reference_id: Optional[str] = None,
         trade_id: Optional[str] = None,
+        order_id: Optional[str] = None,
         description: str = "Position margin release",
         timestamp: Optional[datetime] = None,
+        margin_amount: Optional[float] = None,
     ) -> LedgerEntry:
         """Release locked margin upon position closing."""
-        ref = reference_id or trade_id or f"rel_{uuid.uuid4().hex[:8]}"
-        amt = float(margin_to_release)
+        ref = reference_id or trade_id or order_id or f"rel_{uuid.uuid4().hex[:8]}"
+        raw_amt = margin_to_release if margin_to_release is not None else margin_amount
+        if raw_amt is None:
+            raw_amt = 0.0
+        amt = float(raw_amt)
         self.allocated_margin = max(0.0, round(self.allocated_margin - amt, 2))
         entry = self.record_entry(
             entry_type=LedgerEntryType.MARGIN_RELEASED.value,
@@ -267,38 +276,50 @@ class PaperAccountLedger:
 
     def record_realized_pnl(
         self,
-        pnl: float,
+        pnl: Optional[float] = None,
         reference_id: Optional[str] = None,
         trade_id: Optional[str] = None,
+        order_id: Optional[str] = None,
         description: Optional[str] = None,
         timestamp: Optional[datetime] = None,
+        pnl_amount: Optional[float] = None,
     ) -> Optional[LedgerEntry]:
         """Record gross realized profit or loss to the cash balance."""
-        ref = reference_id or trade_id or f"pnl_{uuid.uuid4().hex[:8]}"
-        desc = description or (f"Gross profit: +₹{pnl:.2f}" if pnl >= 0 else f"Gross loss: -₹{abs(pnl):.2f}")
+        ref = reference_id or trade_id or order_id or f"pnl_{uuid.uuid4().hex[:8]}"
+        raw_pnl = pnl if pnl is not None else pnl_amount
+        if raw_pnl is None:
+            raw_pnl = 0.0
+        pnl_val = float(raw_pnl)
+        desc = description or (f"Gross profit: +₹{pnl_val:.2f}" if pnl_val >= 0 else f"Gross loss: -₹{abs(pnl_val):.2f}")
         return self.record_entry(
             entry_type=LedgerEntryType.REALIZED_PNL.value,
-            amount=abs(pnl),
+            amount=abs(pnl_val),
             reference_id=ref,
             description=desc,
             timestamp=timestamp,
-            is_debit=(pnl < 0),
+            is_debit=(pnl_val < 0),
         )
 
     def record_transaction_cost(
         self,
-        cost: float,
+        cost: Optional[float] = None,
         reference_id: Optional[str] = None,
         trade_id: Optional[str] = None,
+        order_id: Optional[str] = None,
         description: Optional[str] = None,
         timestamp: Optional[datetime] = None,
+        cost_amount: Optional[float] = None,
     ) -> Optional[LedgerEntry]:
         """Debit transaction costs from cash balance."""
-        ref = reference_id or trade_id or f"cost_{uuid.uuid4().hex[:8]}"
-        desc = description or f"Transaction costs: ₹{cost:.2f}"
+        ref = reference_id or trade_id or order_id or f"cost_{uuid.uuid4().hex[:8]}"
+        raw_cost = cost if cost is not None else cost_amount
+        if raw_cost is None:
+            raw_cost = 0.0
+        cost_val = float(raw_cost)
+        desc = description or f"Transaction costs: ₹{cost_val:.2f}"
         return self.record_entry(
             entry_type=LedgerEntryType.TRANSACTION_COST.value,
-            amount=cost,
+            amount=cost_val,
             reference_id=ref,
             description=desc,
             timestamp=timestamp,

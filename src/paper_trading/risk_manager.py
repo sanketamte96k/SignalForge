@@ -280,3 +280,25 @@ class PaperRiskManager:
 
         # All risk checks passed
         return True, "Order approved by risk manager"
+
+    def is_square_off_time(self, timestamp: datetime) -> Tuple[bool, str]:
+        """Check if timestamp is at or past intraday square-off cutoff (15:15 IST)."""
+        now = timestamp
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=timezone.utc)
+        ist_now = now.astimezone(IST)
+        ist_time = ist_now.time()
+        session_cutoff = time(15, 15)
+        if ist_time >= session_cutoff:
+            return True, f"Time {ist_time.strftime('%H:%M:%S')} IST is past square-off cutoff (15:15 IST)"
+        return False, ""
+
+    def check_capital_floor(self, current_equity: float, initial_capital: float | None = None) -> Tuple[bool, str]:
+        """Check if portfolio equity has fallen to or below the protection floor."""
+        init = initial_capital or getattr(self.config, "initial_capital", 1_000_000.0)
+        if self.config.capital_protection_floor_pct is not None:
+            floor_val = init * self.config.capital_protection_floor_pct
+            if current_equity <= floor_val:
+                return True, f"Current equity ₹{current_equity:.2f} <= floor ₹{floor_val:.2f}"
+        return False, ""
+

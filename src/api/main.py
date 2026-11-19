@@ -56,5 +56,9 @@ def root() -> dict[str, str]:
         "version": "0.1.0",
     }
 from src.api.routes.universe import router as universe_router
+from src.api.routes.market_data_live import router as market_data_live_router
+
 app.include_router(universe_router)
+app.include_router(market_data_live_router)
+
 

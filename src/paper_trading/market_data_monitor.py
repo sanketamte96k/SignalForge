@@ -103,6 +103,10 @@ class MarketDataReliabilityMonitor:
     def global_state(self) -> str:
         return self._global_state
 
+    @property
+    def global_feed_state(self) -> str:
+        return self._global_state
+
     def get_symbol_health(self, symbol: str) -> SymbolDataHealth:
         clean_s = symbol.strip().upper()
         if clean_s not in self._symbol_health:
@@ -268,10 +272,13 @@ class MarketDataReliabilityMonitor:
         self,
         symbol: str,
         timestamp: datetime,
-        price: float,
+        price: float | None = None,
+        close: float | None = None,
+        **kwargs: Any,
     ) -> SymbolDataHealth:
         """Alias for register_quote."""
-        return self.register_quote(symbol=symbol, price=price, timestamp=timestamp)
+        effective_price = price if price is not None else (close if close is not None else 0.0)
+        return self.register_quote(symbol=symbol, price=effective_price, timestamp=timestamp)
 
     def is_symbol_healthy(self, symbol: str) -> bool:
         """Check if symbol feed is in CONNECTED or RECOVERING state."""

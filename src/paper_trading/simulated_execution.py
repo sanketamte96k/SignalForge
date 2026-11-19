@@ -97,6 +97,26 @@ class SimulatedOrder:
     execution_notes: Optional[str] = None
 
     @property
+    def total_cost(self) -> float:
+        return self.total_costs
+
+    @property
+    def exchange_fee(self) -> float:
+        return self.exchange_charges
+
+    @property
+    def exchange_turnover_fee(self) -> float:
+        return self.exchange_charges
+
+    @property
+    def sebi_fee(self) -> float:
+        return self.sebi_charges
+
+    @property
+    def sebi_turnover_fee(self) -> float:
+        return self.sebi_charges
+
+    @property
     def is_terminal(self) -> bool:
         return self.status in {
             SimulatedOrderStatus.FILLED.value,
