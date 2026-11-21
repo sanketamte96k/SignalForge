@@ -668,6 +668,8 @@ class PaperSessionCreateRequest(BaseModel):
     initial_capital: float = 1_000_000.0
     symbols: list[str] = ["RELIANCE", "TCS", "INFY"]
     risk_config: dict[str, Any] = {}
+    total_account_balance: float | None = None
+    allocated_capital: float | None = None
 
 
 class PaperSessionTransitionRequest(BaseModel):
@@ -700,6 +702,9 @@ class PaperSessionResponse(BaseModel):
     warning_incident_count: int
     last_market_timestamp: datetime | None = None
     last_order_event_timestamp: datetime | None = None
+    total_account_balance: float | None = None
+    allocated_capital: float | None = None
+    unallocated_cash: float | None = None
     simulation_only: bool = True
 
 

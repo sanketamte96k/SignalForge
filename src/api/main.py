@@ -57,8 +57,11 @@ def root() -> dict[str, str]:
     }
 from src.api.routes.universe import router as universe_router
 from src.api.routes.market_data_live import router as market_data_live_router
+from src.api.routes.capital_allocation import router as capital_allocation_router
 
 app.include_router(universe_router)
 app.include_router(market_data_live_router)
+app.include_router(capital_allocation_router)
+
 
 

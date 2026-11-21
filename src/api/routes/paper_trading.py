@@ -600,6 +600,8 @@ def create_session(req: PaperSessionCreateRequest) -> PaperSessionResponse:
             initial_capital=req.initial_capital,
             symbols=req.symbols,
             risk_config=req.risk_config,
+            total_account_balance=req.total_account_balance,
+            allocated_capital=req.allocated_capital,
         )
         return PaperSessionResponse(**session.get_health_summary())
     except KeyError as exc:

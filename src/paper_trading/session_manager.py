@@ -148,6 +148,8 @@ class PaperSessionConfig:
     initial_capital: float = 1_000_000.0
     symbols: list[str] = field(default_factory=lambda: ["RELIANCE", "TCS", "INFY"])
     risk_config: dict[str, Any] = field(default_factory=dict)
+    total_account_balance: float | None = None
+    allocated_capital: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -776,6 +778,18 @@ class PaperTradingSession:
         elif warn_incidents:
             health_state = "DEGRADED"
 
+        total_acct = (
+            self.config.total_account_balance
+            if self.config.total_account_balance is not None
+            else self.config.initial_capital
+        )
+        alloc_cap = (
+            self.config.allocated_capital
+            if self.config.allocated_capital is not None
+            else self.config.initial_capital
+        )
+        unalloc_cash = max(0.0, total_acct - alloc_cap)
+
         return {
             "session_id": self.session_id,
             "account_id": self.account_id,
@@ -795,6 +809,9 @@ class PaperTradingSession:
             "warning_incident_count": len(warn_incidents),
             "last_market_timestamp": self.last_market_timestamp.isoformat() if self.last_market_timestamp else None,
             "last_order_event_timestamp": self.last_order_event_timestamp.isoformat() if self.last_order_event_timestamp else None,
+            "total_account_balance": total_acct,
+            "allocated_capital": alloc_cap,
+            "unallocated_cash": unalloc_cash,
             "simulation_only": True,
         }
 
@@ -907,8 +924,19 @@ class PaperSessionManager:
         initial_capital: float = 1_000_000.0,
         symbols: list[str] | None = None,
         risk_config: dict[str, Any] | None = None,
+        total_account_balance: float | None = None,
+        allocated_capital: float | None = None,
     ) -> PaperTradingSession:
         """Create a new isolated paper trading session."""
+        if allocated_capital is not None:
+            if allocated_capital <= 0:
+                raise ValueError(f"Allocated capital must be positive, got ₹{allocated_capital}")
+            if total_account_balance is not None and allocated_capital > total_account_balance:
+                raise ValueError(
+                    f"Allocated capital ₹{allocated_capital:,.2f} cannot exceed total account balance ₹{total_account_balance:,.2f}"
+                )
+            initial_capital = allocated_capital
+
         s_id = session_id or f"sess_{datetime.now(timezone.utc).strftime('%Y%m%d')}_{uuid.uuid4().hex[:6]}"
         if s_id in self._sessions:
             raise KeyError(f"Session '{s_id}' already exists")
@@ -920,6 +948,8 @@ class PaperSessionManager:
             initial_capital=initial_capital,
             symbols=symbols or ["RELIANCE", "TCS", "INFY"],
             risk_config=risk_config or {},
+            total_account_balance=total_account_balance,
+            allocated_capital=allocated_capital,
         )
         session = PaperTradingSession(config=config, persistence_dir=self.root_dir / s_id)
         session.save_to_disk()

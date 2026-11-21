@@ -560,5 +560,26 @@ export function getBacktestTearsheetUrl(jobId, download = false) {
   return `/api/strategy/backtest/jobs/${encodeURIComponent(jobId)}/tearsheet${download ? '?download=true' : ''}`
 }
 
+// Capital Allocation API
+export function fetchCapitalPresets() {
+  return fetchJson('/api/v1/capital/presets')
+}
+
+export function allocateCapital(data) {
+  return fetchJson('/api/v1/capital/allocate', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function fetchCapitalAllocations() {
+  return fetchJson('/api/v1/capital/allocations')
+}
+
+export function fetchCapitalAllocation(allocationId) {
+  return fetchJson(`/api/v1/capital/allocations/${encodeURIComponent(allocationId)}`)
+}
+
+
 
 

@@ -197,11 +197,13 @@ function PaperTradingView() {
   const [liveDataStatus, setLiveDataStatus] = useState(null)
 
 
-  // Session creation inline form
+  // Session creation inline form with User-Selectable Capital Allocation
   const [showNewSessionModal, setShowNewSessionModal] = useState(false)
   const [newSessionId, setNewSessionId] = useState('')
   const [newAccountId, setNewAccountId] = useState('')
-  const [newCapital, setNewCapital] = useState(1000000)
+  const [newAccountBalance, setNewAccountBalance] = useState(30000)
+  const [newCapital, setNewCapital] = useState(10000)
+  const [isCustomCapital, setIsCustomCapital] = useState(false)
   const [creatingSession, setCreatingSession] = useState(false)
 
   // State transition
@@ -355,15 +357,27 @@ function PaperTradingView() {
       toast.error('Session ID is required.', { title: 'Validation Error' })
       return
     }
+    const accBal = parseFloat(newAccountBalance) || 30000.0
+    const allocCap = parseFloat(newCapital) || 10000.0
+    if (allocCap > accBal) {
+      toast.error(`Allocated capital (₹${allocCap.toLocaleString('en-IN')}) cannot exceed total account balance (₹${accBal.toLocaleString('en-IN')}).`, { title: 'Allocation Error' })
+      return
+    }
+    if (allocCap <= 0) {
+      toast.error('Allocated capital must be greater than ₹0.', { title: 'Allocation Error' })
+      return
+    }
     setCreatingSession(true)
     try {
       const created = await createPaperSession({
         session_id: newSessionId.trim(),
         account_id: newAccountId.trim() || `acct_${newSessionId.trim()}`,
-        initial_capital: parseFloat(newCapital) || 1000000.0,
+        total_account_balance: accBal,
+        allocated_capital: allocCap,
+        initial_capital: allocCap,
         symbols: ['RELIANCE', 'TCS', 'INFY'],
       })
-      toast.success(`Session ${created.session_id} created successfully.`, { title: 'Session Created' })
+      toast.success(`Session ${created.session_id} created with ₹${allocCap.toLocaleString('en-IN')} allocated (₹${(accBal - allocCap).toLocaleString('en-IN')} ring-fenced).`, { title: 'Session Created' })
       setSelectedSessionId(created.session_id)
       setShowNewSessionModal(false)
       setNewSessionId('')
@@ -840,6 +854,18 @@ function PaperTradingView() {
                     {selectedSession?.health_state || 'HEALTHY'}
                   </strong>
                 </span>
+
+                {selectedSession?.allocated_capital != null && (
+                  <span className="paper-session-chip" style={{ border: '1px solid rgba(0, 217, 163, 0.4)', background: 'rgba(0, 217, 163, 0.08)' }}>
+                    <span style={{ color: '#88a3b8' }}>Allocated:</span>
+                    <strong style={{ color: '#00d9a3' }}>₹{selectedSession.allocated_capital.toLocaleString('en-IN')}</strong>
+                    {selectedSession.unallocated_cash != null && (
+                      <span style={{ color: '#5b7a90', marginLeft: '6px', fontSize: '10px' }}>
+                        (₹{selectedSession.unallocated_cash.toLocaleString('en-IN')} ring-fenced)
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
 
               {/* Lifecycle State Machine Transition Buttons */}
@@ -928,67 +954,193 @@ function PaperTradingView() {
                 onSubmit={handleCreateSession}
                 style={{
                   marginTop: '14px',
-                  padding: '14px',
+                  padding: '16px',
                   background: '#071825',
                   border: '1px solid #1e3f57',
                   borderRadius: '6px',
                   display: 'flex',
-                  gap: '12px',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
+                  flexDirection: 'column',
+                  gap: '14px',
                 }}
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>SESSION ID</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. sess_live_20261118"
-                    value={newSessionId}
-                    onChange={(e) => setNewSessionId(e.target.value)}
-                    style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '160px' }}
-                    required
-                  />
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>SESSION ID</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. sess_live_20261118"
+                      value={newSessionId}
+                      onChange={(e) => setNewSessionId(e.target.value)}
+                      style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '160px' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>ACCOUNT ID</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. acct_alpha_01"
+                      value={newAccountId}
+                      onChange={(e) => setNewAccountId(e.target.value)}
+                      style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '140px' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>TOTAL ACCOUNT BALANCE (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 30000"
+                      value={newAccountBalance}
+                      onChange={(e) => setNewAccountBalance(e.target.value)}
+                      style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '140px' }}
+                      min="1"
+                    />
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>ACCOUNT ID</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. acct_alpha_01"
-                    value={newAccountId}
-                    onChange={(e) => setNewAccountId(e.target.value)}
-                    style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '140px' }}
-                  />
+                {/* Capital Allocation Presets */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>
+                    SELECT SIGNALFORGE CAPITAL ALLOCATION
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {[
+                      { label: '₹10,000 (₹10K)', value: 10000 },
+                      { label: '₹25,000 (₹25K)', value: 25000 },
+                      { label: '₹50,000 (₹50K)', value: 50000 },
+                      { label: '₹1,00,000 (₹1L)', value: 100000 },
+                      { label: '₹2,00,000 (₹2L)', value: 200000 },
+                    ].map((preset) => {
+                      const isSelected = !isCustomCapital && Number(newCapital) === preset.value
+                      return (
+                        <button
+                          key={preset.value}
+                          type="button"
+                          onClick={() => {
+                            setNewCapital(preset.value)
+                            setIsCustomCapital(false)
+                          }}
+                          style={{
+                            height: '28px',
+                            padding: '0 10px',
+                            background: isSelected ? '#00d9a3' : '#0c2438',
+                            color: isSelected ? '#051525' : '#c9d1d9',
+                            border: `1px solid ${isSelected ? '#00d9a3' : '#1e3f57'}`,
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: isSelected ? '700' : '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {preset.label}
+                        </button>
+                      )
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomCapital(true)}
+                      style={{
+                        height: '28px',
+                        padding: '0 10px',
+                        background: isCustomCapital ? '#00d9a3' : '#0c2438',
+                        color: isCustomCapital ? '#051525' : '#c9d1d9',
+                        border: `1px solid ${isCustomCapital ? '#00d9a3' : '#1e3f57'}`,
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontWeight: isCustomCapital ? '700' : '500',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Custom Amount
+                    </button>
+
+                    {isCustomCapital && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}>
+                        <span style={{ fontSize: '11px', color: '#88a3b8' }}>₹</span>
+                        <input
+                          type="number"
+                          placeholder="Enter custom capital"
+                          value={newCapital}
+                          onChange={(e) => setNewCapital(e.target.value)}
+                          style={{
+                            height: '28px',
+                            padding: '0 8px',
+                            background: '#051525',
+                            border: '1px solid #00d9a3',
+                            borderRadius: '4px',
+                            color: '#fff',
+                            fontSize: '11px',
+                            width: '120px',
+                          }}
+                          min="1"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '10px', color: '#88a3b8', fontWeight: '700' }}>INITIAL CAPITAL (₹)</label>
-                  <input
-                    type="number"
-                    value={newCapital}
-                    onChange={(e) => setNewCapital(e.target.value)}
-                    style={{ height: '30px', padding: '0 8px', background: '#051525', border: '1px solid #1a374b', borderRadius: '4px', color: '#fff', fontSize: '11px', width: '120px' }}
-                  />
-                </div>
+                {/* Ring-Fencing Breakdown Alert */}
+                {(() => {
+                  const acc = parseFloat(newAccountBalance) || 0
+                  const alloc = parseFloat(newCapital) || 0
+                  const unalloc = Math.max(0, acc - alloc)
+                  const isExceeded = alloc > acc
 
-                <button
-                  type="submit"
-                  disabled={creatingSession}
-                  style={{
-                    height: '30px',
-                    padding: '0 14px',
-                    marginTop: '16px',
-                    background: '#00d9a3',
-                    border: '0',
-                    borderRadius: '4px',
-                    color: '#051525',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {creatingSession ? 'Creating…' : 'Create Session'}
-                </button>
+                  return (
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '5px',
+                        background: isExceeded ? 'rgba(255, 100, 114, 0.1)' : 'rgba(0, 217, 163, 0.08)',
+                        border: `1px solid ${isExceeded ? 'rgba(255, 100, 114, 0.4)' : 'rgba(0, 217, 163, 0.3)'}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '11px',
+                      }}
+                    >
+                      {isExceeded ? (
+                        <span style={{ color: '#ff6472', fontWeight: '600' }}>
+                          ⚠️ Critical: Allocated capital (₹{alloc.toLocaleString('en-IN')}) exceeds total account balance (₹{acc.toLocaleString('en-IN')}). Trade creation will be rejected.
+                        </span>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', color: '#c9d1d9' }}>
+                          <span>
+                            Account Total: <strong style={{ color: '#fff' }}>₹{acc.toLocaleString('en-IN')}</strong>
+                          </span>
+                          <span>
+                            SignalForge Strategy: <strong style={{ color: '#00d9a3' }}>₹{alloc.toLocaleString('en-IN')}</strong>
+                          </span>
+                          <span>
+                            Ring-Fenced (Untouched): <strong style={{ color: '#4ca8ff' }}>₹{unalloc.toLocaleString('en-IN')}</strong>
+                          </span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={creatingSession || isExceeded || alloc <= 0}
+                        style={{
+                          height: '28px',
+                          padding: '0 14px',
+                          background: isExceeded ? '#333' : '#00d9a3',
+                          border: '0',
+                          borderRadius: '4px',
+                          color: isExceeded ? '#777' : '#051525',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: isExceeded ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {creatingSession ? 'Creating…' : 'Create Session'}
+                      </button>
+                    </div>
+                  )
+                })()}
               </form>
             )}
           </section>
@@ -1230,6 +1382,60 @@ function PaperTradingView() {
                   ))
                 )}
               </div>
+            </div>
+          </section>
+
+          {/* Capital Allocation & Ring-Fenced Telemetry */}
+          <section className="paper-session-panel" style={{ marginBottom: '20px' }}>
+            <SectionHeader
+              title="Capital Allocation & Ring-Fenced Funds"
+              subtitle="User-selected capital allocation, active margin, unencumbered cash, and ring-fenced account funds."
+              right={
+                <span className="paper-trade-count" style={{ background: 'rgba(0, 217, 163, 0.15)', color: '#00d9a3' }}>
+                  {selectedSession?.total_account_balance != null
+                    ? `Account: ₹${selectedSession.total_account_balance.toLocaleString('en-IN')}`
+                    : 'Allocation Active'}
+                </span>
+              }
+            />
+            <div className="paper-stats-grid" style={{ marginTop: '12px' }}>
+              <StatCard
+                label="Selected Capital"
+                value={formatCurrency(selectedSession?.allocated_capital != null ? selectedSession.allocated_capital : displaySummary.initial_capital)}
+                subValue={selectedSession?.unallocated_cash != null ? `₹${selectedSession.unallocated_cash.toLocaleString('en-IN')} ring-fenced` : 'Strategy capital limit'}
+                className="paper-positive"
+              />
+              <StatCard
+                label="Available Cash"
+                value={formatCurrency(selectedSession?.cash_balance != null ? selectedSession.cash_balance : displaySummary.initial_capital)}
+                subValue="Unencumbered buying power"
+              />
+              <StatCard
+                label="Invested Amount"
+                value={formatCurrency(selectedSession?.allocated_margin != null ? selectedSession.allocated_margin : 0)}
+                subValue={`${selectedSession?.open_positions_count || 0} active positions`}
+              />
+              <StatCard
+                label="Realized / Unrealized P&L"
+                value={`${formatCurrency(displaySummary.gross_pnl)} / ${formatCurrency(selectedSession?.unrealized_pnl || 0)}`}
+                subValue={`Gross P&L: ${formatCurrency(displaySummary.gross_pnl + (selectedSession?.unrealized_pnl || 0))}`}
+                className={getPnlClass(displaySummary.gross_pnl + (selectedSession?.unrealized_pnl || 0))}
+              />
+              <StatCard
+                label="Total Returns"
+                value={(() => {
+                  const alloc = selectedSession?.allocated_capital || displaySummary.initial_capital || 1
+                  const eq = selectedSession?.total_equity != null ? selectedSession.total_equity : (displaySummary.initial_capital + displaySummary.gross_pnl)
+                  const ret = eq - alloc
+                  const pct = (ret / alloc) * 100
+                  return `${formatCurrency(ret)} (${formatPercent(pct)})`
+                })()}
+                subValue="Computed strictly off allocated capital"
+                className={getPnlClass(
+                  (selectedSession?.total_equity != null ? selectedSession.total_equity : (displaySummary.initial_capital + displaySummary.gross_pnl)) -
+                  (selectedSession?.allocated_capital || displaySummary.initial_capital || 1)
+                )}
+              />
             </div>
           </section>
 
